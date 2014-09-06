@@ -79,7 +79,7 @@
                   :ma "ma"    :mi "mi"    :mu "mu"    :me "me"    :mo "mo"
                   :ya "ya"                :yu "yu"                :yo "yo"
                   :ra "ra"    :ri "ri"    :ru "ru"    :re "re"    :ro "ro"
-                  :wa "wa"    :wi "wi"                :we "we"    :wo "wo"
+                  :wa "wa"    :wi "wi"                :we "we"    :wo "wo" :wwo "wo"
                   :n "n'"
                   :ga "ga"    :gi "gi"    :gu "gu"    :ge "ge"    :go "go"
                   :za "za"    :ji "ji"    :zu "zu"    :ze "ze"    :zo "zo"
@@ -91,7 +91,7 @@
                   ))
 
 (defclass generic-hepburn (generic-romanization)
-  ((kana-table :initform *hepburn-kana-table*)))
+  ((kana-table :initform (alexandria:copy-hash-table *hepburn-kana-table*))))
 
 (defmethod r-apply ((modifier (eql :sokuon)) (method generic-hepburn) cc-tree)
   (if (eql (car cc-tree) :chi)
