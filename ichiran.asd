@@ -11,6 +11,7 @@
                )
   :components ((:file "package")
                (:file "characters")
+               (:file "tokenize")
                (:file "romanize")
                (:file "ichiran")))
 

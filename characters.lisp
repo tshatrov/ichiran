@@ -35,17 +35,17 @@
 
 (defparameter *char-class-hash*
   (let ((hash (make-hash-table)))
-    (loop for (class chars rest) on *all-characters* by #'cddr
+    (loop for (class chars) on *all-characters* by #'cddr
          do (loop for char across chars
                do (setf (gethash char hash) class)))
     hash))
 
 
 (defmacro hash-from-list (var list)
-  (alexandria:with-gensyms (hash key val rst)
+  (alexandria:with-gensyms (hash key val)
     `(defparameter ,var
        (let ((,hash (make-hash-table)))
-         (loop for (,key ,val ,rst) on ,list
+         (loop for (,key ,val) on ,list
               do (setf (gethash ,key ,hash) ,val))
          ,hash))))
        
@@ -58,4 +58,32 @@
 (defun voice-char (cc)
   "Returns a voiced form of character class, or the same character class"
   (gethash cc *dakuten-hash* cc))
+
+(defparameter *punctuation-marks*
+  '("【" " [" "】" "] "
+    "、" ", " "，" ", "
+    "。" ". " "・" " " "　" " "
+    "「" " \"" "」" "\" " "゛" "\""
+    "『" " «"  "』" "» "
+    "〜" " - " "：" ": " "！" "! " "？" "? " "；" "; "))
+
+(defparameter *full-width-chars* "０１２３４５６７８９ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＃＄％＆（）＊＋／〈＝〉？＠［］＾＿‘｛｜｝～")
+
+(defparameter *half-width-chars* "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&()*+/<=>?@[]^_`{|}~")
+
+(defun simplify-ngrams (str map)
+  (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
+         (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))
+    (ppcre:regex-replace-all scanner str 
+                             (lambda (match &rest rest)
+                               (declare (ignore rest))
+                               (cdr (assoc match alist :test #'equal)))
+                             :simple-calls t)))
+
+(defun normalize (str)
+  (loop for i from 0 below (length str)
+       for char = (char str i)
+       for pos = (position char *full-width-chars*)
+       if pos do (setf (char str i) (char *half-width-chars* pos)))
+  (setf str (simplify-ngrams str *punctuation-marks*)))
   

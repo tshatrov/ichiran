@@ -2,12 +2,6 @@
 
 (in-package #:ichiran)
 
-;; Hepburn
-;; Revised Hepburn
-;; Kunrei-shiki
-
-(defparameter *default-romanization-method* nil)
-
 (defun get-character-classes (word)
   "Transforms a word (or a string) into a list of character classes"
   (map 'list (lambda (char) (gethash char *char-class-hash* char)) word))
@@ -29,7 +23,6 @@
          do (push (list cc (pop result)) result)
        else do (push cc result)
        finally (return (nreverse result))))
-
 
 (defun romanize-core (method cc-tree)
   (with-output-to-string (out)
@@ -100,6 +93,11 @@
 (defclass generic-hepburn (generic-romanization)
   ((kana-table :initform *hepburn-kana-table*)))
 
+(defmethod r-apply ((modifier (eql :sokuon)) (method generic-hepburn) cc-tree)
+  (if (eql (car cc-tree) :chi)
+      (concatenate 'string "t" (romanize-core method cc-tree))
+      (call-next-method)))
+
 (defmethod r-apply ((modifier (eql :+ya)) (method generic-hepburn) cc-tree)
   (case (car cc-tree)
     (:shi "sha")
@@ -121,17 +119,58 @@
     ((:ji :dji) "jo")
     (t (call-next-method))))
 
-(defmethod r-simplify((method generic-hepburn) str)
+(defmethod r-simplify ((method generic-hepburn) str)
   ;; remove apostrophe after n if the next character isn't a vowel
   (ppcre:regex-replace-all "n'([^aiueoy]|$)" str "n\\1"))
 
+(defclass simplified-hepburn (generic-hepburn)
+  ((simplifications :initform nil :initarg :simplifications :reader simplifications
+                    :documentation "List of simplifications e.g. (\"ou\" \"o\" \"uu\" \"u\")"
+                    )))
+
+(defmethod r-simplify ((method simplified-hepburn) str)
+  (simplify-ngrams (call-next-method) (simplifications method)))
+
+
+(defparameter *hepburn-basic* (make-instance 'generic-hepburn))
+
+(defparameter *hepburn-simple* (make-instance 'simplified-hepburn
+                                              :simplifications '("oo" "o" "ou" "o" "uu" "u")))
+
+(defparameter *hepburn-passport* (make-instance 'simplified-hepburn 
+                                                :simplifications '("oo" "oh" "ou" "oh" "uu" "u")))
+
+(defclass traditional-hepburn (simplified-hepburn)
+  ((simplifications :initform '("oo" "ō" "ou" "ō" "uu" "ū"))))
+
+(defmethod r-simplify ((method traditional-hepburn) str)
+  (let ((str (call-next-method)))
+    (setf str (ppcre:regex-replace-all "n'([aiueoy])" str "n-\\1"))
+    (ppcre:regex-replace-all "n([mbp])" str "m\\1")))
+
+(defparameter *hepburn-traditional* (make-instance 'traditional-hepburn))
+
+(defclass modified-hepburn (simplified-hepburn)
+  ((simplifications :initform '("oo" "ō" "ou" "ō" "uu" "ū" "aa" "ā" "ee" "ē"))))
+
+(defmethod initialize-instance :after ((obj modified-hepburn) &key)
+  (setf (gethash :wo (slot-value obj 'kana-table)) "o"))
+
+(defparameter *hepburn-modified* (make-instance 'modified-hepburn))
+
+(defvar *default-romanization-method* *hepburn-traditional*)
 
 (defun romanize-list (cc-list &key (method *default-romanization-method*))
   "Romanize a character class list according to method"
   (let ((cc-tree (process-modifiers (process-iteration-characters cc-list))))
-    (r-simplify method (romanize-core method cc-tree))))
+    (values (r-simplify method (romanize-core method cc-tree)))))
 
-(defun romanize (word &key  (method *default-romanization-method*))
+(defun romanize-word (word &key (method *default-romanization-method*))
   "Romanize a word according to method"
   (romanize-list (get-character-classes word) :method method))
+
+(defun romanize (input &key (method *default-romanization-method*))
+  "Romanize a sentence according to method"
+  (setf input (normalize input))
+  (romanize-word input :method method))
   
