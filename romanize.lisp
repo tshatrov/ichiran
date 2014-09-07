@@ -75,7 +75,7 @@
                   :sa "sa"    :shi "shi"  :su "su"    :se "se"    :so "so"
                   :ta "ta"    :chi "chi"  :tsu "tsu"  :te "te"    :to "to"
                   :na "na"    :ni "ni"    :nu "nu"    :ne "ne"    :no "no"
-                  :ha "ha"    :hi "hi"    :fu "fu"    :he "he"    :ho "ho"
+         :ha "ha" :hha "ha"   :hi "hi"    :fu "fu"    :he "he"    :ho "ho"
                   :ma "ma"    :mi "mi"    :mu "mu"    :me "me"    :mo "mo"
                   :ya "ya"                :yu "yu"                :yo "yo"
                   :ra "ra"    :ri "ri"    :ru "ru"    :re "re"    :ro "ro"

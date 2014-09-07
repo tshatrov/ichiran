@@ -14,7 +14,7 @@
     :sa "さサ"    :shi "しシ"   :su "すス"    :se "せセ"    :so "そソ"
     :ta "たタ"    :chi "ちチ"   :tsu "つツ"   :te "てテ"    :to "とト"
     :na "なナ"    :ni "にニ"    :nu "ぬヌ"    :ne "ねネ"    :no "のノ"
-    :ha "はハ"    :hi "ひヒ"    :fu "ふフ"    :he "へヘ"    :ho "ほホ"
+    :ha "は" :hha "ハ" :hi "ひヒ" :fu "ふフ"  :he "へヘ"    :ho "ほホ"
     :ma "まマ"    :mi "みミ"    :mu "むム"    :me "めメ"    :mo "もモ"
     :ya "やヤ"                  :yu "ゆユ"                 :yo "よヨ"
     :ra "らラ"    :ri "りリ"    :ru "るル"    :re "れレ"    :ro "ろロ"
@@ -53,7 +53,7 @@
                 '(:ka :ga :ki :gi :ku :gu :ke :ge :ko :go
                   :sa :za :shi :ji :su :zu :se :ze :so :zo
                   :ta :da :chi :dji :tsu :dzu :te :de :to :do
-                  :ha :ba :hi :bi :fu :bu :he :be :ho :bo))
+                  :ha :ba :hha :ba :hi :bi :fu :bu :he :be :ho :bo))
 
 (defun voice-char (cc)
   "Returns a voiced form of character class, or the same character class"

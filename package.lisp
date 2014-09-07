@@ -1,6 +1,5 @@
 ;;;; package.lisp
 
-
 (defpackage #:ichiran/tokenize
   (:use #:cl)
   (:export :segment))
