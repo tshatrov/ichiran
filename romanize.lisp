@@ -53,11 +53,9 @@
   (:method (method str) str))
 
 
-(defparameter *generic-kana-table* (make-hash-table))
-
 (defclass generic-romanization ()
   ((kana-table :reader kana-table
-               :initform *generic-kana-table*)))
+               :initform (make-hash-table))))
 
 (defmethod r-base ((method generic-romanization) item)
   (or (gethash item (kana-table method)) (call-next-method)))
