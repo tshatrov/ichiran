@@ -24,6 +24,10 @@
        else do (push cc result)
        finally (return (nreverse result))))
 
+(defun leftmost-atom (cc-list &aux (first (car cc-list)))
+  (cond ((atom first) first)
+        (t (leftmost-atom (cdr first)))))
+
 (defun romanize-core (method cc-tree)
   (with-output-to-string (out)
     (dolist (item cc-tree)
@@ -92,7 +96,7 @@
   ((kana-table :initform (alexandria:copy-hash-table *hepburn-kana-table*))))
 
 (defmethod r-apply ((modifier (eql :sokuon)) (method generic-hepburn) cc-tree)
-  (if (eql (car cc-tree) :chi)
+  (if (eql (leftmost-atom cc-tree) :chi)
       (concatenate 'string "t" (romanize-core method cc-tree))
       (call-next-method)))
 
