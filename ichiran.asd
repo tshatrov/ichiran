@@ -8,10 +8,14 @@
   :depends-on (#:cl-ppcre
                #:alexandria
                #:split-sequence
+               #:webgunk
+               #:postmodern
+               #:cxml
                )
   :components ((:file "package")
                (:file "characters")
                (:file "tokenize")
                (:file "romanize")
+               (:file "dict")
                (:file "ichiran")))
 

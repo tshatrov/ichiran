@@ -4,6 +4,11 @@
   (:use #:cl)
   (:export :segment))
 
+(defpackage #:ichiran/dict
+  (:use #:cl #:postmodern)
+  (:import-from #:webgunk :node-text)
+  )
+
 (defpackage #:ichiran
   (:use #:cl)
   (:export :romanize :romanize-word
