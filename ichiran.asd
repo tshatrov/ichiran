@@ -8,9 +8,9 @@
   :depends-on (#:cl-ppcre
                #:alexandria
                #:split-sequence
-               #:webgunk
                #:postmodern
                #:cxml
+               #:cl-unicode
                )
   :components ((:file "package")
                (:file "characters")

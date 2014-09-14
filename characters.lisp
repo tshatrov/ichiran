@@ -1,4 +1,4 @@
-(in-package #:ichiran)
+(in-package #:ichiran/characters)
 
 (defparameter *sokuon-characters* '(:sokuon "っッ"))
 
@@ -71,6 +71,29 @@
 
 (defparameter *half-width-chars* "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&()*+/<=>?@[]^_`{|}~")
 
+
+(defparameter *katakana-regex* "[ァ-ヺヽヾー]")
+
+(defparameter *hiragana-regex* "[ぁ-ゔゝゞー]")
+
+(defparameter *kanji-regex* "[々一-龯]")
+
+(defparameter *nonword-regex* "[^々一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
+
+(defparameter *char-scanners*
+  (mapcar (lambda (pair) (cons (car pair) (ppcre:create-scanner (format nil "^~a+$" (cadr pair)))))
+          `((:katakana ,*katakana-regex*)
+            (:hiragana ,*hiragana-regex*)
+            (:kanji ,*kanji-regex*)
+            (:kana ,(format nil "(~a|~a)" *katakana-regex* *hiragana-regex*))
+            (:traditional ,(format nil "(~a|~a)" *hiragana-regex* *kanji-regex*))
+            (:nonword ,*nonword-regex*))))
+
+(defun test-word (word char-class)
+  (declare (type (member :katakana :hiragana :kanji :kana :traditional :nonword) char-class))
+  (let ((regex (cdr (assoc char-class *char-scanners*))))
+    (ppcre:scan regex word)))
+    
 (defun simplify-ngrams (str map)
   (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
          (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))
@@ -87,3 +110,20 @@
        if pos do (setf (char str i) (char *half-width-chars* pos)))
   (setf str (simplify-ngrams str *punctuation-marks*)))
   
+(defun split-by-regex (regex str)
+  (remove-if (lambda (seg) (= (length seg) 0))
+             (ppcre:split regex str :with-registers-p t)))
+
+(defun basic-split (str)
+  "splits string into segments of katakana, traditional and misc characters"
+  (let ((split1 (split-by-regex (format nil "(~a+)" *nonword-regex*) str)))
+    (loop for segment in split1
+         for misc = (test-word segment :nonword) then (not misc)
+         append (if misc
+                    (list (cons :misc segment))
+                    (mapcar (lambda (seg) (cons :word seg))
+                            (split-by-regex "([ァ-ヺヽヾ][ァ-ヺヽヾー]*)" segment))))))
+                      
+  
+
+

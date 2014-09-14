@@ -164,15 +164,36 @@
 
 (defun romanize-list (cc-list &key (method *default-romanization-method*))
   "Romanize a character class list according to method"
-  (let ((cc-tree (process-modifiers (process-iteration-characters cc-list))))
-    (values (r-simplify method (romanize-core method cc-tree)))))
+  ;;exception for ha = wa
+  (if (and (= (length cc-list) 1) (eql (car cc-list) :ha)) "wa"
+      (let ((cc-tree (process-modifiers (process-iteration-characters cc-list))))
+        (values (r-simplify method (romanize-core method cc-tree))))))
 
 (defun romanize-word (word &key (method *default-romanization-method*))
   "Romanize a word according to method"
   (romanize-list (get-character-classes word) :method method))
 
+(defun join-parts (parts)
+  (with-output-to-string (s)
+    (loop with last-space = t
+         for part in parts
+         for len = (length part) do 
+         (when (and (not (zerop len))
+                    (not last-space)
+                    (alpha-char-p (char part 0)))
+           (princ #\Space s))
+         (princ part s)
+         (unless (zerop len)
+           (setf last-space (cl-unicode:has-property (char part (1- len)) "WhiteSpace"))))))
+
 (defun romanize (input &key (method *default-romanization-method*))
   "Romanize a sentence according to method"
   (setf input (normalize input))
-  (romanize-word input :method method))
+  (loop for (split-type . split-text) in (basic-split input)
+     nconc
+       (if (eql split-type :word)
+           (mapcar (lambda (word) (romanize-word word :method method))
+                   (mapcar #'word-info-kana (simple-segment split-text)))
+           (list split-text)) into parts
+     finally (return (join-parts parts))))
   
