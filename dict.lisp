@@ -337,5 +337,17 @@
                       
 (defun simple-segment (str)
   (with-connection *connection*
-    (mapcar #'word-info-from-segment (find-best-path (find-substring-words str)))))
+    (flet ((make-substr-gap (start end)
+             (let ((substr (subseq str start end)))
+               (make-word-info :type :gap :text substr :kana substr :score 0))))
+      (loop with idx = 0 and result
+         for segment in (find-best-path (find-substring-words str))
+         if (> (segment-start segment) idx)
+            do (push (make-substr-gap idx (segment-start segment)) result)
+         do (push (word-info-from-segment segment) result)
+            (setf idx (segment-end segment))
+         finally
+           (when (< idx (length str))
+             (push (make-substr-gap idx (length str)) result))
+           (return (nreverse result))))))
 

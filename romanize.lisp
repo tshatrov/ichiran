@@ -192,8 +192,9 @@
   (loop for (split-type . split-text) in (basic-split input)
      nconc
        (if (eql split-type :word)
-           (mapcar (lambda (word) (romanize-word word :method method))
-                   (mapcar #'word-info-kana (simple-segment split-text)))
+           (mapcar (lambda (word)
+                     (romanize-word (word-info-kana word) :method method))
+                   (simple-segment split-text))
            (list split-text)) into parts
      finally (return (join-parts parts))))
   
