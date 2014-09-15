@@ -77,11 +77,11 @@
                   :sa "sa"    :shi "shi"  :su "su"    :se "se"    :so "so"
                   :ta "ta"    :chi "chi"  :tsu "tsu"  :te "te"    :to "to"
                   :na "na"    :ni "ni"    :nu "nu"    :ne "ne"    :no "no"
-         :ha "ha" :hha "ha"   :hi "hi"    :fu "fu"    :he "he"    :ho "ho"
+                  :ha "ha"    :hi "hi"    :fu "fu"    :he "he"    :ho "ho"
                   :ma "ma"    :mi "mi"    :mu "mu"    :me "me"    :mo "mo"
                   :ya "ya"                :yu "yu"                :yo "yo"
                   :ra "ra"    :ri "ri"    :ru "ru"    :re "re"    :ro "ro"
-                  :wa "wa"    :wi "wi"                :we "we"    :wo "wo" :wwo "wo"
+                  :wa "wa"    :wi "wi"                :we "we"    :wo "wo"
                   :n "n'"
                   :ga "ga"    :gi "gi"    :gu "gu"    :ge "ge"    :go "go"
                   :za "za"    :ji "ji"    :zu "zu"    :ze "ze"    :zo "zo"
@@ -168,6 +168,18 @@
   (if (and (= (length cc-list) 1) (eql (car cc-list) :ha)) "wa"
       (let ((cc-tree (process-modifiers (process-iteration-characters cc-list))))
         (values (r-simplify method (romanize-core method cc-tree))))))
+
+(defgeneric r-special (method word)
+  (:documentation "Romanize words that are exceptions, return nil otherwise")
+  (:method-combination or)
+  (:method (method word) nil))
+
+(defmethod r-special or ((method generic-hepburn) word)
+  (cond ((equal word "は") "wa")
+        ((equal word "へ") "e")))
+
+(defmethod r-special or ((method modified-hepburn) word)
+  (when (equal word "を") "o"))
 
 (defun romanize-word (word &key (method *default-romanization-method*))
   "Romanize a word according to method"
