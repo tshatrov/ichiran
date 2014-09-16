@@ -260,7 +260,7 @@
     (values readings (mapcar #'ichiran:romanize-word readings))))
 
 (defstruct segment
-  start end word (score nil) (accum 0) (path nil))
+  start end word (score nil) (top nil)) ;; (accum 0) (path nil)
 
 (defun calc-score (reading)
   (let* ((score 1)
@@ -300,32 +300,61 @@
                         (gen-score (make-segment :start start :end end :word word)))
                       (find-word substr)))))
 
-(defun find-best-path (segments)
-  ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
-  (let ((best-accum 0)
-        (best-path nil))
-    (loop for (seg1 . rest) on segments
-       when (> (segment-score seg1) (segment-accum seg1))
-         do (setf (segment-accum seg1) (segment-score seg1)
-                  (segment-path seg1) (list seg1))
-            (when (> (segment-accum seg1) best-accum)
-              (setf best-accum (segment-accum seg1)
-                    best-path (segment-path seg1)))
-       when (> (segment-score seg1) 0)
-         do (loop for seg2 in rest
-               if (>= (segment-start seg2) (segment-end seg1))
-               do (let ((accum (+ (segment-accum seg1) (segment-score seg2))))
-                    (when (> accum (segment-accum seg2))
-                      (setf (segment-accum seg2) accum
-                            (segment-path seg2) (cons seg2 (segment-path seg1)))
-                      (when (> accum best-accum)
-                        (setf best-accum accum
-                              best-path (segment-path seg2)))))))
-    ;; prevent returning recursive structures 
-    (dolist (segment segments)
-      (setf (segment-path segment) nil))
 
-    (values (nreverse best-path) best-accum)))
+(defstruct (top-array-item (:conc-name tai-)) score payload)
+
+(defclass top-array ()
+  ((array :reader top-array)
+   (count :reader item-count :initform 0)
+   ))
+
+(defmethod initialize-instance :after ((obj top-array) &key (limit 5))
+  (setf (slot-value obj 'array) (make-array limit :initial-element nil)))
+
+(defgeneric register-item (collection score payload)
+  (:method ((obj top-array) score payload)
+    (with-slots (array count) obj
+      (let ((item (make-top-array-item :score score :payload payload))
+            (len (length array)))
+        (loop for idx from (min count len) downto 0
+           for prev-item = (when (> idx 0) (aref array (1- idx)))
+           for done = (or (not prev-item) (>= (tai-score prev-item) score))
+           when (< idx len) do (setf (aref array idx) (if done item prev-item))
+           until done)
+        (incf count)))))
+
+(defgeneric get-array (collection)
+  (:method ((obj top-array))
+    (with-slots (array count) obj
+      (if (>= count (length array)) array (subseq array 0 count)))))
+
+
+(defun find-best-path (segments &key (limit 5))
+  ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
+  (let ((top (make-instance 'top-array :limit limit)))
+    (register-item top 0 nil)
+
+    (dolist (segment segments)
+      (setf (segment-top segment) (make-instance 'top-array :limit limit)))
+
+    (loop for (seg1 . rest) on segments
+       when (> (segment-score seg1) 0) do 
+         (register-item (segment-top seg1) (segment-score seg1) (list seg1))
+         (register-item top (segment-score seg1) (list seg1))
+         (loop for seg2 in rest
+            for seg2-score = (segment-score seg2)
+            when (and (> seg2-score 0) 
+                      (>= (segment-start seg2) (segment-end seg1))) do
+              (loop for tai across (get-array (segment-top seg1))
+                 for accum = (+ (tai-score tai) seg2-score)
+                 for path = (cons seg2 (tai-payload tai))
+                 do (register-item (segment-top seg2) accum path)
+                    (register-item top accum path))))
+    (dolist (segment segments)
+      (setf (segment-top segment) nil))
+
+    (loop for tai across (get-array top)
+         collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
 
 (defstruct word-info type text kana score)
 
@@ -334,20 +363,27 @@
                   :text (get-text word)
                   :kana (get-kana word)
                   :score (segment-score segment)))
-                      
-(defun simple-segment (str)
-  (with-connection *connection*
-    (flet ((make-substr-gap (start end)
-             (let ((substr (subseq str start end)))
-               (make-word-info :type :gap :text substr :kana substr :score 0))))
-      (loop with idx = 0 and result
-         for segment in (find-best-path (find-substring-words str))
-         if (> (segment-start segment) idx)
-            do (push (make-substr-gap idx (segment-start segment)) result)
-         do (push (word-info-from-segment segment) result)
-            (setf idx (segment-end segment))
-         finally
-           (when (< idx (length str))
-             (push (make-substr-gap idx (length str)) result))
-           (return (nreverse result))))))
 
+(defun fill-segment-path (str path)
+  (flet ((make-substr-gap (start end)
+           (let ((substr (subseq str start end)))
+             (make-word-info :type :gap :text substr :kana substr :score 0))))
+    (loop with idx = 0 and result
+       for segment in path
+       if (> (segment-start segment) idx)
+         do (push (make-substr-gap idx (segment-start segment)) result)
+       do (push (word-info-from-segment segment) result)
+          (setf idx (segment-end segment))
+       finally
+         (when (< idx (length str))
+           (push (make-substr-gap idx (length str)) result))
+         (return (nreverse result)))))
+  
+                      
+(defun dict-segment (str &key (limit 5))
+  (with-connection *connection*
+    (loop for (path . score) in (find-best-path (find-substring-words str) :limit limit)
+         collect (cons (fill-segment-path str path) score))))
+
+(defun simple-segment (str)
+  (caar (dict-segment str :limit 1)))
