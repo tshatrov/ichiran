@@ -18,6 +18,7 @@
   (:export :simple-segment :dict-segment
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score
+           :word-info-str
            ))
 
 (defpackage #:ichiran

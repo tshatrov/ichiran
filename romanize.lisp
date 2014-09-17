@@ -198,15 +198,19 @@
          (unless (zerop len)
            (setf last-space (cl-unicode:has-property (char part (1- len)) "WhiteSpace"))))))
 
-(defun romanize (input &key (method *default-romanization-method*))
+(defun romanize (input &key (method *default-romanization-method*) (with-info nil))
   "Romanize a sentence according to method"
   (setf input (normalize input))
-  (loop for (split-type . split-text) in (basic-split input)
+  (loop with definitions = nil 
+     for (split-type . split-text) in (basic-split input)
      nconc
        (if (eql split-type :word)
            (mapcar (lambda (word)
-                     (romanize-word (word-info-kana word) :method method))
+                     (let ((rom (romanize-word (word-info-kana word) :method method)))
+                       (when with-info
+                         (push (cons rom (word-info-str word)) definitions))
+                       rom))
                    (simple-segment split-text))
            (list split-text)) into parts
-     finally (return (join-parts parts))))
+     finally (return (values (join-parts parts) (nreverse definitions)))))
   

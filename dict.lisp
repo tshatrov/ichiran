@@ -357,18 +357,19 @@
     (loop for tai across (get-array top)
          collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
 
-(defstruct word-info type text kana score)
+(defstruct word-info type text kana (score 0) (seq nil))
 
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
   (make-word-info :type (if (typep word 'kanji-text) :kanji :kana)
                   :text (get-text word)
                   :kana (get-kana word)
+                  :seq (seq word)
                   :score (segment-score segment)))
 
 (defun fill-segment-path (str path)
   (flet ((make-substr-gap (start end)
            (let ((substr (subseq str start end)))
-             (make-word-info :type :gap :text substr :kana substr :score 0))))
+             (make-word-info :type :gap :text substr :kana substr))))
     (loop with idx = 0 and result
        for segment in path
        if (> (segment-start segment) idx)
@@ -388,3 +389,33 @@
 
 (defun simple-segment (str)
   (caar (dict-segment str :limit 1)))
+
+(defun get-senses (seq)
+  (query (:order-by
+          (:select (:select (:concat "[" (:raw "string_agg(pos.text, ',' ORDER BY pos.ord)") "]")
+                            :from (:as 'sense-prop 'pos) :where (:and (:= 'pos.sense-id 'sense.id) (:= 'pos.tag "pos")))
+                   (:select (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
+                            :from 'gloss :where (:= 'gloss.sense-id 'sense.id))
+                   :from 'sense
+                   :where (:= 'sense.seq seq)
+                   :group-by 'sense.id)
+          'sense.ord)))
+
+(defun get-senses-str (seq)
+  (with-output-to-string (s)
+    (loop for (pos gloss) in (get-senses seq)
+          for i from 1
+          when (> i 1) do (terpri s)
+          do (format s "~a. ~a ~a" i pos gloss))))
+
+(defun word-info-str (word-info)
+  (with-output-to-string (s)
+    (case (word-info-type word-info)
+      (:kanji (format s "~a 【~a 】" (word-info-text word-info) (word-info-kana word-info)))
+      (t (princ (word-info-text word-info) s)))
+    (terpri s)
+    (let ((seq (word-info-seq word-info)))
+      (princ (if seq (get-senses-str seq) "???") s))))
+          
+
+      
