@@ -270,6 +270,7 @@
       (let* ((entry (get-dao 'entry seq))
              (prefer-kana (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "misc") (:= 'text "uk"))))
              (particle-p (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "pos") (:= 'text "prt"))))
+             (long-p (> len (if kanji-p 2 3)))
              (primary-p (and (= ord 0)
                              (or (and prefer-kana (not kanji-p))
                                  (and (not prefer-kana) kanji-p)
@@ -279,7 +280,7 @@
           (when particle-p
             (incf score 10)))
         (unless (eql common :null)
-          (if primary-p
+          (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 5)))
         (setf score (* score (expt len (if kanji-p 3 2))))
