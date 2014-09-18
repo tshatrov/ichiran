@@ -291,15 +291,25 @@
   (setf (segment-score segment) (calc-score (segment-word segment)))
   segment)
 
+(defun find-sticky-positions (str)
+  "words cannot start or end after sokuon and before yoon characters"
+  (loop for pos from 0 below (length str)
+        for char = (char str pos)
+        for char-class = (gethash char *char-class-hash* char)
+        if (eql char-class :sokuon) collect (1+ pos)
+        else if (member char-class *modifier-characters*) collect pos))
+
 (defun find-substring-words (str)
-  (loop for start from 0 below (length str)
+  (loop with sticky = (find-sticky-positions str)
+       for start from 0 below (length str)
+       unless (member start sticky)
        nconcing 
        (loop for end from (1+ start) upto (length str)
-          for substr = (subseq str start end)
+            unless (member end sticky)
             nconcing (mapcar 
                       (lambda (word)
                         (gen-score (make-segment :start start :end end :word word)))
-                      (find-word substr)))))
+                      (find-word (subseq str start end))))))
 
 
 (defstruct (top-array-item (:conc-name tai-)) score payload)
