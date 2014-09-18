@@ -415,13 +415,14 @@
   (with-output-to-string (s)
     (loop for (pos gloss) in (get-senses seq)
           for i from 1
+          for rpos = pos then (if (equal pos "[]") rpos pos)
           when (> i 1) do (terpri s)
-          do (format s "~a. ~a ~a" i pos gloss))))
+          do (format s "~a. ~a ~a" i rpos gloss))))
 
 (defun word-info-str (word-info)
   (with-output-to-string (s)
     (case (word-info-type word-info)
-      (:kanji (format s "~a 【~a 】" (word-info-text word-info) (word-info-kana word-info)))
+      (:kanji (format s "~a 【~a】" (word-info-text word-info) (word-info-kana word-info)))
       (t (princ (word-info-text word-info) s)))
     (terpri s)
     (let ((seq (word-info-seq word-info)))
