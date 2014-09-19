@@ -421,13 +421,12 @@
           do (format s "~a. ~a ~a" i rpos gloss))))
 
 (defun word-info-str (word-info)
-  (with-output-to-string (s)
-    (case (word-info-type word-info)
-      (:kanji (format s "~a 【~a】" (word-info-text word-info) (word-info-kana word-info)))
-      (t (princ (word-info-text word-info) s)))
-    (terpri s)
-    (let ((seq (word-info-seq word-info)))
-      (princ (if seq (get-senses-str seq) "???") s))))
+  (with-connection *connection*
+    (with-output-to-string (s)
+      (case (word-info-type word-info)
+        (:kanji (format s "~a 【~a】" (word-info-text word-info) (word-info-kana word-info)))
+        (t (princ (word-info-text word-info) s)))
+      (terpri s)
+      (let ((seq (word-info-seq word-info)))
+        (princ (if seq (get-senses-str seq) "???") s)))))
           
-
-      
