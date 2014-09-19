@@ -122,7 +122,7 @@
          append (if misc
                     (list (cons :misc segment))
                     (mapcar (lambda (seg) (cons :word seg))
-                            (split-by-regex "([ァ-ヺヽヾ][ァ-ヺヽヾー]*)" segment))))))
+                            (split-by-regex "([ァ-ヺ][ァ-ヺヽヾゝゞー]*)" segment))))))
                       
   
 

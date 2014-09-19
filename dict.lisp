@@ -293,11 +293,12 @@
 
 (defun find-sticky-positions (str)
   "words cannot start or end after sokuon and before yoon characters"
-  (loop for pos from 0 below (length str)
-        for char = (char str pos)
-        for char-class = (gethash char *char-class-hash* char)
-        if (eql char-class :sokuon) collect (1+ pos)
-        else if (member char-class *modifier-characters*) collect pos))
+  (loop with modifiers = (append *modifier-characters* *iteration-characters*)
+     for pos from 0 below (length str)
+     for char = (char str pos)
+     for char-class = (gethash char *char-class-hash* char)
+     if (eql char-class :sokuon) collect (1+ pos)
+     else if (member char-class modifiers) collect pos))
 
 (defun find-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
