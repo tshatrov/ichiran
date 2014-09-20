@@ -247,6 +247,26 @@
                    (gethash pos *conj-rules* nil))))
           (val val))
 
+
+(defun construct-conjugation (word rule)
+  (assert (> (length word) 1))
+  (let* ((iskana (test-word (subseq word (- (length word) 2)) :kana))
+         (euphr (cr-euphr rule))
+         (euphk (cr-euphk rule))
+         (stem (+ (cr-stem rule)
+                  (if (or (and iskana (> (length euphr) 0))
+                          (and (not iskana) (> (length euphk) 0)))
+                      1 0))))
+    (concatenate 'string (subseq word 0 (- (length word) stem))
+                 (if iskana euphr euphk)
+                 (cr-okuri rule))))
+
+(defun conjugate-word (word pos)
+  (let* ((pos-id (get-pos-index pos))
+         (rules (get-conj-rules pos-id)))
+    (loop for rule in rules
+         collect (cons rule (construct-conjugation word rule)))))
+
 (defun init-tables ()
   (with-connection *connection*
     (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop)))
