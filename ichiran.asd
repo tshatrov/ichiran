@@ -11,6 +11,7 @@
                #:postmodern
                #:cxml
                #:cl-unicode
+               #:cl-csv
                )
   :components ((:file "package")
                (:file "characters")

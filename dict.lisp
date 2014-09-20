@@ -150,9 +150,106 @@
   (!foreign 'entry 'seq)
   (!foreign 'sense 'sense-id 'id))
 
+(defclass conjugation ()
+  ((seq :reader seq :col-type integer :initarg :seq)
+   (from :reader seq-from :col-type integer :initarg :from)
+   (pos :reader pos :col-type string :initarg :pos)
+   )
+  (:documentation "conjugation link")
+  (:metaclass dao-class)
+  (:keys seq))
+
+(deftable conjugation
+  (!dao-def)
+  (!index 'from)
+  (!index 'pos)
+  (!foreign 'entry 'seq)
+  (!foreign 'entry 'from 'seq))
+
+(defclass conj-prop ()
+  ((id :reader id :col-type serial)
+   (seq :reader seq :col-type integer :initarg :seq)
+   (neg :reader conj-neg :col-type boolean :initarg :neg)
+   (fml :reader conj-fml :col-type boolean :initarg :fml))
+  (:metaclass dao-class)
+  (:keys id))
+
+(deftable conj-prop
+  (!dao-def)
+  (!index 'seq)
+  (!foreign 'entry 'seq))
+
+
+(defmacro csv-hash (hash-name (filename &key skip-first) loader-opts &rest accessor-opts-list)
+  (let ((base-name (string-trim "*" hash-name))
+        (forms (list `(defparameter ,hash-name nil)))
+        (loader-opts-length (length loader-opts)) ;;([loader-name] row-def row-key value-form)
+        loader-name
+        (row-count-var (gensym "ROW"))
+        )
+    (assert (member loader-opts-length '(3 4)))
+    (setf loader-name
+          (if (= loader-opts-length 4)
+              (pop loader-opts)
+              (intern (concatenate 'string (symbol-name :load-) base-name))))
+    (destructuring-bind (row-def row-key-form value-form) loader-opts
+      (push
+       `(defun ,loader-name ()
+          (setf ,hash-name (make-hash-table :test 'equal))
+          (loop :for ,row-def :in (cl-csv:read-csv 
+                                   (merge-pathnames *jmdict-data* ,filename)
+                                   :separator #\Tab :skip-first-p ,skip-first)
+             :for ,row-count-var :from 0
+             :do (setf (gethash ,row-key-form ,hash-name) ,value-form)))
+       forms))
+    (loop with accessor-name
+       for accessor-opts in accessor-opts-list
+       for accessor-opts-length = (length accessor-opts) ;; ([accessor-name] val-var val-var-form)
+       for param = (gensym "KEY")
+       do (assert (member accessor-opts-length '(2 3)))
+         (setf accessor-name
+               (if (= accessor-opts-length 3)
+                   (pop accessor-opts)
+                   (intern (concatenate 'string (symbol-name :get-) base-name))))
+         (destructuring-bind (val-var val-var-form) accessor-opts
+           (push
+            `(defun ,accessor-name (,param)
+               (unless ,hash-name (,loader-name))
+               (let ((,val-var (gethash ,param ,hash-name)))
+                 ,val-var-form))
+            forms)))
+    `(progn ,@(nreverse forms))))
+               
+(csv-hash *pos-index* ("kwpos.csv")
+          ((pos-id pos description) pos (cons (parse-integer pos-id) description))
+          (val (car val)))
+
+(csv-hash *conj-description* ("conj.csv" :skip-first t)
+          ((conj-id description) (parse-integer conj-id) description)
+          (val val))
+
+(defstruct (conjugation-rule
+             (:conc-name cr-)
+             (:constructor make-conjugation-rule (pos conj neg fml onum stem okuri euphr euphk)))
+  pos conj neg fml onum stem okuri euphr euphk)
+
+(csv-hash *conj-rules* ("conjo.csv" :skip-first t)
+          ((pos-id conj-id neg fml onum stem okuri euphr euphk pos2)
+           (parse-integer pos-id)
+           (let ((pos (parse-integer pos-id)))
+             (cons (make-conjugation-rule pos
+                                          (parse-integer conj-id)
+                                          (case (char neg 0) (#\t t) (#\f nil))
+                                          (case (char fml 0) (#\t t) (#\f nil))
+                                          (parse-integer onum)
+                                          (parse-integer stem)
+                                          okuri euphr euphk)
+                   (gethash pos *conj-rules* nil))))
+          (val val))
+
 (defun init-tables ()
   (with-connection *connection*
-    (let ((tables '(entry kanji-text kana-text sense gloss sense-prop)))
+    (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop)))
       (loop for table in (reverse tables)
          do (query (:drop-table :if-exists table)))
       (loop for table in tables
