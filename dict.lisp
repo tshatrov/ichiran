@@ -21,8 +21,8 @@
 (defclass entry ()
   ((seq :reader seq :col-type integer :initarg :seq)
    (content :reader content :col-type string :initarg :content)
-   (n-kanji :accessor n-kanji :col-type integer :initform 0)
-   (n-kana :accessor n-kana :col-type integer :initform 0) 
+   (n-kanji :accessor n-kanji :col-type integer :initform 0 :initarg :n-kanji)
+   (n-kana :accessor n-kana :col-type integer :initform 0 :initarg :n-kana) 
    )
   (:metaclass dao-class)
   (:keys seq))
@@ -40,6 +40,12 @@
 (defmethod get-text ((obj entry))
   (text (car (select-dao (if (> (n-kanji obj) 0) 'kanji-text 'kana-text)
                          (:and (:= 'seq (seq obj)) (:= 'ord 0))))))
+
+(defun recalc-entry-stats ()
+  (query (:update 'entry :set
+                  'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
+                  'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq)))))
+
 
 (defclass kanji-text ()
   ((id :reader id :col-type serial)
@@ -251,19 +257,14 @@
 (defun load-entry (content)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
          (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
-         (seq (parse-integer (node-text entseq-node)))
-         (entry-obj (make-dao 'entry :seq seq :content content)))
+         (seq (parse-integer (node-text entseq-node))))
+    (make-dao 'entry :seq seq :content content)
     (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
            (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))
-           (n-kanji (dom:length kanji-nodes))
-           (n-kana (dom:length kana-nodes))
            (sense-nodes (dom:get-elements-by-tag-name parsed "sense")))
       (insert-readings kanji-nodes "keb" 'kanji-text seq "ke_pri")
       (insert-readings kana-nodes "reb" 'kana-text seq "re_pri")
-      (insert-senses sense-nodes seq)
-      (setf (n-kanji entry-obj) n-kanji
-            (n-kana entry-obj) n-kana)
-      (update-dao entry-obj))))
+      (insert-senses sense-nodes seq))))
 
 (defun fix-entities (source)
   "replaces entity definitions with abbreviations"
@@ -289,9 +290,10 @@
          finally (query "ANALYZE") (format t "~a entries total~%" cnt)))
     (when load-conjugations
       (format t "Loading conjugations...~%")
-      (load-conjugations)
-      (query "ANALYZE"))
+      (load-conjugations))
     (add-errata)
+    (recalc-entry-stats)
+    (query "ANALYZE")
     ))
 
 ;;; conjugations generator (warning: terrible code ahead)
