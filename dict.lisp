@@ -291,6 +291,7 @@
       (format t "Loading conjugations...~%")
       (load-conjugations)
       (query "ANALYZE"))
+    (add-errata)
     ))
 
 ;;; conjugations generator (warning: terrible code ahead)

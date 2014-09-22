@@ -18,5 +18,6 @@
                (:file "tokenize")
                (:file "romanize")
                (:file "dict")
+               (:file "dict-errata")
                (:file "ichiran")))
 
