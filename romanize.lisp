@@ -172,7 +172,7 @@
 (defgeneric r-special (method word)
   (:documentation "Romanize words that are exceptions, return nil otherwise")
   (:method-combination or)
-  (:method (method word) nil))
+  (:method or (method word) nil))
 
 (defmethod r-special or ((method generic-hepburn) word)
   (cond ((equal word "は") "wa")
