@@ -527,11 +527,11 @@
 (defstruct segment
   start end word (score nil) (top nil)) ;; (accum 0) (path nil)
 
-(defun calc-score (reading)
+(defun calc-score (reading &optional final)
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
          (len (length (text reading))))
-    (with-slots (common seq ord) reading
+    (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (prefer-kana (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "misc") (:= 'text "uk"))))
              (particle-p (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "pos") (:= 'text "prt"))))
@@ -539,11 +539,22 @@
              (primary-p (and (= ord 0)
                              (or (and prefer-kana (not kanji-p))
                                  (and (not prefer-kana) kanji-p)
-                                 (= (n-kanji entry) 0)))))
+                                 (= (n-kanji entry) 0))))
+             (common (common reading)))
         (when primary-p
           (incf score 10)
           (when particle-p
-            (incf score 10)))
+            (incf score 10)
+            (when final
+              (incf score 5))))
+        (when (eql common :null)
+          (let* ((table (if kanji-p 'kanji-text 'kana-text))
+                 (conj-of-common (query (:select 'rdng.id :from (:as table 'rdng) (:as 'conjugation 'conj)
+                                                :where (:and (:= 'conj.seq seq)
+                                                             (:= 'rdng.seq 'conj.from)
+                                                             (:not-null 'rdng.common)))
+                                       :column)))
+            (when conj-of-common (setf common 0))))
         (unless (eql common :null)
           (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
@@ -552,8 +563,8 @@
         ))
     score))
 
-(defun gen-score (segment)
-  (setf (segment-score segment) (calc-score (segment-word segment)))
+(defun gen-score (segment &optional final)
+  (setf (segment-score segment) (calc-score (segment-word segment) final))
   segment)
 
 (defun find-sticky-positions (str)
@@ -574,7 +585,8 @@
             unless (member end sticky)
             nconcing (mapcar 
                       (lambda (word)
-                        (gen-score (make-segment :start start :end end :word word)))
+                        (gen-score (make-segment :start start :end end :word word)
+                                   (= end (length str))))
                       (find-word (subseq str start end))))))
 
 
