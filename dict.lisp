@@ -151,34 +151,146 @@
   (!foreign 'sense 'sense-id 'id))
 
 (defclass conjugation ()
-  ((seq :reader seq :col-type integer :initarg :seq)
+  ((id :reader id :col-type serial)
+   (seq :reader seq :col-type integer :initarg :seq)
    (from :reader seq-from :col-type integer :initarg :from)
-   (pos :reader pos :col-type string :initarg :pos)
    )
   (:documentation "conjugation link")
   (:metaclass dao-class)
-  (:keys seq))
+  (:keys id))
 
 (deftable conjugation
   (!dao-def)
+  (!index 'seq)
   (!index 'from)
-  (!index 'pos)
   (!foreign 'entry 'seq)
   (!foreign 'entry 'from 'seq))
 
+(defmethod print-object ((obj conjugation) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a -> ~a" (seq-from obj) (seq obj))))
+
 (defclass conj-prop ()
   ((id :reader id :col-type serial)
-   (seq :reader seq :col-type integer :initarg :seq)
-   (neg :reader conj-neg :col-type boolean :initarg :neg)
-   (fml :reader conj-fml :col-type boolean :initarg :fml))
+   (conj-id :reader conj-id :col-type integer :initarg :conj-id)
+   (conj-type :reader conj-type :col-type integer :initarg :conj-type)
+   (pos :reader pos :col-type string :initarg :pos)
+   (neg :reader conj-neg :col-type (or db-null boolean) :initarg :neg)
+   (fml :reader conj-fml :col-type (or db-null boolean) :initarg :fml))
   (:metaclass dao-class)
   (:keys id))
 
 (deftable conj-prop
   (!dao-def)
-  (!index 'seq)
-  (!foreign 'entry 'seq))
+  (!index 'conj-id)
+  (!foreign 'conjugation 'conj-id 'id))
 
+(defmethod print-object ((obj conj-prop) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "[~a] ~a~[ Affirmative~; Negative~]~[ Plain~; Formal~]"
+            (pos obj) 
+            (get-conj-description (conj-type obj))
+            (case (conj-neg obj) ((nil) 0) ((t) 1))
+            (case (conj-fml obj) ((nil) 0) ((t) 1))
+            )))
+
+(defun init-tables ()
+  (with-connection *connection*
+    (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop)))
+      (loop for table in (reverse tables)
+         do (query (:drop-table :if-exists table)))
+      (loop for table in tables
+         do (create-table table)))))
+
+;; Taken from webgunk so that ichiran doesn't depend on it
+;; strip-whitespace option is removed as it doesn't look necessary in this case
+(defun node-text (node &rest args &key test)
+  (let (values result)
+    (when (or (not test) (funcall test node))
+      (dom:do-node-list (node (dom:child-nodes node))
+        (let ((val (case (dom:node-type node)
+                     (:element (apply #'node-text node args))
+                     (:text (dom:node-value node)))))
+          (push val values))))
+    (setf result (apply #'concatenate 'string (nreverse values)))))
+
+(defmacro do-node-list-ord ((ord-var node-var node-list) &body body)
+  `(let ((,ord-var 0))
+     (dom:do-node-list (,node-var ,node-list)
+       ,@body
+       (incf ,ord-var))))
+
+(defun insert-readings (node-list tag table seq pri)
+  (do-node-list-ord (ord node node-list)
+    (let* ((reading-node (dom:item (dom:get-elements-by-tag-name node tag) 0))
+           (reading-text (node-text reading-node))
+           (common :null))
+      (dom:do-node-list (node (dom:get-elements-by-tag-name node pri))
+        (let ((pri-tag (node-text node)))
+          (if (eql common :null) (setf common 0))
+          (when (alexandria:starts-with-subseq "nf" pri-tag)
+            (setf common (parse-integer pri-tag :start 2)))))
+      (make-dao table :seq seq :text reading-text :ord ord :common common))))
+
+(defun insert-sense-traits (sense-node tag sense-id seq)
+  (do-node-list-ord (ord node (dom:get-elements-by-tag-name sense-node tag))
+    (make-dao 'sense-prop :sense-id sense-id :tag tag :text (node-text node) :ord ord :seq seq)))
+
+(defun insert-senses (node-list seq)
+  (do-node-list-ord (ord node node-list)
+    (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
+      (do-node-list-ord (ord node (dom:get-elements-by-tag-name node "gloss"))
+        (make-dao 'gloss :sense-id sense-id :text (node-text node) :ord ord))
+      (insert-sense-traits node "pos" sense-id seq)
+      (insert-sense-traits node "misc" sense-id seq)
+      (insert-sense-traits node "dial" sense-id seq))))
+
+(defun load-entry (content)
+  (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
+         (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
+         (seq (parse-integer (node-text entseq-node)))
+         (entry-obj (make-dao 'entry :seq seq :content content)))
+    (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
+           (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))
+           (n-kanji (dom:length kanji-nodes))
+           (n-kana (dom:length kana-nodes))
+           (sense-nodes (dom:get-elements-by-tag-name parsed "sense")))
+      (insert-readings kanji-nodes "keb" 'kanji-text seq "ke_pri")
+      (insert-readings kana-nodes "reb" 'kana-text seq "re_pri")
+      (insert-senses sense-nodes seq)
+      (setf (n-kanji entry-obj) n-kanji
+            (n-kana entry-obj) n-kana)
+      (update-dao entry-obj))))
+
+(defun fix-entities (source)
+  "replaces entity definitions with abbreviations"
+  (let ((entity-hash (cxml::dtd-gentities (cxml::dtd (slot-value source 'cxml::context)))))
+    (maphash 
+     (lambda (name entdef)
+       (unless (member name '("lt" "gt" "amp" "apos" "quot") :test #'equal)
+         (setf (cxml::entdef-value (cdr entdef)) name)))
+     entity-hash)))
+    
+(defun load-jmdict (&key (path *jmdict-path*) (load-conjugations t))
+  (init-tables)
+  (with-connection *connection*
+    (klacks:with-open-source (source (cxml:make-source path))
+      (klacks:find-element source "JMdict")
+      (fix-entities source)
+      (loop for cnt from 1 ;; to 1000
+         while (klacks:find-element source "entry")
+         do
+           (let ((content (klacks:serialize-element source (cxml:make-string-sink))))
+             (load-entry content))
+         if (zerop (mod cnt 1000)) do (format t "~a entries loaded~%" cnt)
+         finally (query "ANALYZE") (format t "~a entries total~%" cnt)))
+    (when load-conjugations
+      (format t "Loading conjugations...~%")
+      (load-conjugations)
+      (query "ANALYZE"))
+    ))
+
+;;; conjugations generator (warning: terrible code ahead)
 
 (defmacro csv-hash (hash-name (filename &key skip-first) loader-opts &rest accessor-opts-list)
   (let ((base-name (string-trim "*" hash-name))
@@ -224,6 +336,10 @@
           ((pos-id pos description) pos (cons (parse-integer pos-id) description))
           (val (car val)))
 
+(csv-hash *pos-by-index* ("kwpos.csv")
+          ((pos-id pos description) (parse-integer pos-id) pos)
+          (get-pos val val))
+
 (csv-hash *conj-description* ("conj.csv" :skip-first t)
           ((conj-id description) (parse-integer conj-id) description)
           (val val))
@@ -232,6 +348,7 @@
              (:conc-name cr-)
              (:constructor make-conjugation-rule (pos conj neg fml onum stem okuri euphr euphk)))
   pos conj neg fml onum stem okuri euphr euphk)
+
 
 (csv-hash *conj-rules* ("conjo.csv" :skip-first t)
           ((pos-id conj-id neg fml onum stem okuri euphr euphk pos2)
@@ -245,12 +362,11 @@
                                           (parse-integer stem)
                                           okuri euphr euphk)
                    (gethash pos *conj-rules* nil))))
-          (val val))
+          (val (reverse val)))
 
 
 (defun construct-conjugation (word rule)
-  (assert (> (length word) 1))
-  (let* ((iskana (test-word (subseq word (- (length word) 2)) :kana))
+  (let* ((iskana (test-word (subseq word (max 0 (- (length word) 2))) :kana))
          (euphr (cr-euphr rule))
          (euphk (cr-euphk rule))
          (stem (+ (cr-stem rule)
@@ -267,97 +383,126 @@
     (loop for rule in rules
          collect (cons rule (construct-conjugation word rule)))))
 
-(defun init-tables ()
+(defparameter *do-not-conjugate* '("n" "vs"))
+
+(defun conjugate-entry-inner (seq)
+  (let ((posi (query (:select 'text :distinct :from 'sense-prop
+                              :where (:and (:= 'tag "pos") (:= 'seq seq))) :column)))
+    (loop with conj-matrix = (make-hash-table :test 'equal) ;; (cons pos-id conj-id) -> 2x2 array
+       for pos in posi
+       for pos-id = (get-pos-index pos)
+       for rules = (get-conj-rules pos-id)
+       if (and rules (not (member pos *do-not-conjugate*)))
+         do (loop 
+               for (reading ord kanji-flag) in (query (:union (:select 'text 'ord 1 :from 'kanji-text :where (:= 'seq seq))
+                                                              (:select 'text 'ord 0 :from 'kana-text :where (:= 'seq seq))))
+               do (loop for rule in rules
+                       for conj-id = (cr-conj rule)
+                       for key = (list pos-id conj-id)
+                       for conj-text = (construct-conjugation reading rule)
+                     do (unless (gethash key conj-matrix)
+                          (setf (gethash key conj-matrix)
+                                (make-array '(2 2) :initial-element nil)))
+                       (push (list conj-text kanji-flag ord (cr-onum rule))
+                             (aref (gethash key conj-matrix)
+                                   (if (cr-neg rule) 1 0)
+                                   (if (cr-fml rule) 1 0)))))
+         finally (return conj-matrix))))
+
+(defun conjugate-entry-outer (seq)
+  (let* ((conj-matrix (conjugate-entry-inner seq))
+         (max-seq (query (:select (:max 'seq) :from 'entry) :single))
+         (next-seq (1+ max-seq)))
+    (loop for (pos-id conj-id) being the hash-key of conj-matrix using (hash-value matrix)
+       for ignore-neg = (not (or (aref matrix 1 0) (aref matrix 1 1)))
+       for ignore-fml = (not (or (aref matrix 0 1) (aref matrix 1 1)))
+       for pos = (get-pos pos-id)
+         do (loop for ii from 0 below 4
+               for neg = (>= ii 2)
+               for fml = (oddp ii)
+               for readings = (row-major-aref matrix ii)
+               when readings
+               do (when (insert-conjugation readings :seq next-seq
+                                            :from seq :pos pos
+                                            :conj-id conj-id
+                                            :neg (if ignore-neg :null neg)
+                                            :fml (if ignore-fml :null fml))
+                    (incf next-seq))))))
+
+(defun lex-compare (predicate)
+  "Only can sort sequences of equal length"
+  (lambda (seq1 seq2)
+    (block nil
+      (map nil 
+           (lambda (e1 e2) 
+             (cond ((funcall predicate e1 e2) (return t))
+                   ((funcall predicate e2 e1) (return nil))))
+           seq1 seq2))))
+
+(defun insert-conjugation (readings &key seq from pos conj-id neg fml)
+  "returns true if new entry is created, nil otherwise"
+  (loop for (reading kanji-flag) in (sort readings (lex-compare #'<) :key #'cddr)
+     if (= kanji-flag 1) collect reading into kanji-readings
+     else collect reading into kana-readings
+     finally
+       (let* ((kanji-readings (remove-duplicates kanji-readings :test #'equal))
+              (kana-readings (remove-duplicates kana-readings :test #'equal))
+              (seq-candidates
+               (if kanji-readings
+                   (query (:intersect 
+                           (:select 'seq :from 'kanji-text
+                                    :where (:in 'text (:set kanji-readings))
+                                    :group-by 'seq
+                                    :having (:= (:count 'id) (length kanji-readings)))
+                           (:select 'seq :from 'kana-text
+                                 :where (:in 'text (:set kana-readings))
+                                 :group-by 'seq
+                                 :having (:= (:count 'id) (length kana-readings))))
+                          :column)
+                   (query (:select 'r.seq
+                                   :from (:as 'kana-text 'r)
+                                   :left-join (:as 'kanji-text 'k) :on (:= 'r.seq 'k.seq)
+                                   :where (:and (:is-null 'k.text)
+                                                (:in 'r.text (:set kana-readings)))
+                                   :group-by 'r.seq
+                                   :having (:= (:count 'r.id) (length kana-readings)))
+                          :column))))
+         (when (member from seq-candidates)
+           (return nil))
+         (if seq-candidates
+             (setf seq (car seq-candidates))
+             (progn
+               (make-dao 'entry :seq seq :content "")
+               (loop for kr in kanji-readings
+                  for ord from 0
+                  do (make-dao 'kanji-text :seq seq :text kr :ord ord :common :null))
+               (loop for kr in kana-readings
+                  for ord from 0
+                  do (make-dao 'kana-text :seq seq :text kr :ord ord :common :null))))
+         
+         (let* ((old-conj (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq))))
+                (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from))))
+           (make-dao 'conj-prop :conj-id (id conj) :conj-type conj-id :pos pos :neg neg :fml fml))
+         (return (not seq-candidates)))))
+
+(defparameter *pos-with-conj-rules*
+ '("adj-i" "adj-na" "adj-ix" "cop-da" "v1" "v1-s" "v5aru" 
+   "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
+   "v5t" "v5u" "v5u-s" "vk" "vs-s" "vs-i"))
+
+(defun load-conjugations ()
   (with-connection *connection*
-    (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop)))
-      (loop for table in (reverse tables)
-         do (query (:drop-table :if-exists table)))
-      (loop for table in tables
-         do (create-table table)))))
+    (let ((seqs (query (:select 'seq :distinct :from 'sense-prop
+                                :where (:and (:= 'tag "pos")
+                                             (:in 'text (:set *pos-with-conj-rules*))))
+                       :column)))
+      (loop for cnt from 1
+           for seq in seqs
+           do (conjugate-entry-outer seq)
+           if (zerop (mod cnt 500)) do (format t "~a entries processed~%" cnt)))))
 
-;; Taken from webgunk so that ichiran doesn't depend on it
-;; strip-whitespace option is removed as it doesn't look necessary in this case
-(defun node-text (node &rest args &key test)
-  (let (values result)
-    (when (or (not test) (funcall test node))
-      (dom:do-node-list (node (dom:child-nodes node))
-        (let ((val (case (dom:node-type node)
-                     (:element (apply #'node-text node args))
-                     (:text (dom:node-value node)))))
-          (push val values))))
-    (setf result (apply #'concatenate 'string (nreverse values)))))
 
-(defmacro do-node-list-ord ((ord-var node-var node-list) &body body)
-  `(let ((,ord-var 0))
-     (dom:do-node-list (,node-var ,node-list)
-       ,@body
-       (incf ,ord-var))))
-
-(defun insert-readings (node-list tag table seq pri)
-  (do-node-list-ord (ord node node-list)
-    (let* ((reading-node (dom:item (dom:get-elements-by-tag-name node tag) 0))
-           (reading-text (node-text reading-node))
-           (common :null))
-      (dom:do-node-list (node (dom:get-elements-by-tag-name node pri))
-        (let ((pri-tag (node-text node)))
-          (if (eql common :null) (setf common 0))
-          (when (alexandria:starts-with-subseq "nf" pri-tag)
-            (setf common (parse-integer pri-tag :start 2)))))
-      (make-dao table :seq seq :text reading-text :ord ord :common common))
-    (incf ord)))
-
-(defun insert-sense-traits (sense-node tag sense-id seq)
-  (do-node-list-ord (ord node (dom:get-elements-by-tag-name sense-node tag))
-    (make-dao 'sense-prop :sense-id sense-id :tag tag :text (node-text node) :ord ord :seq seq)))
-
-(defun insert-senses (node-list seq)
-  (do-node-list-ord (ord node node-list)
-    (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
-      (do-node-list-ord (ord node (dom:get-elements-by-tag-name node "gloss"))
-        (make-dao 'gloss :sense-id sense-id :text (node-text node) :ord ord))
-      (insert-sense-traits node "pos" sense-id seq)
-      (insert-sense-traits node "misc" sense-id seq)
-      (insert-sense-traits node "dial" sense-id seq))))
-
-(defun load-entry (content)
-  (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
-         (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
-         (seq (parse-integer (node-text entseq-node)))
-         (entry-obj (make-dao 'entry :seq seq :content content)))
-    (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
-           (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))
-           (n-kanji (dom:length kanji-nodes))
-           (n-kana (dom:length kana-nodes))
-           (sense-nodes (dom:get-elements-by-tag-name parsed "sense")))
-      (insert-readings kanji-nodes "keb" 'kanji-text seq "ke_pri")
-      (insert-readings kana-nodes "reb" 'kana-text seq "re_pri")
-      (insert-senses sense-nodes seq)
-      (setf (n-kanji entry-obj) n-kanji
-            (n-kana entry-obj) n-kana)
-      (update-dao entry-obj))))
-
-(defun fix-entities (source)
-  "replaces entity definitions with abbreviations"
-  (let ((entity-hash (cxml::dtd-gentities (cxml::dtd (slot-value source 'cxml::context)))))
-    (maphash 
-     (lambda (name entdef)
-       (unless (member name '("lt" "gt" "amp" "apos" "quot") :test #'equal)
-         (setf (cxml::entdef-value (cdr entdef)) name)))
-     entity-hash)))
-    
-(defun load-jmdict (&optional (path *jmdict-path*))
-  (init-tables)
-  (with-connection *connection*
-    (klacks:with-open-source (source (cxml:make-source path))
-      (klacks:find-element source "JMdict")
-      (fix-entities source)
-      (loop for cnt from 1 ;; to 1000
-         while (klacks:find-element source "entry")
-         do
-           (let ((content (klacks:serialize-element source (cxml:make-string-sink))))
-             (load-entry content))
-         if (zerop (mod cnt 1000)) do (format t "~a entries loaded~%" cnt)
-         finally (query "ANALYZE") (return cnt)))))
+;;; end conjugations
 
 (defun find-word (word)
   (select-dao 
