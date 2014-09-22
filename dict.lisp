@@ -542,7 +542,7 @@
                                  (= (n-kanji entry) 0))))
              (common (common reading)))
         (when primary-p
-          (incf score 10)
+          (incf score (if kanji-p 10 5))
           (when particle-p
             (incf score 10)
             (when final
@@ -720,8 +720,8 @@
       kana))
 
 (defun entry-info-short (seq &key with-pos)
-  (let ((kanji-text (car (query (:select 'text :from 'kanji-text :where (:= 'seq seq)) :column)))
-        (kana-text (car (query (:select 'text :from 'kana-text :where (:= 'seq seq)) :column)))
+  (let ((kanji-text (car (query (:select 'text :from 'kanji-text :where (:and (:= 'seq seq) (:= 'ord 0))) :column)))
+        (kana-text (car (query (:select 'text :from 'kana-text :where (:and (:= 'seq seq) (:= 'ord 0))) :column)))
         (sense-str (short-sense-str seq :with-pos with-pos)))
     (with-output-to-string (s)
       (format s "~a : " (reading-str kanji-text kana-text))
