@@ -185,14 +185,17 @@
   (!index 'conj-id)
   (!foreign 'conjugation 'conj-id 'id))
 
+(defun conj-info-short (obj)
+  (format nil "[~a] ~a~[ Affirmative~; Negative~]~[ Plain~; Formal~]"
+          (pos obj) 
+          (get-conj-description (conj-type obj))
+          (case (conj-neg obj) ((nil) 0) ((t) 1))
+          (case (conj-fml obj) ((nil) 0) ((t) 1))
+          ))
+
 (defmethod print-object ((obj conj-prop) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
-    (format stream "[~a] ~a~[ Affirmative~; Negative~]~[ Plain~; Formal~]"
-            (pos obj) 
-            (get-conj-description (conj-type obj))
-            (case (conj-neg obj) ((nil) 0) ((t) 1))
-            (case (conj-fml obj) ((nil) 0) ((t) 1))
-            )))
+    (princ (conj-info-short obj) stream)))
 
 (defun init-tables ()
   (with-connection *connection*
@@ -682,13 +685,52 @@
           when (> i 1) do (terpri s)
           do (format s "~a. ~a ~a" i rpos gloss))))
 
+(defun short-sense-str (seq &key with-pos)
+  (query 
+   (sql-compile
+    `(:limit 
+      (:order-by
+       (:select (:select (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
+                         :from gloss :where (:= gloss.sense-id sense.id))
+                :from sense 
+                ,@(if with-pos
+                      `(:inner-join (:as sense-prop pos) :on (:and (:= pos.sense-id sense.id)
+                                                                   (:= pos.tag "pos")
+                                                                   (:= pos.text ,with-pos))))
+                :where (:= 'sense.seq ,seq)
+                :group-by 'sense.id)
+       'sense.ord)
+      1)) :single))
+
+(defun reading-str (kanji kana)
+  (if kanji
+      (format nil "~a 【~a】" kanji kana)
+      kana))
+
+(defun entry-info-short (seq &key with-pos)
+  (let ((kanji-text (car (query (:select 'text :from 'kanji-text :where (:= 'seq seq)) :column)))
+        (kana-text (car (query (:select 'text :from 'kana-text :where (:= 'seq seq)) :column)))
+        (sense-str (short-sense-str seq :with-pos with-pos)))
+    (with-output-to-string (s)
+      (format s "~a : " (reading-str kanji-text kana-text))
+      (when sense-str (princ sense-str s)))))
+
+(defun print-conj-info (seq &optional (out *standard-output*))
+  (loop for conj in (select-dao 'conjugation (:= 'seq seq))
+       do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+             do (format out "~%Conjugation: ~a" (conj-info-short conj-prop)))
+       (format out "~%  ~a" (entry-info-short (seq-from conj)))))
+
 (defun word-info-str (word-info)
   (with-connection *connection*
     (with-output-to-string (s)
-      (case (word-info-type word-info)
-        (:kanji (format s "~a 【~a】" (word-info-text word-info) (word-info-kana word-info)))
-        (t (princ (word-info-text word-info) s)))
+      (princ (reading-str (case (word-info-type word-info)
+                            (:kanji (word-info-text word-info))
+                            (t nil))
+                          (word-info-kana word-info)) s)
       (terpri s)
       (let ((seq (word-info-seq word-info)))
-        (princ (if seq (get-senses-str seq) "???") s)))))
+        (princ (if seq (get-senses-str seq) "???") s)
+        (when seq
+          (print-conj-info seq s))))))
           
