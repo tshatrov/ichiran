@@ -544,8 +544,8 @@
              (posi (query (:select 'text :from 'sense-prop :where (:and (:= 'seq seq) (:= 'tag "pos"))) :column))
              (particle-p (member "prt" posi :test #'equal))
              (pronoun-p (member "pn" posi :test #'equal))
-             (long-p (> len (if kanji-p 2 3)))
              (common (common reading))
+             (long-p (> len (if (or kanji-p (and (not (eql common :null)) (> common 0))) 2 3)))
              (primary-p (and (= ord 0)
                              (or (and common pronoun-p)
                                  (and prefer-kana (not kanji-p))
@@ -562,13 +562,15 @@
         (when primary-p
           (incf score (if kanji-p 10 5))
           (when particle-p
-            (incf score 10)
+            (incf score 5)
             (when final
               (incf score 5))))
         (unless (eql common :null)
           (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 5)))
+        (when long-p
+          (setf score (max 5 score)))
         (setf score (* score (expt len (if (or kanji-p katakana-p) 3 2))))
         ))
     score))
