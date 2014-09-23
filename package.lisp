@@ -30,3 +30,7 @@
            :*hepburn-traditional* :*hepburn-modified*
            :*default-romanization-method*))
 
+(defpackage #:ichiran/test
+  (:use #:cl #:ichiran/characters #:ichiran/dict #:ichiran #:lisp-unit)
+  (:export :run-all-tests))
+  

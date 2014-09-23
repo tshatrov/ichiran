@@ -1,6 +1,8 @@
 ;;;; ichiran.asd
 
-(asdf:defsystem #:ichiran
+(in-package :asdf)
+
+(defsystem #:ichiran
   :serial t
   :description "Ichiran means list in Japanese"
   :author "Timofei Shatrov <timofei.shatrov@example.com>"
@@ -12,6 +14,7 @@
                #:cxml
                #:cl-unicode
                #:cl-csv
+               #:lisp-unit
                )
   :components ((:file "package")
                (:file "characters")
@@ -19,5 +22,9 @@
                (:file "romanize")
                (:file "dict")
                (:file "dict-errata")
-               (:file "ichiran")))
+               (:file "ichiran")
+               (:file "tests"))
+  :perform (test-op 
+            (o s)
+            (uiop:symbol-call :ichiran/test :run-all-tests)))
 
