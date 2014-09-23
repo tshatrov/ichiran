@@ -533,6 +533,7 @@
 (defun calc-score (reading &optional final)
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
+         (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
          (len (length (text reading))))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
@@ -565,7 +566,7 @@
           (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 5)))
-        (setf score (* score (expt len (if kanji-p 3 2))))
+        (setf score (* score (expt len (if (or kanji-p katakana-p) 3 2))))
         ))
     score))
 
