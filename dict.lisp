@@ -536,7 +536,10 @@
          (len (length (text reading))))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
-             (prefer-kana (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "misc") (:= 'text "uk"))))
+             (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
+             (prefer-kana
+              (let ((seq-set (cons seq conj-of)))
+                (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk")))))
              (particle-p (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "pos") (:= 'text "prt"))))
              (long-p (> len (if kanji-p 2 3)))
              (primary-p (and (= ord 0)
@@ -544,20 +547,20 @@
                                  (and (not prefer-kana) kanji-p)
                                  (= (n-kanji entry) 0))))
              (common (common reading)))
+        (when (eql common :null)
+          (let* ((table (if kanji-p 'kanji-text 'kana-text))
+                 (conj-of-common (query (:select 'id :from table
+                                                 :where (:and (:in 'seq (:set conj-of))
+                                                              (:not-null 'common)))
+                                       :column)))
+            (when conj-of-common
+              (setf common 0))))
         (when primary-p
           (incf score (if kanji-p 10 5))
           (when particle-p
             (incf score 10)
             (when final
               (incf score 5))))
-        (when (eql common :null)
-          (let* ((table (if kanji-p 'kanji-text 'kana-text))
-                 (conj-of-common (query (:select 'rdng.id :from (:as table 'rdng) (:as 'conjugation 'conj)
-                                                :where (:and (:= 'conj.seq seq)
-                                                             (:= 'rdng.seq 'conj.from)
-                                                             (:not-null 'rdng.common)))
-                                       :column)))
-            (when conj-of-common (setf common 0))))
         (unless (eql common :null)
           (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
