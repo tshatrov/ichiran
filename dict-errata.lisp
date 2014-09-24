@@ -49,6 +49,10 @@
             (incf (n-kanji entry)))
         (update-dao entry)))))
 
+(defun delete-sense-prop (seq tag text)
+  (let ((props (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag tag) (:= 'text text)))))
+    (mapc #'delete-dao props)))
+
 (defun add-errata ()
   ;;; gozaimashita / gozaimashitara
   (add-conj 1612690 '(2 "exp" :null :null)
@@ -57,4 +61,7 @@
             "ございましたら")
   ;;;  いる / る
   (add-reading 1577980 "る")
+  
+  ;;; delete sense-prop uk for 生る
+  (delete-sense-prop 1611000 "misc" "uk")
   )
