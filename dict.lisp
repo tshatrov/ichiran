@@ -203,6 +203,14 @@
   (print-unreadable-object (obj stream :type t :identity nil)
     (princ (conj-info-short obj) stream)))
 
+(defstruct conj-data seq from prop)
+
+(defun get-conj-data (seq)
+  (loop for conj in (select-dao 'conjugation (:= 'seq seq))
+       nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+                     collect (make-conj-data :seq (seq conj) :from (seq-from conj)
+                                             :prop prop))))
+
 (defun init-tables ()
   (with-connection *connection*
     (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop)))
@@ -528,7 +536,7 @@
     (values readings (mapcar #'ichiran:romanize-word readings))))
 
 (defstruct segment
-  start end word (score nil) (top nil)) ;; (accum 0) (path nil)
+  start end word (score nil) (info nil) (top nil)) ;; (accum 0) (path nil)
 
 (defun calc-score (reading &optional final)
   (let* ((score 1)
@@ -538,10 +546,11 @@
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
+             (seq-set (cons seq conj-of))
              (prefer-kana
-              (let ((seq-set (cons seq conj-of)))
-                (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk")))))
-             (posi (query (:select 'text :from 'sense-prop :where (:and (:= 'seq seq) (:= 'tag "pos"))) :column))
+              (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
+             (posi (query (:select 'text :distinct :from 'sense-prop
+                                   :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
              (particle-p (member "prt" posi :test #'equal))
              (pronoun-p (member "pn" posi :test #'equal))
              (common (common reading))
@@ -568,15 +577,16 @@
         (unless (eql common :null)
           (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
-              (incf score 5)))
+              (incf score 2)))
         (when long-p
           (setf score (max 5 score)))
         (setf score (* score (expt len (if (or kanji-p katakana-p) 3 2))))
-        ))
-    score))
+        (values score (list :posi posi :seq-set seq-set
+                            :conj (get-conj-data seq)))))))
 
 (defun gen-score (segment &optional final)
-  (setf (segment-score segment) (calc-score (segment-word segment) final))
+  (setf (values (segment-score segment) (segment-info segment))
+        (calc-score (segment-word segment) final))
   segment)
 
 (defun find-sticky-positions (str)
@@ -600,6 +610,46 @@
                         (gen-score (make-segment :start start :end end :word word)
                                    (= end (length str))))
                       (find-word (subseq str start end))))))
+
+(defparameter *identical-word-score-cutoff* 1/2)
+
+(defun cull-segments (segments)
+  (when segments
+    (let* ((segments (stable-sort segments #'> :key #'segment-score))
+           (max-score (segment-score (car segments)))
+           (cutoff (* max-score *identical-word-score-cutoff*)))
+      (loop for seg in segments
+           while (>= (segment-score seg) cutoff)
+           collect seg))))
+
+(defstruct segment-list segments start end (top nil))
+
+(defgeneric get-segment-score (seg)
+  (:documentation "Like segment-score but also works for segment-list and synergies")
+  (:method ((seg segment))
+    (segment-score seg))
+  (:method ((seg-list segment-list))
+    (let ((seg (car (segment-list-segments seg-list))))
+      (if seg (segment-score seg) 0)))
+  (:method ((syn synergy))
+    (synergy-score syn)))
+
+(defun join-substring-words (str)
+  (loop with sticky = (find-sticky-positions str)
+       for start from 0 below (length str)
+       unless (member start sticky)
+       nconcing 
+       (loop for end from (1+ start) upto (length str)
+            unless (member end sticky)
+            nconcing 
+            (let ((segments (mapcar 
+                             (lambda (word)
+                               (gen-score (make-segment :start start :end end :word word)
+                                          (= end (length str))))
+                             (find-word (subseq str start end)))))
+              (when segments
+                (list (make-segment-list :segments (cull-segments segments)
+                                         :start start :end end)))))))
 
 
 (defstruct (top-array-item (:conc-name tai-)) score payload)
@@ -629,7 +679,6 @@
     (with-slots (array count) obj
       (if (>= count (length array)) array (subseq array 0 count)))))
 
-
 (defun find-best-path (segments &key (limit 5))
   ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
   (let ((top (make-instance 'top-array :limit limit)))
@@ -656,6 +705,110 @@
 
     (loop for tai across (get-array top)
          collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
+
+(defstruct synergy description connector score start end)
+
+(defun make-segment-list-from (old-segment-list segments)
+  (let ((new-segment-list (copy-segment-list old-segment-list)))
+    (setf (segment-list-segments new-segment-list) segments)
+    new-segment-list))
+
+(defun generic-synergy (filter-left filter-right &rest keys &key description connector score)
+  (declare (ignore description connector score))
+  (lambda (segment-list-left segment-list-right)
+    (let ((start (segment-list-end segment-list-left))
+          (end (segment-list-start segment-list-right)))
+      (when (= start end)
+        (let ((left (remove-if-not filter-left (segment-list-segments segment-list-left)))
+              (right (remove-if-not filter-right (segment-list-segments segment-list-right))))
+          (when (and left right)
+            (list (list (make-segment-list-from segment-list-right right)
+                        (apply #'make-synergy :start start :end end keys)
+                        (make-segment-list-from segment-list-left left)))))))))
+
+(defparameter *synergy-list* nil)
+
+(defmacro defsynergy (name &body body)
+  (alexandria:with-gensyms (left-var right-var)
+  `(progn
+     (defun ,name (,left-var ,right-var)
+       (funcall (progn ,@body) ,left-var ,right-var))
+     (pushnew ',name *synergy-list*))))
+              
+(defsynergy synergy-noun-particle
+  (generic-synergy
+   (lambda (segment)
+     (and (typep (segment-word segment) 'kanji-text)
+          (intersection '("n" "n-adv" "n-t")
+                        (getf (segment-info segment) :posi)
+                        :test #'equal)))
+   (lambda (segment)
+     (intersection '("prt" "cop-da")
+                   (getf (segment-info segment) :posi)
+                   :test #'equal))
+   :description "noun+prt"
+   :score 15
+   :connector " "))
+
+(defsynergy synergy-te-iru-aru
+  (generic-synergy
+   (lambda (segment)
+     (member 3 (getf (segment-info segment) :conj)
+             :key (lambda (cdata) (conj-type (conj-data-prop cdata)))))
+   (lambda (segment)
+     (intersection '(1577980 1296400) ;;  [いる] [ある]
+                   (getf (segment-info segment) :seq-set)))
+   :description "-te+iru/aru"
+   :score 10
+   :connector ""))
+
+(defun get-synergies (segment-list-left segment-list-right)
+  (loop for fn in *synergy-list*
+     nconc (funcall fn segment-list-left segment-list-right)))
+
+(defun find-best-path^2 (segment-lists &key (limit 5))
+  "same as find-best-path but operates on segment-lists and uses synergies"
+  (let ((top (make-instance 'top-array :limit limit)))
+    (register-item top 0 nil)
+
+    (dolist (segment-list segment-lists)
+      (setf (segment-list-top segment-list) (make-instance 'top-array :limit limit)))
+
+    (loop for (seg1 . rest) on segment-lists
+         for score1 = (get-segment-score seg1)
+       when (> score1 0) do 
+         (register-item (segment-list-top seg1) score1 (list seg1))
+         (register-item top score1 (list seg1))
+         (loop for seg2 in rest
+            for score2 = (get-segment-score seg2)
+            when (and (> score2 0)
+                      (>= (segment-list-start seg2) (segment-list-end seg1))) do
+              ;; here's where it gets really damn hairy
+              (loop for tai across (get-array (segment-list-top seg1))
+                   for (seg-left . tail) = (tai-payload tai)
+                   for score3 = (get-segment-score seg-left)
+                   for score-tail = (- (tai-score tai) score3)
+                   do (loop for split in (cons (list seg2 seg-left) (get-synergies seg-left seg2))
+                           for accum = (+ (reduce #'+ split :key #'get-segment-score) score-tail)
+                           for path = (nconc split tail)
+                           do (register-item (segment-list-top seg2) accum path)
+                              (register-item top accum path)))))
+
+    (dolist (segment segment-lists)
+      (setf (segment-list-top segment) nil))
+
+    (loop for tai across (get-array top)
+         collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
+
+(defun find-best-path^2-1 (segment-lists &key (limit 5))
+  "convert find-best-path^2 results to previous format"
+  (let ((result (find-best-path^2 segment-lists :limit limit)))
+    (dolist (item result result)
+      (setf (car item)
+            (mapcan (lambda (obj)
+                      (typecase obj
+                        (segment-list (list (car (segment-list-segments obj))))))
+                    (car item))))))
 
 (defstruct word-info type text kana (score 0) (seq nil))
 
@@ -684,7 +837,7 @@
                       
 (defun dict-segment (str &key (limit 5))
   (with-connection *connection*
-    (loop for (path . score) in (find-best-path (find-substring-words str) :limit limit)
+    (loop for (path . score) in (find-best-path^2-1 (join-substring-words str) :limit limit)
          collect (cons (fill-segment-path str path) score))))
 
 (defun simple-segment (str)
