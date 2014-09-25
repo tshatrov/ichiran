@@ -713,7 +713,23 @@
     (setf (segment-list-segments new-segment-list) segments)
     new-segment-list))
 
-(defun generic-synergy (filter-left filter-right &rest keys &key description connector score)
+(defmacro generic-synergy ((segment-list-left segment-list-right)
+                           filter-left filter-right &key description connector score)
+  (alexandria:with-gensyms (start end left right)
+  `(let ((,start (segment-list-end ,segment-list-left))
+         (,end (segment-list-start ,segment-list-right)))
+     (when (= ,start ,end)
+       (let ((,left (remove-if-not ,filter-left (segment-list-segments ,segment-list-left)))
+             (,right (remove-if-not ,filter-right (segment-list-segments ,segment-list-right))))
+          (when (and ,left ,right)
+            (list (list (make-segment-list-from ,segment-list-right ,right)
+                        (make-synergy :start ,start :end ,end
+                                      :description ,description
+                                      :connector ,connector
+                                      :score ,score)
+                        (make-segment-list-from ,segment-list-left ,left)))))))))
+
+(defun generic-synergy* (filter-left filter-right &rest keys &key description connector score)
   (declare (ignore description connector score))
   (lambda (segment-list-left segment-list-right)
     (let ((start (segment-list-end segment-list-left))
@@ -726,17 +742,17 @@
                         (apply #'make-synergy :start start :end end keys)
                         (make-segment-list-from segment-list-left left)))))))))
 
+
 (defparameter *synergy-list* nil)
 
-(defmacro defsynergy (name &body body)
-  (alexandria:with-gensyms (left-var right-var)
+(defmacro defsynergy (name (left-var right-var) &body body)
   `(progn
      (defun ,name (,left-var ,right-var)
-       (funcall (progn ,@body) ,left-var ,right-var))
-     (pushnew ',name *synergy-list*))))
+       ,@body)
+     (pushnew ',name *synergy-list*)))
               
-(defsynergy synergy-noun-particle
-  (generic-synergy
+(defsynergy synergy-noun-particle (l v)
+  (generic-synergy (l v)
    (lambda (segment)
      (and (typep (segment-word segment) 'kanji-text)
           (intersection '("n" "n-adv" "n-t")
@@ -750,8 +766,8 @@
    :score 15
    :connector " "))
 
-(defsynergy synergy-te-iru-aru
-  (generic-synergy
+(defsynergy synergy-te-iru-aru (l v)
+  (generic-synergy (l v)
    (lambda (segment)
      (member 3 (getf (segment-info segment) :conj)
              :key (lambda (cdata) (conj-type (conj-data-prop cdata)))))
