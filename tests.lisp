@@ -16,7 +16,9 @@
                   "お姉ちゃん" "に" "まかせて" "地球" "まるごと")
   (assert-segment "大人になってるはず"
                   "大人" "に" "なって" "る" "はず")
-  (assert-segment "いいとこ" "いいとこ"))
+  (assert-segment "いいとこ" "いいとこ")
+  (assert-segment "そういうお隣どうし"
+                  "そういう" "お" "隣" "どうし"))
 
 
 (defun run-all-tests ()

@@ -21,8 +21,9 @@
 (defclass entry ()
   ((seq :reader seq :col-type integer :initarg :seq)
    (content :reader content :col-type string :initarg :content)
+   (root-p :reader root-p :col-type boolean :initform nil :initarg :root-p)
    (n-kanji :accessor n-kanji :col-type integer :initform 0 :initarg :n-kanji)
-   (n-kana :accessor n-kana :col-type integer :initform 0 :initarg :n-kana) 
+   (n-kana :accessor n-kana :col-type integer :initform 0 :initarg :n-kana)
    )
   (:metaclass dao-class)
   (:keys seq))
@@ -265,7 +266,7 @@
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
          (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
          (seq (parse-integer (node-text entseq-node))))
-    (make-dao 'entry :seq seq :content content)
+    (make-dao 'entry :seq seq :content content :root-p t)
     (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
            (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))
            (sense-nodes (dom:get-elements-by-tag-name parsed "sense")))
@@ -555,7 +556,7 @@
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
-             (seq-set (cons seq conj-of))
+             (seq-set (if (root-p entry) (list seq) (cons seq conj-of)))
              (prefer-kana
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
              (posi (query (:select 'text :distinct :from 'sense-prop
@@ -564,7 +565,7 @@
              (common-p (not (eql common :null)))
              (particle-p (member "prt" posi :test 'equal))
              (pronoun-p (member "pn" posi :test 'equal))
-             (long-p (> len (if (or kanji-p (and common-p (> common 0))) 2 3)))
+             (long-p (> len (if (or kanji-p (and common-p (< 0 common 10))) 2 3)))
              (primary-p (and (= ord 0)
                              (or (and common-p pronoun-p)
                                  (and prefer-kana (not kanji-p))
@@ -761,7 +762,7 @@
      (defun ,name (,left-var ,right-var)
        ,@body)
      (pushnew ',name *synergy-list*)))
-              
+
 (defsynergy synergy-noun-particle (l r)
   (generic-synergy (l r)
    (lambda (segment)
@@ -798,6 +799,17 @@
    (lambda (segment)
      (member 1157170 (getf (segment-info segment) :seq-set)))
    :description "noun+suru"
+   :score 10
+   :connector ""))
+
+(defsynergy synergy-o-prefix (l r)
+  (generic-synergy (l r)
+   (lambda (segment)
+     (eql 1270190 (seq (segment-word segment))))
+   (lambda (segment)
+     (and (typep (segment-word segment) 'kanji-text)
+          (member "n" (getf (segment-info segment) :posi) :test 'equal)))
+   :description "o+noun"
    :score 10
    :connector ""))
 
