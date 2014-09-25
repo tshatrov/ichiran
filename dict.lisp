@@ -397,7 +397,7 @@
     (loop for rule in rules
          collect (cons rule (construct-conjugation word rule)))))
 
-(defparameter *do-not-conjugate* '("n" "vs"))
+(defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 
 (defun conjugate-entry-inner (seq)
   (let ((posi (query (:select 'text :distinct :from 'sense-prop
@@ -406,7 +406,7 @@
        for pos in posi
        for pos-id = (get-pos-index pos)
        for rules = (get-conj-rules pos-id)
-       if (and rules (not (member pos *do-not-conjugate*)))
+       if (and rules (not (member pos *do-not-conjugate* :test 'equal)))
          do (loop 
                for (reading ord kanji-flag) in (query (:union (:select 'text 'ord 1 :from 'kanji-text :where (:= 'seq seq))
                                                               (:select 'text 'ord 0 :from 'kana-text :where (:= 'seq seq))))
@@ -500,7 +500,7 @@
          (return (not seq-candidates)))))
 
 (defparameter *pos-with-conj-rules*
- '("adj-i" "adj-na" "adj-ix" "cop-da" "v1" "v1-s" "v5aru" 
+ '("adj-i" "adj-ix" "cop-da" "v1" "v1-s" "v5aru" 
    "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
    "v5t" "v5u" "v5u-s" "vk" "vs-s" "vs-i"))
 
@@ -755,7 +755,7 @@
   (generic-synergy (l r)
    (lambda (segment)
      (and (typep (segment-word segment) 'kanji-text)
-          (intersection '("n" "n-adv" "n-t")
+          (intersection '("n" "n-adv" "n-t" "adj-na")
                         (getf (segment-info segment) :posi)
                         :test #'equal)))
    (lambda (segment)
