@@ -879,8 +879,8 @@
     (loop for (path . score) in (find-best-path^2-1 (join-substring-words str) :limit limit)
          collect (cons (fill-segment-path str path) score))))
 
-(defun simple-segment (str)
-  (caar (dict-segment str :limit 1)))
+(defun simple-segment (str &key (limit 5))
+  (caar (dict-segment str :limit limit)))
 
 (defun get-senses (seq)
   (query (:order-by
