@@ -751,8 +751,8 @@
        ,@body)
      (pushnew ',name *synergy-list*)))
               
-(defsynergy synergy-noun-particle (l v)
-  (generic-synergy (l v)
+(defsynergy synergy-noun-particle (l r)
+  (generic-synergy (l r)
    (lambda (segment)
      (and (typep (segment-word segment) 'kanji-text)
           (intersection '("n" "n-adv" "n-t")
@@ -766,8 +766,8 @@
    :score 15
    :connector " "))
 
-(defsynergy synergy-te-iru-aru (l v)
-  (generic-synergy (l v)
+(defsynergy synergy-te-iru-aru (l r)
+  (generic-synergy (l r)
    (lambda (segment)
      (member 3 (getf (segment-info segment) :conj)
              :key (lambda (cdata) (conj-type (conj-data-prop cdata)))))
@@ -775,6 +775,17 @@
      (intersection '(1577980 1296400) ;;  [いる] [ある]
                    (getf (segment-info segment) :seq-set)))
    :description "-te+iru/aru"
+   :score 10
+   :connector ""))
+
+(defsynergy synergy-suru-verb (l r)
+  (generic-synergy (l r)
+   (lambda (segment)
+     (and (typep (segment-word segment) 'kanji-text)
+          (member "vs" (getf (segment-info segment) :posi) :test #'equal)))
+   (lambda (segment)
+     (member 1157170 (getf (segment-info segment) :seq-set)))
+   :description "noun+suru"
    :score 10
    :connector ""))
 
