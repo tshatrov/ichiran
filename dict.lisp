@@ -46,7 +46,6 @@
                   'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
                   'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq)))))
 
-
 (defclass kanji-text ()
   ((id :reader id :col-type serial)
    (seq :reader seq :col-type integer :initarg :seq)
@@ -279,7 +278,7 @@
   (let ((entity-hash (cxml::dtd-gentities (cxml::dtd (slot-value source 'cxml::context)))))
     (maphash 
      (lambda (name entdef)
-       (unless (member name '("lt" "gt" "amp" "apos" "quot") :test #'equal)
+       (unless (member name '("lt" "gt" "amp" "apos" "quot") :test 'equal)
          (setf (cxml::entdef-value (cdr entdef)) name)))
      entity-hash)))
     
@@ -397,6 +396,12 @@
     (loop for rule in rules
          collect (cons rule (construct-conjugation word rule)))))
 
+(defun get-all-readings (seq)
+  (query (:union
+          (:select 'text :from 'kanji-text :where (:= 'seq seq))
+          (:select 'text :from 'kana-text :where (:= 'seq seq)))
+         :column))
+
 (defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 
 (defun conjugate-entry-inner (seq)
@@ -425,6 +430,7 @@
 
 (defun conjugate-entry-outer (seq)
   (let* ((conj-matrix (conjugate-entry-inner seq))
+         (original-readings (get-all-readings seq))
          (max-seq (query (:select (:max 'seq) :from 'entry) :single))
          (next-seq (1+ max-seq)))
     (loop for (pos-id conj-id) being the hash-key of conj-matrix using (hash-value matrix)
@@ -434,7 +440,9 @@
          do (loop for ii from 0 below 4
                for neg = (>= ii 2)
                for fml = (oddp ii)
-               for readings = (row-major-aref matrix ii)
+               for readings = (remove-if (lambda (item) 
+                                           (member (car item) original-readings :test 'equal))
+                                         (row-major-aref matrix ii))
                when readings
                do (when (insert-conjugation readings :seq next-seq
                                             :from seq :pos pos
@@ -459,8 +467,9 @@
      if (= kanji-flag 1) collect reading into kanji-readings
      else collect reading into kana-readings
      finally
-       (let* ((kanji-readings (remove-duplicates kanji-readings :test #'equal))
-              (kana-readings (remove-duplicates kana-readings :test #'equal))
+       (unless kana-readings (return nil))
+       (let* ((kanji-readings (remove-duplicates kanji-readings :test 'equal))
+              (kana-readings (remove-duplicates kana-readings :test 'equal))
               (seq-candidates
                (if kanji-readings
                    (query (:intersect 
@@ -551,8 +560,8 @@
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
              (posi (query (:select 'text :distinct :from 'sense-prop
                                    :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
-             (particle-p (member "prt" posi :test #'equal))
-             (pronoun-p (member "pn" posi :test #'equal))
+             (particle-p (member "prt" posi :test 'equal))
+             (pronoun-p (member "pn" posi :test 'equal))
              (common (common reading))
              (long-p (> len (if (or kanji-p (and (not (eql common :null)) (> common 0))) 2 3)))
              (primary-p (and (= ord 0)
@@ -757,11 +766,11 @@
      (and (typep (segment-word segment) 'kanji-text)
           (intersection '("n" "n-adv" "n-t" "adj-na")
                         (getf (segment-info segment) :posi)
-                        :test #'equal)))
+                        :test 'equal)))
    (lambda (segment)
      (intersection '("prt" "cop-da")
                    (getf (segment-info segment) :posi)
-                   :test #'equal))
+                   :test 'equal))
    :description "noun+prt"
    :score 15
    :connector " "))
@@ -782,7 +791,7 @@
   (generic-synergy (l r)
    (lambda (segment)
      (and (typep (segment-word segment) 'kanji-text)
-          (member "vs" (getf (segment-info segment) :posi) :test #'equal)))
+          (member "vs" (getf (segment-info segment) :posi) :test 'equal)))
    (lambda (segment)
      (member 1157170 (getf (segment-info segment) :seq-set)))
    :description "noun+suru"
