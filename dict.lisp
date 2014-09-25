@@ -560,30 +560,32 @@
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
              (posi (query (:select 'text :distinct :from 'sense-prop
                                    :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
+             (common (common reading))
+             (common-p (not (eql common :null)))
              (particle-p (member "prt" posi :test 'equal))
              (pronoun-p (member "pn" posi :test 'equal))
-             (common (common reading))
-             (long-p (> len (if (or kanji-p (and (not (eql common :null)) (> common 0))) 2 3)))
+             (long-p (> len (if (or kanji-p (and common-p (> common 0))) 2 3)))
              (primary-p (and (= ord 0)
-                             (or (and common pronoun-p)
+                             (or (and common-p pronoun-p)
                                  (and prefer-kana (not kanji-p))
                                  (and (not prefer-kana) kanji-p)
                                  (= (n-kanji entry) 0)))))
-        (when (eql common :null)
+        (unless common-p
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
                  (conj-of-common (query (:select 'id :from table
                                                  :where (:and (:in 'seq (:set conj-of))
                                                               (:not-null 'common)))
                                        :column)))
             (when conj-of-common
-              (setf common 0))))
+              (setf common 0 common-p t))))
         (when primary-p
-          (incf score (if kanji-p 10 5))
+          (incf score (if (or kanji-p long-p) 10 5))
           (when particle-p
-            (incf score 5)
+            (when common-p
+              (incf score 5))
             (when final
               (incf score 5))))
-        (unless (eql common :null)
+        (when common-p
           (if (or primary-p long-p)
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 2)))
@@ -768,9 +770,10 @@
                         (getf (segment-info segment) :posi)
                         :test 'equal)))
    (lambda (segment)
-     (intersection '("prt" "cop-da")
-                   (getf (segment-info segment) :posi)
-                   :test 'equal))
+     (and (not (eql (common (segment-word segment)) :null))
+          (intersection '("prt" "cop-da")
+                        (getf (segment-info segment) :posi)
+                        :test 'equal)))
    :description "noun+prt"
    :score 15
    :connector " "))
