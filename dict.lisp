@@ -18,6 +18,10 @@
   (:documentation "most popular text representation (kanji or kana)")
   (:method (obj) (text obj)))
 
+(defgeneric word-type (obj)
+  (:documentation "returns :kanji or :kana or :gap")
+  (:method (obj) :gap))
+
 (defclass entry ()
   ((seq :reader seq :col-type integer :initarg :seq)
    (content :reader content :col-type string :initarg :content)
@@ -72,6 +76,8 @@
 (defmethod get-kana ((obj kanji-text))
   (text (car (select-dao 'kana-text (:and (:= 'seq (seq obj)) (:= 'ord 0))))))
 
+(defmethod word-type ((obj kanji-text)) :kanji)
+
 (defclass kana-text ()
   ((id :reader id :col-type serial)
    (seq :reader seq :col-type integer :initarg :seq)
@@ -96,6 +102,8 @@
 
 (defmethod get-kana ((obj kana-text))
   (text obj))
+
+(defmethod word-type ((obj kana-text)) :kana)
 
 (defclass sense ()
   ((id :reader id :col-type serial)
@@ -528,6 +536,7 @@
 
 ;;; end conjugations
 
+
 (defun find-word (word)
   (select-dao 
    (if (test-word word :kana) 'kana-text 'kanji-text)
@@ -545,10 +554,93 @@
                         'id) :column)))))
     (values readings (mapcar #'ichiran:romanize-word readings))))
 
+;; Compound words (usually 2 words squished together, but not in concatenative way)
+
+(defclass compound-text ()
+  ((text :reader text :initarg :text)
+   (kana :reader get-kana :initarg :kana)
+   (primary :reader primary :initarg :primary)
+   (words :reader words :initarg :words)
+   (score-mod :reader score-mod :initarg :score-mod)
+   ))
+
+(defmethod seq ((obj compound-text))
+  (mapcar #'seq (words obj)))
+
+(defmethod print-object ((obj compound-text) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a ~a" (seq obj) (text obj))))
+
+(defmethod common ((obj compound-text))
+  (common (primary obj)))
+
+(defmethod ord ((obj compound-text))
+  (ord (primary obj)))
+
+(defmethod word-type ((obj compound-text)) (word-type (primary obj)))
+
+(defparameter *suffix-list* nil)
+
+(defmacro defsuffix (name (str-var) &body body)
+  `(progn
+     (defun ,name (,str-var)
+       ,@body)
+     (pushnew ',name *suffix-list*)))
+
+(defmacro simple-suffix (name (suffix seq &key (stem 1) (score 15)) (root-var) &body get-primary-words)
+  (alexandria:with-gensyms (str len-diff primary-words suf-obj)
+    `(defsuffix ,name (,str)
+       (let ((,len-diff (- (length ,str) (length ,suffix))))
+         (when (and (> ,len-diff 0)
+                    (alexandria:ends-with-subseq ,suffix ,str))
+           (let* ((,root-var (subseq ,str 0 ,len-diff))
+                  (,primary-words (progn ,@get-primary-words)))
+             (when ,primary-words
+               (let ((,suf-obj (car (select-dao 'kana-text (:and (:= 'seq ,seq) 
+                                                                 (:= 'text ,suffix))))))
+                 (mapcar (lambda (pw)
+                           (make-instance 'compound-text
+                                          :text ,str
+                                          :kana (let ((k (get-kana pw)))
+                                                  (concatenate 'string
+                                                               (subseq k 0 (- (length k) ,stem))
+                                                               ,suffix))
+                                          :primary pw
+                                          :words (list pw ,suf-obj)
+                                          :score-mod ,score))
+                         ,primary-words)))))))))
+         
+(simple-suffix suffix-chau ("ちゃう" 2013800) (root)
+  (loop with str = (concatenate 'string root "て")
+     for word in (find-word str)
+     for conj-data = (get-conj-data (seq word))
+     if (member 3 conj-data
+                :key (lambda (cdata) (conj-type (conj-data-prop cdata))))
+       collect word))
+
+(simple-suffix suffix-jau ("じゃう" 2013800) (root)
+  (loop with str = (concatenate 'string root "で")
+     for word in (find-word str)
+     for conj-data = (get-conj-data (seq word))
+     if (member 3 conj-data
+                :key (lambda (cdata) (conj-type (conj-data-prop cdata))))
+       collect word))
+
+(defun find-word-full (word)
+  (nconc (find-word word)
+         (loop for suffix-fn in *suffix-list*
+              nconcing (funcall suffix-fn word))))
+
 (defstruct segment
   start end word (score nil) (info nil) (top nil)) ;; (accum 0) (path nil)
 
 (defun calc-score (reading &optional final)
+  (when (typep reading 'compound-text)
+    (multiple-value-bind (score info) (calc-score (primary reading))
+      (setf (getf info :conj) nil)
+      (return-from calc-score
+        (values (+ score (score-mod reading)) info))))
+
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
@@ -661,7 +753,7 @@
                              (lambda (word)
                                (gen-score (make-segment :start start :end end :word word)
                                           (= end (length str))))
-                             (find-word (subseq str start end)))))
+                             (find-word-full (subseq str start end)))))
               (when segments
                 (list (make-segment-list :segments (cull-segments segments)
                                          :start start :end end)))))))
@@ -743,19 +835,6 @@
                                       :connector ,connector
                                       :score ,score)
                         (make-segment-list-from ,segment-list-left ,left)))))))))
-
-(defun generic-synergy* (filter-left filter-right &rest keys &key description connector score)
-  (declare (ignore description connector score))
-  (lambda (segment-list-left segment-list-right)
-    (let ((start (segment-list-end segment-list-left))
-          (end (segment-list-start segment-list-right)))
-      (when (= start end)
-        (let ((left (remove-if-not filter-left (segment-list-segments segment-list-left)))
-              (right (remove-if-not filter-right (segment-list-segments segment-list-right))))
-          (when (and left right)
-            (list (list (make-segment-list-from segment-list-right right)
-                        (apply #'make-synergy :start start :end end keys)
-                        (make-segment-list-from segment-list-left left)))))))))
 
 
 (defparameter *synergy-list* nil)
@@ -887,13 +966,19 @@
                         (segment-list (list (car (segment-list-segments obj))))))
                     (car item))))))
 
-(defstruct word-info type text kana (score 0) (seq nil))
+(defstruct word-info type text kana (score 0) (seq nil) (components nil))
 
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
-  (make-word-info :type (if (typep word 'kanji-text) :kanji :kana)
+  (make-word-info :type (word-type word)
                   :text (get-text word)
                   :kana (get-kana word)
                   :seq (seq word)
+                  :components (when (typep word 'compound-text)
+                                (loop for wrd in (words word)
+                                     collect (make-word-info :type (word-type wrd)
+                                                             :text (get-text wrd)
+                                                             :kana (get-kana wrd)
+                                                             :seq (seq wrd))))
                   :score (segment-score segment)))
 
 (defun fill-segment-path (str path)
@@ -978,13 +1063,21 @@
 (defun word-info-str (word-info)
   (with-connection *connection*
     (with-output-to-string (s)
-      (princ (reading-str (case (word-info-type word-info)
-                            (:kanji (word-info-text word-info))
-                            (t nil))
-                          (word-info-kana word-info)) s)
-      (terpri s)
-      (let ((seq (word-info-seq word-info)))
-        (princ (if seq (get-senses-str seq) "???") s)
-        (when seq
-          (print-conj-info seq s))))))
+      (labels ((inner (word-info)
+                 (princ (reading-str (case (word-info-type word-info)
+                                       (:kanji (word-info-text word-info))
+                                       (t nil))
+                                     (word-info-kana word-info)) s)
+                 (if (word-info-components word-info)
+                     (progn
+                       (format s " Compound word: ~{~a~^ + ~}" (mapcar #'word-info-text (word-info-components word-info)))
+                       (dolist (comp (word-info-components word-info))
+                         (terpri s)
+                         (inner comp)))
+                     (let ((seq (word-info-seq word-info)))
+                       (terpri s)
+                       (princ (if seq (get-senses-str seq) "???") s)
+                       (when seq
+                         (print-conj-info seq s))))))
+        (inner word-info)))))
           

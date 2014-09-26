@@ -18,7 +18,9 @@
                   "大人" "に" "なって" "る" "はず")
   (assert-segment "いいとこ" "いいとこ")
   (assert-segment "そういうお隣どうし"
-                  "そういう" "お" "隣" "どうし"))
+                  "そういう" "お" "隣" "どうし")
+  (assert-segment "はしゃいじゃう" "はしゃいじゃう")
+  (assert-segment "分かっちゃうのよ" "分かっちゃう" "の" "よ"))
 
 
 (defun run-all-tests ()
