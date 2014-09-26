@@ -124,6 +124,9 @@
                     (mapcar (lambda (seg) (cons :word seg))
                             (split-by-regex "([ァ-ヺ][ァ-ヺヽヾゝゞー]*)" segment))))))
                       
-  
 
-
+(defun mora-length (str)
+  "like length but doesn't count modifier characters"
+  (count-if-not (lambda (char)
+                  (find char "っッぁァぃィぅゥぇェぉォゃャゅュょョー"))
+                str))

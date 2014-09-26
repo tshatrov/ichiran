@@ -6,7 +6,7 @@
            :*kana-characters* :*all-characters* :*char-class-hash*
            :*katakana-regex* :*hiragana-regex* :*kanji-regex* :test-word
            :hash-from-list :voice-char :simplify-ngrams :normalize
-           :split-by-regex :basic-split
+           :split-by-regex :basic-split :mora-length
            ))
 
 (defpackage #:ichiran/tokenize

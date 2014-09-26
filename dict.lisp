@@ -552,7 +552,7 @@
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
-         (len (length (text reading))))
+         (len (mora-length (text reading))))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
@@ -580,7 +580,9 @@
             (when conj-of-common
               (setf common 0 common-p t))))
         (when primary-p
-          (incf score (if (or kanji-p long-p) 10 5))
+          (incf score (cond ((or kanji-p long-p) 10)
+                            ((or common-p prefer-kana) 5)
+                            (t 1)))
           (when particle-p
             (when common-p
               (incf score 5))
@@ -593,8 +595,9 @@
         (when long-p
           (setf score (max 5 score)))
         (setf score (* score (expt len (if (or kanji-p katakana-p) 3 2))))
-        (values score (list :posi posi :seq-set seq-set
-                            :conj (get-conj-data seq)))))))
+        (values score (list :posi posi :seq-set (cons seq conj-of)
+                            :conj (get-conj-data seq)
+                            :kpcl (list kanji-p primary-p common-p long-p)))))))
 
 (defun gen-score (segment &optional final)
   (setf (values (segment-score segment) (segment-info segment))
@@ -757,6 +760,24 @@
 
 (defparameter *synergy-list* nil)
 
+(defun filter-is-noun (segment)
+  (destructuring-bind (k p c l) (getf (segment-info segment) :kpcl)
+    (and (or k l (and p c))
+         (intersection '("n" "n-adv" "n-t" "adj-na")
+                       (getf (segment-info segment) :posi)
+                       :test 'equal))))
+
+(declaim (inline filter-in-seq-set))
+(defun filter-in-seq-set (&rest seqs)
+  (lambda (segment)
+    (intersection seqs (getf (segment-info segment) :seq-set))))
+
+(declaim (inline filter-is-conjugation))
+(defun filter-is-conjugation (conj-type)
+  (lambda (segment)
+    (member conj-type (getf (segment-info segment) :conj)
+            :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
+
 (defmacro defsynergy (name (left-var right-var) &body body)
   `(progn
      (defun ,name (,left-var ,right-var)
@@ -765,42 +786,47 @@
 
 (defsynergy synergy-noun-particle (l r)
   (generic-synergy (l r)
-   (lambda (segment)
-     (and (typep (segment-word segment) 'kanji-text)
-          (intersection '("n" "n-adv" "n-t" "adj-na")
-                        (getf (segment-info segment) :posi)
-                        :test 'equal)))
+   #'filter-is-noun
    (lambda (segment)
      (and (not (eql (common (segment-word segment)) :null))
-          (intersection '("prt" "cop-da")
+          (intersection '("prt")
                         (getf (segment-info segment) :posi)
                         :test 'equal)))
    :description "noun+prt"
    :score 15
    :connector " "))
 
-(defsynergy synergy-te-iru-aru (l r)
+(defsynergy synergy-suru-verb (l r)
   (generic-synergy (l r)
-   (lambda (segment)
-     (member 3 (getf (segment-info segment) :conj)
-             :key (lambda (cdata) (conj-type (conj-data-prop cdata)))))
-   (lambda (segment)
-     (intersection '(1577980 1296400) ;;  [いる] [ある]
-                   (getf (segment-info segment) :seq-set)))
+   #'filter-is-noun
+   (filter-in-seq-set 1157170) ;; する
+   :description "noun+suru"
+   :score 10
+   :connector ""))
+
+(defsynergy synergy-noun-da (l r)
+  (generic-synergy (l r)
+   #'filter-is-noun
+   (filter-in-seq-set 2089020) ;; だ 
+   :description "noun+da"
+   :score 10
+   :connector " "))
+
+(defsynergy synergy-te-verbs (l r)
+  (generic-synergy (l r)
+   (filter-is-conjugation 3)
+   (filter-in-seq-set 1577980 1296400 1305380) ;;  [いる] [ある] [しまう]
    :description "-te+iru/aru"
    :score 10
    :connector ""))
 
-(defsynergy synergy-suru-verb (l r)
-  (generic-synergy (l r)
-   (lambda (segment)
-     (and (typep (segment-word segment) 'kanji-text)
-          (member "vs" (getf (segment-info segment) :posi) :test 'equal)))
-   (lambda (segment)
-     (member 1157170 (getf (segment-info segment) :seq-set)))
-   :description "noun+suru"
-   :score 10
-   :connector ""))
+;; (defsynergy synergy-chau (l r)
+;;   (generic-synergy (l r)
+;;    (lambda (segment) (or (funcall (filter-is-conjugation 13) segment) (filter-is-noun segment)))
+;;    (filter-in-seq-set 2013800 2210750) ;; ちまう ； じまう ; しまう
+;;    :description "cont+chau"
+;;    :score 10
+;;    :connector ""))
 
 (defsynergy synergy-o-prefix (l r)
   (generic-synergy (l r)
