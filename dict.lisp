@@ -786,33 +786,6 @@
     (with-slots (array count) obj
       (if (>= count (length array)) array (subseq array 0 count)))))
 
-(defun find-best-path (segments &key (limit 5))
-  ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
-  (let ((top (make-instance 'top-array :limit limit)))
-    (register-item top 0 nil)
-
-    (dolist (segment segments)
-      (setf (segment-top segment) (make-instance 'top-array :limit limit)))
-
-    (loop for (seg1 . rest) on segments
-       when (> (segment-score seg1) 0) do 
-         (register-item (segment-top seg1) (segment-score seg1) (list seg1))
-         (register-item top (segment-score seg1) (list seg1))
-         (loop for seg2 in rest
-            for seg2-score = (segment-score seg2)
-            when (and (> seg2-score 0) 
-                      (>= (segment-start seg2) (segment-end seg1))) do
-              (loop for tai across (get-array (segment-top seg1))
-                 for accum = (+ (tai-score tai) seg2-score)
-                 for path = (cons seg2 (tai-payload tai))
-                 do (register-item (segment-top seg2) accum path)
-                    (register-item top accum path))))
-    (dolist (segment segments)
-      (setf (segment-top segment) nil))
-
-    (loop for tai across (get-array top)
-         collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
-
 (defstruct synergy description connector score start end)
 
 (defun make-segment-list-from (old-segment-list segments)
@@ -835,7 +808,6 @@
                                       :connector ,connector
                                       :score ,score)
                         (make-segment-list-from ,segment-list-left ,left)))))))))
-
 
 (defparameter *synergy-list* nil)
 
@@ -899,14 +871,6 @@
    :score 10
    :connector ""))
 
-;; (defsynergy synergy-chau (l r)
-;;   (generic-synergy (l r)
-;;    (lambda (segment) (or (funcall (filter-is-conjugation 13) segment) (filter-is-noun segment)))
-;;    (filter-in-seq-set 2013800 2210750) ;; ちまう ； じまう ; しまう
-;;    :description "cont+chau"
-;;    :score 10
-;;    :connector ""))
-
 (defsynergy synergy-o-prefix (l r)
   (generic-synergy (l r)
    (lambda (segment)
@@ -922,14 +886,15 @@
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))
 
-(defun find-best-path^2 (segment-lists &key (limit 5))
-  "same as find-best-path but operates on segment-lists and uses synergies"
+(defun find-best-path (segment-lists &key (limit 5))
+  "generalized version of old find-best-path that operates on segment-lists and uses synergies"
   (let ((top (make-instance 'top-array :limit limit)))
     (register-item top 0 nil)
 
     (dolist (segment-list segment-lists)
       (setf (segment-list-top segment-list) (make-instance 'top-array :limit limit)))
 
+    ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
     (loop for (seg1 . rest) on segment-lists
          for score1 = (get-segment-score seg1)
        when (> score1 0) do 
@@ -939,7 +904,6 @@
             for score2 = (get-segment-score seg2)
             when (and (> score2 0)
                       (>= (segment-list-start seg2) (segment-list-end seg1))) do
-              ;; here's where it gets really damn hairy
               (loop for tai across (get-array (segment-list-top seg1))
                    for (seg-left . tail) = (tai-payload tai)
                    for score3 = (get-segment-score seg-left)
@@ -956,9 +920,9 @@
     (loop for tai across (get-array top)
          collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
 
-(defun find-best-path^2-1 (segment-lists &key (limit 5))
-  "convert find-best-path^2 results to previous format"
-  (let ((result (find-best-path^2 segment-lists :limit limit)))
+(defun find-best-path* (segment-lists &key (limit 5))
+  "convert find-best-path results to single word format"
+  (let ((result (find-best-path segment-lists :limit limit)))
     (dolist (item result result)
       (setf (car item)
             (mapcan (lambda (obj)
@@ -999,7 +963,7 @@
                       
 (defun dict-segment (str &key (limit 5))
   (with-connection *connection*
-    (loop for (path . score) in (find-best-path^2-1 (join-substring-words str) :limit limit)
+    (loop for (path . score) in (find-best-path* (join-substring-words str) :limit limit)
          collect (cons (fill-segment-path str path) score))))
 
 (defun simple-segment (str &key (limit 5))
