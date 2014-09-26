@@ -164,10 +164,8 @@
 
 (defun romanize-list (cc-list &key (method *default-romanization-method*))
   "Romanize a character class list according to method"
-  ;;exception for ha = wa
-  (if (and (= (length cc-list) 1) (eql (car cc-list) :ha)) "wa"
-      (let ((cc-tree (process-modifiers (process-iteration-characters cc-list))))
-        (values (r-simplify method (romanize-core method cc-tree))))))
+  (let ((cc-tree (process-modifiers (process-iteration-characters cc-list))))
+    (values (r-simplify method (romanize-core method cc-tree)))))
 
 (defgeneric r-special (method word)
   (:documentation "Romanize words that are exceptions, return nil otherwise")
@@ -183,7 +181,8 @@
 
 (defun romanize-word (word &key (method *default-romanization-method*))
   "Romanize a word according to method"
-  (romanize-list (get-character-classes word) :method method))
+  (or (r-special method word)
+      (romanize-list (get-character-classes word) :method method)))
 
 (defun join-parts (parts)
   (with-output-to-string (s)
