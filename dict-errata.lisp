@@ -61,7 +61,9 @@
             "ございましたら")
   ;;;  いる / る
   (add-reading 1577980 "る")
-  
+  ;; きみ / キミ
+  (add-reading 1247250 "キミ")
+
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
   )
