@@ -1,4 +1,5 @@
-;; JMdict crawler
+;; ichiran dictionary module
+;; based on JMDict
 
 (in-package #:ichiran/dict)
 
@@ -57,6 +58,7 @@
    (text :reader text :col-type string :initarg :text)
    (ord :reader ord :col-type integer :initarg :ord)
    (common :reader common :col-type (or db-null integer) :initarg :common)
+   (conjugate-p :reader conjugate-p :col-type boolean :initform t :initarg :conjugate-p)
    )
   (:metaclass dao-class)
   (:keys id))
@@ -84,6 +86,7 @@
    (text :reader text :col-type string :initarg :text)
    (ord :reader ord :col-type integer :initarg :ord)
    (common :reader common :col-type (or db-null integer) :initarg :common)
+   (conjugate-p :reader conjugate-p :col-type boolean :initform t :initarg :conjugate-p)
    )
   (:metaclass dao-class)
   (:keys id))
@@ -432,8 +435,10 @@
        for rules = (get-conj-rules pos-id)
        if (and rules (not (member pos *do-not-conjugate* :test 'equal)))
          do (loop 
-               for (reading ord kanji-flag) in (query (:union (:select 'text 'ord 1 :from 'kanji-text :where (:= 'seq seq))
-                                                              (:select 'text 'ord 0 :from 'kana-text :where (:= 'seq seq))))
+               for (reading ord kanji-flag) in (query (:union (:select 'text 'ord 1 :from 'kanji-text
+                                                                       :where (:and (:= 'seq seq) 'conjugate-p))
+                                                              (:select 'text 'ord 0 :from 'kana-text
+                                                                       :where (:and (:= 'seq seq) 'conjugate-p))))
                do (loop for rule in rules
                        for conj-id = (cr-conj rule)
                        for key = (list pos-id conj-id)
@@ -517,10 +522,10 @@
                (make-dao 'entry :seq seq :content "")
                (loop for kr in kanji-readings
                   for ord from 0
-                  do (make-dao 'kanji-text :seq seq :text kr :ord ord :common :null))
+                  do (make-dao 'kanji-text :seq seq :text kr :ord ord :common :null :conjugate-p nil))
                (loop for kr in kana-readings
                   for ord from 0
-                  do (make-dao 'kana-text :seq seq :text kr :ord ord :common :null))))
+                  do (make-dao 'kana-text :seq seq :text kr :ord ord :common :null :conjugate-p nil))))
          
          (let* ((old-conj (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq))))
                 (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from))))

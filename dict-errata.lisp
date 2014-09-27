@@ -37,13 +37,13 @@
           (make-dao 'conj-prop :conj-id (id conj)
                     :pos pos :conj-type conj-type :neg neg :fml fml))))))
 
-(defun add-reading (seq reading &optional (common :null))
+(defun add-reading (seq reading &optional (common :null) (conjugate-p t))
   (let* ((is-kana (test-word reading :kana))
          (table (if is-kana 'kana-text 'kanji-text))
          (entry (get-dao 'entry seq)))
     (when (not (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
       (let ((ord (1+ (query (:select (:max 'ord) :from table :where (:= 'seq seq)) :single))))
-        (make-dao table :text reading :seq seq :ord ord :common common)
+        (make-dao table :text reading :seq seq :ord ord :common common :conjugate-p conjugate-p)
         (if is-kana
             (incf (n-kana entry))
             (incf (n-kanji entry)))
@@ -60,7 +60,7 @@
   (add-conj 1612690 '(11 "exp" :null :null)
             "ございましたら")
   ;;;  いる / る
-  (add-reading 1577980 "る")
+  (add-reading 1577980 "る" :conjugate-p nil)
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
 
