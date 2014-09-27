@@ -67,3 +67,19 @@
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
   )
+
+
+;; Additional conjugations
+
+(defconstant +conj-adverbial+ 50)
+
+(defun errata-conj-description-hook (hash)
+  (setf (gethash +conj-adverbial+ hash) "Adverbial"))
+
+(defun errata-conj-rules-hook (hash)
+  (let ((pos (get-pos-index "adj-i")))
+    (push 
+     (make-conjugation-rule
+      pos +conj-adverbial+ nil nil 1 
+      1 "く" "" "")
+     (gethash pos hash nil))))

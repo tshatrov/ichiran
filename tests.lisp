@@ -20,8 +20,10 @@
   (assert-segment "そういうお隣どうし"
                   "そういう" "お" "隣" "どうし")
   (assert-segment "はしゃいじゃう" "はしゃいじゃう")
-  (assert-segment "分かっちゃうのよ" "分かっちゃう" "の" "よ"))
-
+  (assert-segment "分かっちゃうのよ" "分かっちゃう" "の" "よ")
+  (assert-segment "懐かしく新しいまだそしてまた"
+                  "懐かしく" "新しい" "まだ" "そして" "また")
+  )
 
 (defun run-all-tests ()
   (run-tests :all :ichiran/test))

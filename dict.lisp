@@ -67,7 +67,7 @@
   (!index 'ord)
   (!index 'text)
   (!index 'common)
-  (!foreign 'entry 'seq))
+  (!foreign 'entry 'seq :on-delete :cascade))
 
 (defmethod print-object ((obj kanji-text) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
@@ -94,7 +94,7 @@
   (!index 'ord)
   (!index 'text)
   (!index 'common)
-  (!foreign 'entry 'seq))
+  (!foreign 'entry 'seq :on-delete :cascade))
 
 (defmethod print-object ((obj kana-text) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
@@ -291,7 +291,7 @@
          (setf (cxml::entdef-value (cdr entdef)) name)))
      entity-hash)))
     
-(defun load-jmdict (&key (path *jmdict-path*) (load-conjugations t))
+(defun load-jmdict (&key (path *jmdict-path*) (load-extras t))
   (init-tables)
   (with-connection *connection*
     (klacks:with-open-source (source (cxml:make-source path))
@@ -303,18 +303,25 @@
            (let ((content (klacks:serialize-element source (cxml:make-string-sink))))
              (load-entry content))
          if (zerop (mod cnt 1000)) do (format t "~a entries loaded~%" cnt)
-         finally (query "ANALYZE") (format t "~a entries total~%" cnt)))
-    (when load-conjugations
-      (format t "Loading conjugations...~%")
-      (load-conjugations))
-    (add-errata)
-    (recalc-entry-stats)
-    (query "ANALYZE")
-    ))
+         finally (recalc-entry-stats) (query "ANALYZE") (format t "~a entries total~%" cnt)))
+    (when load-extras (load-extras))))
+
+(defun load-extras ()
+  (format t "Loading conjugations...~%")
+  (load-conjugations)
+  (add-errata)
+  (recalc-entry-stats)
+  (query "ANALYZE"))
+
+(defun drop-extras ()
+  (query (:delete-from 'conj-prop))
+  (query (:delete-from 'conjugation))
+  (query (:delete-from 'entry :where (:not 'root-p)))
+  )
 
 ;;; conjugations generator (warning: terrible code ahead)
 
-(defmacro csv-hash (hash-name (filename &key skip-first) loader-opts &rest accessor-opts-list)
+(defmacro csv-hash (hash-name (filename &key skip-first ((:errata errata-fn))) loader-opts &rest accessor-opts-list)
   (let ((base-name (string-trim "*" hash-name))
         (forms (list `(defparameter ,hash-name nil)))
         (loader-opts-length (length loader-opts)) ;;([loader-name] row-def row-key value-form)
@@ -334,7 +341,8 @@
                                    (merge-pathnames *jmdict-data* ,filename)
                                    :separator #\Tab :skip-first-p ,skip-first)
              :for ,row-count-var :from 0
-             :do (setf (gethash ,row-key-form ,hash-name) ,value-form)))
+             :do (setf (gethash ,row-key-form ,hash-name) ,value-form))
+          ,(when errata-fn `(funcall ,errata-fn ,hash-name)))
        forms))
     (loop with accessor-name
        for accessor-opts in accessor-opts-list
@@ -362,7 +370,8 @@
           ((pos-id pos description) (parse-integer pos-id) pos)
           (get-pos val val))
 
-(csv-hash *conj-description* ("conj.csv" :skip-first t)
+(csv-hash *conj-description* ("conj.csv" :skip-first t
+                                         :errata 'errata-conj-description-hook)
           ((conj-id description) (parse-integer conj-id) description)
           (val val))
 
@@ -372,7 +381,8 @@
   pos conj neg fml onum stem okuri euphr euphk)
 
 
-(csv-hash *conj-rules* ("conjo.csv" :skip-first t)
+(csv-hash *conj-rules* ("conjo.csv" :skip-first t
+                                    :errata 'errata-conj-rules-hook)
           ((pos-id conj-id neg fml onum stem okuri euphr euphk pos2)
            (parse-integer pos-id)
            (let ((pos (parse-integer pos-id)))
@@ -681,10 +691,10 @@
             (when final
               (incf score 5))))
         (when common-p
-          (if (or primary-p long-p)
+          (if (and (or primary-p long-p) (> len 1))
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 2)))
-        (when long-p
+        (when (or long-p kanji-p)
           (setf score (max 5 score)))
         (setf score (* score (expt len (if (or kanji-p katakana-p) 3 2))))
         (values score (list :posi posi :seq-set (cons seq conj-of)
