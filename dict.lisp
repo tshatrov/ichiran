@@ -649,6 +649,11 @@
 (defstruct segment
   start end word (score nil) (info nil) (top nil)) ;; (accum 0) (path nil)
 
+(defun length-multiplier (length power len-lim)
+  "len^power until len-lim, goes linear after"
+  (cond ((<= length len-lim) (expt length power))
+        (t (* length (expt len-lim (1- power))))))
+
 (defun calc-score (reading &optional final)
   (when (typep reading 'compound-text)
     (multiple-value-bind (score info) (calc-score (primary reading))
@@ -697,12 +702,12 @@
             (when final
               (incf score 5))))
         (when common-p
-          (if (or long-p (and primary-p root-p))
+          (if (or long-p (and primary-p root-p (> len 1)))
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 2)))
         (when (or long-p kanji-p)
           (setf score (max 5 score)))
-        (setf score (* score (expt len (if (or kanji-p katakana-p) 3 2))))
+        (setf score (* score (length-multiplier len (if (or kanji-p katakana-p) 3 2) 5)))
         (values score (list :posi posi :seq-set (cons seq conj-of)
                             :conj (get-conj-data seq)
                             :kpcl (list kanji-p primary-p common-p long-p)))))))
