@@ -662,8 +662,9 @@
          (len (mora-length (text reading))))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
+             (root-p (root-p entry))
              (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
-             (seq-set (if (root-p entry) (list seq) (cons seq conj-of)))
+             (seq-set (if root-p (list seq) (cons seq conj-of)))
              (prefer-kana
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
              (posi (query (:select 'text :distinct :from 'sense-prop
@@ -696,7 +697,7 @@
             (when final
               (incf score 5))))
         (when common-p
-          (if (and (or primary-p long-p) (> len 1))
+          (if (or long-p (and primary-p root-p))
               (incf score (if (= common 0) 10 (max (- 20 common) 10)))
               (incf score 2)))
         (when (or long-p kanji-p)
@@ -859,7 +860,7 @@
                         (getf (segment-info segment) :posi)
                         :test 'equal)))
    :description "noun+prt"
-   :score 15
+   :score 10
    :connector " "))
 
 (defsynergy synergy-suru-verb (l r)

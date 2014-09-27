@@ -49,6 +49,13 @@
             (incf (n-kanji entry)))
         (update-dao entry)))))
 
+(defun delete-senses (seq prop-test)
+  (let* ((sense-props (remove-if-not prop-test (select-dao 'sense-prop (:= 'seq seq))))
+         (sense-ids (remove-duplicates (mapcar #'sense-id sense-props))))
+    (query (:delete-from 'sense-prop :where (:in 'sense-id (:set sense-ids))))
+    (query (:delete-from 'gloss :where (:in 'sense-id (:set sense-ids))))
+    (query (:delete-from 'sense :where (:in 'id (:set sense-ids))))))
+
 (defun delete-sense-prop (seq tag text)
   (let ((props (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag tag) (:= 'text text)))))
     (mapc #'delete-dao props)))
@@ -66,6 +73,9 @@
 
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
+  
+  ;; delete noun sense for と
+  (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))
   )
 
 
