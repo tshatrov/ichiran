@@ -726,9 +726,9 @@
   (cond ((<= length len-lim) (expt length power))
         (t (* length (expt len-lim (1- power))))))
 
-(defun calc-score (reading &optional final)
+(defun calc-score (reading &optional final use-length)
   (when (typep reading 'compound-text)
-    (multiple-value-bind (score info) (calc-score (primary reading))
+    (multiple-value-bind (score info) (calc-score (primary reading) nil (mora-length (text reading)))
       (multiple-value-bind (score-suf info-suf) (calc-score (car (last (words reading))))
         (declare (ignore score-suf))
         (setf (getf info :conj) (getf info-suf :conj))
@@ -738,7 +738,7 @@
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
-         (len (mora-length (text reading))))
+         (len (or use-length (mora-length (text reading)))))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (root-p (root-p entry))
