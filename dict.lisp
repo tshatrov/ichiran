@@ -594,6 +594,22 @@
 
 (defmethod word-type ((obj compound-text)) (word-type (primary obj)))
 
+
+
+(defun get-kana-forms (seq)
+  (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
+                                 :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
+                                 :where (:or (:= 'kt.seq seq)
+                                             (:= 'conj.from seq)))))
+
+(defparameter *suffix-cache* nil)
+
+(defun init-suffixes ()
+  (unless *suffix-cache*
+    (setf *suffix-cache* (make-hash-table :test 'equal))
+    (loop for kf in (get-kana-forms 2013800)
+       do (setf (gethash (cons (text kf) :chau) *suffix-cache*) kf))))
+
 (defparameter *suffix-list* nil)
 
 (defmacro defsuffix (name (str-var) &body body)
@@ -624,8 +640,30 @@
                                           :words (list pw ,suf-obj)
                                           :score-mod ,score))
                          ,primary-words)))))))))
+
+(defmacro conj-suffix (name (suffix-start keyword &key (stem 1) (score 15)) (root-var) &body get-primary-words)
+  (alexandria:with-gensyms (str pos suf primary-words)
+    `(defsuffix ,name (,str)
+       (let ((,pos (search ,suffix-start ,str :from-end t)))
+         (when ,pos
+           (let ((,suf (gethash (cons (subseq ,str ,pos) ,keyword) *suffix-cache*)))
+             (when ,suf
+               (let* ((,root-var (subseq ,str 0 ,pos))
+                      (,primary-words (progn ,@get-primary-words)))
+                 (mapcar (lambda (pw)
+                           (make-instance 'compound-text
+                                          :text ,str
+                                          :kana (let ((k (get-kana pw)))
+                                                  (concatenate 'string
+                                                               (subseq k 0 (- (length k) ,stem))
+                                                               (text ,suf)))
+                                          :primary pw
+                                          :words (list pw ,suf)
+                                          :score-mod ,score))
+                         ,primary-words)))))))))
+  
          
-(simple-suffix suffix-chau ("ちゃう" 2013800) (root)
+(conj-suffix suffix-chau ("ちゃ" :chau) (root)
   (loop with str = (concatenate 'string root "て")
      for word in (find-word str)
      for conj-data = (get-conj-data (seq word))
@@ -633,7 +671,7 @@
                 :key (lambda (cdata) (conj-type (conj-data-prop cdata))))
        collect word))
 
-(simple-suffix suffix-jau ("じゃう" 2013800) (root)
+(conj-suffix suffix-jau ("じゃ" :chau) (root)
   (loop with str = (concatenate 'string root "で")
      for word in (find-word str)
      for conj-data = (get-conj-data (seq word))
@@ -642,6 +680,7 @@
        collect word))
 
 (defun find-word-full (word)
+  (init-suffixes)
   (nconc (find-word word)
          (loop for suffix-fn in *suffix-list*
               nconcing (funcall suffix-fn word))))
@@ -657,9 +696,11 @@
 (defun calc-score (reading &optional final)
   (when (typep reading 'compound-text)
     (multiple-value-bind (score info) (calc-score (primary reading))
-      (setf (getf info :conj) nil)
-      (return-from calc-score
-        (values (+ score (score-mod reading)) info))))
+      (multiple-value-bind (score-suf info-suf) (calc-score (car (last (words reading))))
+        (declare (ignore score-suf))
+        (setf (getf info :conj) (getf info-suf :conj))
+        (return-from calc-score
+          (values (+ score (score-mod reading)) info)))))
 
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
