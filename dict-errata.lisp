@@ -60,7 +60,16 @@
   (let ((props (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag tag) (:= 'text text)))))
     (mapc #'delete-dao props)))
 
+(defun add-sense (seq ord &rest glosses)
+  (unless (select-dao 'sense (:and (:= 'seq seq) (:= 'ord ord)))
+    (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
+      (loop for gord from 1
+           for gloss in glosses
+           do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord)))))
+
 (defun add-errata ()
+  ;;; add sense for な 
+  (add-sense 2029110 4 "(used with nouns) な-adjective")
   ;;; gozaimashita / gozaimashitara
   (add-conj 1612690 '(2 "exp" :null :null)
             "ございました")
@@ -73,9 +82,10 @@
 
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
-  
+
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))
+
   )
 
 

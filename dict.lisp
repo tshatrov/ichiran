@@ -839,6 +839,14 @@
                        (getf (segment-info segment) :posi)
                        :test 'equal))))
 
+(defmacro filter-is-pos (pos-list (segment &rest kpcl-vars) &body kpcl-test)
+  `(lambda (,segment)
+     (destructuring-bind ,kpcl-vars (getf (segment-info ,segment) :kpcl)
+       (and (progn ,@kpcl-test)
+            (intersection ',pos-list
+                          (getf (segment-info ,segment) :posi)
+                          :test 'equal)))))
+
 (declaim (inline filter-in-seq-set))
 (defun filter-in-seq-set (&rest seqs)
   (lambda (segment)
@@ -870,7 +878,7 @@
 
 (defsynergy synergy-suru-verb (l r)
   (generic-synergy (l r)
-   #'filter-is-noun
+   (filter-is-pos ("vs") (segment k p c l) (or k l (and p c)))
    (filter-in-seq-set 1157170) ;; する
    :description "noun+suru"
    :score 10
@@ -890,6 +898,22 @@
    (filter-in-seq-set 1577980 1296400 1305380) ;;  [いる] [ある] [しまう]
    :description "-te+iru/aru"
    :score 10
+   :connector ""))
+
+(defsynergy no-adjectives (l r)
+  (generic-synergy (l r)
+   (filter-is-pos ("adj-no") (segment k p c l) (or k l (and p c)))
+   (filter-in-seq-set 1469800) ;; の
+   :description "no-adjective"
+   :score 15
+   :connector ""))
+
+(defsynergy na-adjectives (l r)
+  (generic-synergy (l r)
+   (filter-is-pos ("adj-na") (segment k p c l) (or k l (and p c)))
+   (filter-in-seq-set 2029110 2028990) ;; な ; に 
+   :description "na-adjective"
+   :score 15
    :connector ""))
 
 (defsynergy synergy-o-prefix (l r)
