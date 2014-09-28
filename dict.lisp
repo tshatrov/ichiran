@@ -171,6 +171,7 @@
   ((id :reader id :col-type serial)
    (seq :reader seq :col-type integer :initarg :seq)
    (from :reader seq-from :col-type integer :initarg :from)
+   (via :reader seq-via :col-type (or integer db-null) :initform :null :initarg :via)
    )
   (:documentation "conjugation link")
   (:metaclass dao-class)
@@ -185,7 +186,10 @@
 
 (defmethod print-object ((obj conjugation) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
-    (format stream "~a -> ~a" (seq-from obj) (seq obj))))
+    (let ((via (seq-via obj)))
+      (if (eql via :null)
+          (format stream "~a -> ~a" (seq-from obj) (seq obj))
+          (format stream "~a -> ~a -> ~a" (seq-from obj) (seq-via obj) (seq obj))))))
 
 (defclass conj-prop ()
   ((id :reader id :col-type serial)
@@ -214,12 +218,14 @@
   (print-unreadable-object (obj stream :type t :identity nil)
     (princ (conj-info-short obj) stream)))
 
-(defstruct conj-data seq from prop)
+(defstruct conj-data seq from via prop)
 
 (defun get-conj-data (seq)
   (loop for conj in (select-dao 'conjugation (:= 'seq seq))
        nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
+                                             :via (let ((via (seq-via conj)))
+                                                    (if (eql via :null) nil via))
                                              :prop prop))))
 
 (defun init-tables ()
@@ -312,6 +318,8 @@
 (defun load-extras ()
   (format t "Loading conjugations...~%")
   (load-conjugations)
+  (format t "Loading secondary conjugations...~%")
+  (load-secondary-conjugations)
   (add-errata)
   (recalc-entry-stats)
   (query "ANALYZE"))
@@ -426,9 +434,18 @@
 
 (defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 
-(defun conjugate-entry-inner (seq)
-  (let ((posi (query (:select 'text :distinct :from 'sense-prop
-                              :where (:and (:= 'tag "pos") (:= 'seq seq))) :column)))
+(defparameter *pos-with-conj-rules*
+ '("adj-i" "adj-ix" "cop-da" "v1" "v1-s" "v5aru" 
+   "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
+   "v5t" "v5u" "v5u-s" "vk" "vs-s" "vs-i"))
+
+(defparameter *secondary-conjugation-types-from* '(5 6 7 8))
+
+(defparameter *secondary-conjugation-types* '(2 3 4 9 10 11 12 13))
+
+(defun conjugate-entry-inner (seq &key conj-types as-posi)
+  (let ((posi (or as-posi (query (:select 'text :distinct :from 'sense-prop
+                                          :where (:and (:= 'tag "pos") (:= 'seq seq))) :column))))
     (loop with conj-matrix = (make-hash-table :test 'equal) ;; (cons pos-id conj-id) -> 2x2 array
        for pos in posi
        for pos-id = (get-pos-index pos)
@@ -440,20 +457,23 @@
                                                               (:select 'text 'ord 0 :from 'kana-text
                                                                        :where (:and (:= 'seq seq) 'conjugate-p))))
                do (loop for rule in rules
-                       for conj-id = (cr-conj rule)
-                       for key = (list pos-id conj-id)
-                       for conj-text = (construct-conjugation reading rule)
-                     do (unless (gethash key conj-matrix)
-                          (setf (gethash key conj-matrix)
-                                (make-array '(2 2) :initial-element nil)))
-                       (push (list conj-text kanji-flag ord (cr-onum rule))
-                             (aref (gethash key conj-matrix)
+                        for conj-id = (cr-conj rule)
+                     when (or (not conj-types)
+                              (member conj-id conj-types))
+                     do (let ((key (list pos-id conj-id))
+                              (conj-text (construct-conjugation reading rule)))
+                          (unless (gethash key conj-matrix)
+                            (setf (gethash key conj-matrix)
+                                  (make-array '(2 2) :initial-element nil)))
+                          (push (list conj-text kanji-flag ord (cr-onum rule))
+                                (aref (gethash key conj-matrix)
                                    (if (cr-neg rule) 1 0)
-                                   (if (cr-fml rule) 1 0)))))
+                                   (if (cr-fml rule) 1 0))))))
          finally (return conj-matrix))))
 
-(defun conjugate-entry-outer (seq)
-  (let* ((conj-matrix (conjugate-entry-inner seq))
+(defun conjugate-entry-outer (seq* &key via conj-types as-posi)
+  (let* ((seq (or via seq*))
+         (conj-matrix (conjugate-entry-inner seq :conj-types conj-types :as-posi as-posi))
          (original-readings (get-all-readings seq))
          (max-seq (query (:select (:max 'seq) :from 'entry) :single))
          (next-seq (1+ max-seq)))
@@ -468,8 +488,8 @@
                                            (member (car item) original-readings :test 'equal))
                                          (row-major-aref matrix ii))
                when readings
-               do (when (insert-conjugation readings :seq next-seq
-                                            :from seq :pos pos
+               do (when (insert-conjugation readings :seq next-seq :via via
+                                            :from seq* :pos pos
                                             :conj-id conj-id
                                             :neg (if ignore-neg :null neg)
                                             :fml (if ignore-fml :null fml))
@@ -485,7 +505,7 @@
                    ((funcall predicate e2 e1) (return nil))))
            seq1 seq2))))
 
-(defun insert-conjugation (readings &key seq from pos conj-id neg fml)
+(defun insert-conjugation (readings &key seq from pos conj-id neg fml via)
   "returns true if new entry is created, nil otherwise"
   (loop for (reading kanji-flag) in (sort readings (lex-compare #'<) :key #'cddr)
      if (= kanji-flag 1) collect reading into kanji-readings
@@ -514,28 +534,26 @@
                                    :group-by 'r.seq
                                    :having (:= (:count 'r.id) (length kana-readings)))
                           :column))))
-         (when (member from seq-candidates)
+         (when (or (member from seq-candidates) (member via seq-candidates))
            (return nil))
          (if seq-candidates
              (setf seq (car seq-candidates))
              (progn
                (make-dao 'entry :seq seq :content "")
-               (loop for kr in kanji-readings
-                  for ord from 0
-                  do (make-dao 'kanji-text :seq seq :text kr :ord ord :common :null :conjugate-p nil))
-               (loop for kr in kana-readings
-                  for ord from 0
-                  do (make-dao 'kana-text :seq seq :text kr :ord ord :common :null :conjugate-p nil))))
+               (let ((conjugate-p (when (member conj-id *secondary-conjugation-types-from*) t)))
+                 (loop for kr in kanji-readings
+                    for ord from 0
+                    do (make-dao 'kanji-text :seq seq :text kr :ord ord :common :null :conjugate-p conjugate-p))
+                 (loop for kr in kana-readings
+                    for ord from 0
+                    do (make-dao 'kana-text :seq seq :text kr :ord ord :common :null :conjugate-p conjugate-p)))))
          
-         (let* ((old-conj (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq))))
-                (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from))))
+         (let* ((old-conj (if via
+                              (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:= 'via via)))
+                              (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:is-null 'via)))))
+                (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from :via (or via :null)))))
            (make-dao 'conj-prop :conj-id (id conj) :conj-type conj-id :pos pos :neg neg :fml fml))
          (return (not seq-candidates)))))
-
-(defparameter *pos-with-conj-rules*
- '("adj-i" "adj-ix" "cop-da" "v1" "v1-s" "v5aru" 
-   "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
-   "v5t" "v5u" "v5u-s" "vk" "vs-s" "vs-i"))
 
 (defun load-conjugations ()
   (with-connection *connection*
@@ -548,6 +566,21 @@
            do (conjugate-entry-outer seq)
            if (zerop (mod cnt 500)) do (format t "~a entries processed~%" cnt)))))
 
+
+(defun load-secondary-conjugations ()
+  (let ((to-conj (query-dao 'conjugation 
+                            (:select 'conj.* :distinct :from (:as 'conjugation 'conj)
+                                     :left-join 'conj-prop :on (:= 'conj.id 'conj-prop.conj-id)
+                                     :where (:and (:in 'conj-prop.conj-type (:set *secondary-conjugation-types-from*))
+                                                  (:not (:in 'conj-prop.pos (:set "vs-i" "vs-s")))
+                                                  (:or (:not 'neg) (:is-null 'neg))
+                                                  (:or (:not 'fml) (:is-null 'fml)))))))
+    (loop for cnt from 1
+       for conj in to-conj
+       do (conjugate-entry-outer (seq-from conj) :via (seq conj) :as-posi '("v1")
+                                 :conj-types *secondary-conjugation-types*)
+       if (zerop (mod cnt 1000)) do (format t "~a entries processed~%" cnt))
+    ))
 
 ;;; end conjugations
 
@@ -1108,7 +1141,11 @@
   (loop for conj in (select-dao 'conjugation (:= 'seq seq))
        do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
              do (format out "~%Conjugation: ~a" (conj-info-short conj-prop)))
-       (format out "~%  ~a" (entry-info-short (seq-from conj)))))
+       (if (eql (seq-via conj) :null)
+           (format out "~%  ~a" (entry-info-short (seq-from conj)))
+           (progn
+             (format out "~% --(via)--")
+             (print-conj-info (seq-via conj) out)))))
 
 (defun word-info-str (word-info)
   (with-connection *connection*
