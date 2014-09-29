@@ -775,10 +775,11 @@
               (incf score 5))
             (when final
               (incf score 5))))
-        (when common-p
-          (if (or long-p (and primary-p root-p (> len 1)))
-              (incf score (if (= common 0) 10 (max (- 20 common) 10)))
-              (incf score 2)))
+        (when (and common-p (not particle-p)) 
+          (cond ((or long-p (and primary-p root-p (> len 1)))
+                 (incf score (if (= common 0) 10 (max (- 20 common) 10))))
+                ((> len 2) (incf score 3))
+                (t (incf score 2))))
         (when (or long-p kanji-p)
           (setf score (max 5 score)))
         (setf score (* score (length-multiplier len (if (or kanji-p katakana-p) 3 2) 5)))

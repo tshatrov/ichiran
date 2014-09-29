@@ -33,6 +33,7 @@
                   "だけど" "気付けば" "馴染んじゃって" "る")
   (assert-segment "飲んで笑っちゃえば"
                   "飲んで" "笑っちゃえば")
+  (assert-segment "なんで" "なんで")
   )
 
 (defun run-all-tests ()
