@@ -832,9 +832,8 @@
     (segment-score seg))
   (:method ((seg-list segment-list))
     (let ((seg (car (segment-list-segments seg-list))))
-      (if seg (segment-score seg) 0)))
-  (:method ((syn synergy))
-    (synergy-score syn)))
+      (if seg (segment-score seg) 0))))
+
 
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
@@ -882,6 +881,9 @@
       (if (>= count (length array)) array (subseq array 0 count)))))
 
 (defstruct synergy description connector score start end)
+
+(defmethod get-segment-score ((syn synergy))
+  (synergy-score syn))
 
 (defun make-segment-list-from (old-segment-list segments)
   (let ((new-segment-list (copy-segment-list old-segment-list)))
