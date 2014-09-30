@@ -49,6 +49,24 @@
             (incf (n-kanji entry)))
         (update-dao entry)))))
 
+(defun delete-reading (seq reading)
+  (let* ((is-kana (test-word reading :kana))
+         (table (if is-kana 'kana-text 'kanji-text))
+         (entry (get-dao 'entry seq))
+         (to-delete (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
+         (deleted 0))
+    (when to-delete
+      (dolist (obj to-delete)
+        (delete-dao obj)
+        (incf deleted))
+      (if is-kana
+          (decf (n-kana entry) deleted)
+          (decf (n-kanji entry) deleted))
+      (update-dao entry)
+      (loop for obj in (select-dao table (:= 'seq seq) 'ord)
+            for ord from 0
+            do (setf (slot-value obj 'ord) ord) (update-dao obj)))))
+
 (defun delete-senses (seq prop-test)
   (let* ((sense-props (remove-if-not prop-test (select-dao 'sense-prop (:= 'seq seq))))
          (sense-ids (remove-duplicates (mapcar #'sense-id sense-props))))
@@ -63,7 +81,7 @@
 (defun add-sense (seq ord &rest glosses)
   (unless (select-dao 'sense (:and (:= 'seq seq) (:= 'ord ord)))
     (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
-      (loop for gord from 1
+      (loop for gord from 0
            for gloss in glosses
            do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord)))))
 
@@ -80,11 +98,21 @@
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
 
+  ;; delete hiragana reading for 鯛 (タイ)
+  (delete-reading 1411550 "たい")
+  ;; same for カモ
+  (delete-reading 1209250 "かも")
+
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
+  ;; 仕手 (して) 
+  (delete-sense-prop 1305070 "misc" "uk")
 
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))
+
+  ;; delete prt sense for たい
+  (delete-senses 2017560 (lambda (prop) (and (equal (text prop) "prt") (equal (tag prop) "pos"))))
 
   )
 
