@@ -52,7 +52,9 @@
                   'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
                   'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq)))))
 
-(defclass kanji-text ()
+(defclass simple-text () ())
+
+(defclass kanji-text (simple-text)
   ((id :reader id :col-type serial)
    (seq :reader seq :col-type integer :initarg :seq)
    (text :reader text :col-type string :initarg :text)
@@ -80,7 +82,7 @@
 
 (defmethod word-type ((obj kanji-text)) :kanji)
 
-(defclass kana-text ()
+(defclass kana-text (simple-text)
   ((id :reader id :col-type serial)
    (seq :reader seq :col-type integer :initarg :seq)
    (text :reader text :col-type string :initarg :text)
@@ -627,6 +629,25 @@
 
 (defmethod word-type ((obj compound-text)) (word-type (primary obj)))
 
+(defgeneric adjoin-word (word1 word2 &key text kana score-mod)
+  (:documentation "make compound word from 2 words"))
+
+(defmethod adjoin-word :around (word1 word2 &key text kana score-mod)
+  (call-next-method word1 word2
+                    :text (or text (concatenate 'string (get-text word1) (get-text word2)))
+                    :kana (or kana (concatenate 'string (get-kana word1) (get-kana word2)))
+                    :score-mod (or score-mod 0)))
+
+(defmethod adjoin-word ((word1 simple-text) (word2 simple-text) &key text kana score-mod)
+  (make-instance 'compound-text
+                 :text text :kana kana :primary word1 :words (list word1 word2) :score-mod score-mod))
+
+(defmethod adjoin-word ((word1 compound-text) (word2 simple-text) &key text kana score-mod)
+  (with-slots ((s-text text) (s-kana kana) (s-words words) (s-score-mod score-mod)) word1
+    (setf s-text text s-kana kana
+          s-words (append s-words (list word2))
+          s-score-mod (+ s-score-mod score-mod)))
+  word1)
 
 
 (defun get-kana-forms (seq)
@@ -635,13 +656,41 @@
                                  :where (:or (:= 'kt.seq seq)
                                              (:= 'conj.from seq)))))
 
+
+;; (defmacro find-word-with-conj-prop (word condition)
+;;   (alexandria:with-gensyms (table)
+;;     `(let ((,table (if (test-word ,word :kana) 'kana-text 'kanji-text)))
+;;        (query-dao ,table (:select 'kt.* :from (:as ,table 'kt)
+;;                                   :inner-join (:as 'conjugation 'conj) :on (:= 'kt.seq 'conj.seq)
+;;                                   :inner-join 'conj-prop :on (:= 'conj-id 'conj.id)
+;;                                   :where (:and (:= 'kt.text ,word) ,condition))))))
+
+(defgeneric word-conj-data (word)
+  (:documentation "conjugation data for word"))
+
+(defmethod word-conj-data ((word simple-text))
+  (get-conj-data (seq word)))
+
+(defmethod word-conj-data ((word compound-text))
+  (word-conj-data (car (last (words word)))))
+
+(defmacro find-word-with-conj-prop (word (conj-data-var) &body condition)
+  `(remove-if-not (lambda (,conj-data-var) ,@condition) (find-word-full ,word) :key 'word-conj-data))
+
+(defmacro find-word-with-conj-type (word conj-type)
+  `(find-word-with-conj-prop ,word (conj-data)
+      (member ,conj-type conj-data :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
+
 (defparameter *suffix-cache* nil)
 
 (defun init-suffixes ()
   (unless *suffix-cache*
     (setf *suffix-cache* (make-hash-table :test 'equal))
     (loop for kf in (get-kana-forms 2013800)
-       do (setf (gethash (cons (text kf) :chau) *suffix-cache*) kf))))
+       do (setf (gethash (cons (text kf) :chau) *suffix-cache*) kf))
+    (loop for kf in (get-kana-forms  2017560)
+       do (setf (gethash (cons (text kf) :tai) *suffix-cache*) kf))
+    ))
 
 (defparameter *suffix-list* nil)
 
@@ -663,18 +712,16 @@
                (let ((,suf-obj (car (select-dao 'kana-text (:and (:= 'seq ,seq) 
                                                                  (:= 'text ,suffix))))))
                  (mapcar (lambda (pw)
-                           (make-instance 'compound-text
-                                          :text ,str
-                                          :kana (let ((k (get-kana pw)))
-                                                  (concatenate 'string
-                                                               (subseq k 0 (- (length k) ,stem))
-                                                               ,suffix))
-                                          :primary pw
-                                          :words (list pw ,suf-obj)
-                                          :score-mod ,score))
+                           (adjoin-word pw ,suf-obj
+                                        :text ,str
+                                        :kana (let ((k (get-kana pw)))
+                                                (concatenate 'string
+                                                             (subseq k 0 (- (length k) ,stem))
+                                                             ,suffix))
+                                        :score-mod ,score))
                          ,primary-words)))))))))
 
-(defmacro conj-suffix (name (suffix-start keyword &key (stem 1) (score 15)) (root-var) &body get-primary-words)
+(defmacro conj-suffix (name (suffix-start keyword &key (stem 1) (score 15) (connector "")) (root-var) &body get-primary-words)
   (alexandria:with-gensyms (str pos suf primary-words)
     `(defsuffix ,name (,str)
        (let ((,pos (search ,suffix-start ,str :from-end t)))
@@ -684,33 +731,26 @@
                (let* ((,root-var (subseq ,str 0 ,pos))
                       (,primary-words (progn ,@get-primary-words)))
                  (mapcar (lambda (pw)
-                           (make-instance 'compound-text
-                                          :text ,str
-                                          :kana (let ((k (get-kana pw)))
-                                                  (concatenate 'string
-                                                               (subseq k 0 (- (length k) ,stem))
-                                                               (text ,suf)))
-                                          :primary pw
-                                          :words (list pw ,suf)
-                                          :score-mod ,score))
+                           (adjoin-word pw ,suf
+                                        :text ,str
+                                        :kana (let ((k (get-kana pw)))
+                                                (concatenate 'string
+                                                             (subseq k 0 (- (length k) ,stem))
+                                                             ,connector
+                                                             (text ,suf)))
+                                        :score-mod ,score))
                          ,primary-words)))))))))
   
          
 (conj-suffix suffix-chau ("ちゃ" :chau) (root)
-  (loop with str = (concatenate 'string root "て")
-     for word in (find-word str)
-     for conj-data = (get-conj-data (seq word))
-     if (member 3 conj-data
-                :key (lambda (cdata) (conj-type (conj-data-prop cdata))))
-       collect word))
+  (find-word-with-conj-type (concatenate 'string root "て") 3))
 
 (conj-suffix suffix-jau ("じゃ" :chau) (root)
-  (loop with str = (concatenate 'string root "で")
-     for word in (find-word str)
-     for conj-data = (get-conj-data (seq word))
-     if (member 3 conj-data
-                :key (lambda (cdata) (conj-type (conj-data-prop cdata))))
-       collect word))
+  (find-word-with-conj-type (concatenate 'string root "で") 3))
+
+(conj-suffix suffix-tai ("たい" :tai :stem 0 :connector "-") (root)
+  (find-word-with-conj-type root 13))
+
 
 (defun find-word-full (word)
   (init-suffixes)
@@ -977,7 +1017,7 @@
    :score 10
    :connector ""))
 
-(defsynergy no-adjectives (l r)
+(defsynergy synergy-no-adjectives (l r)
   (generic-synergy (l r)
    (filter-is-pos ("adj-no") (segment k p c l) (or k l (and p c)))
    (filter-in-seq-set 1469800) ;; の
@@ -985,13 +1025,21 @@
    :score 15
    :connector ""))
 
-(defsynergy na-adjectives (l r)
+(defsynergy synergy-na-adjectives (l r)
   (generic-synergy (l r)
    (filter-is-pos ("adj-na") (segment k p c l) (or k l (and p c)))
    (filter-in-seq-set 2029110 2028990) ;; な ; に 
    :description "na-adjective"
    :score 15
    :connector ""))
+
+;; (defsynergy synergy-tai (l r)
+;;   (generic-synergy (l r)
+;;    (filter-is-conjugation 13)
+;;    (filter-in-seq-set 2017560) ;; たい 
+;;    :description "verb+tai"
+;;    :score 10
+;;    :connector "-"))
 
 (defsynergy synergy-o-prefix (l r)
   (generic-synergy (l r)
