@@ -94,7 +94,7 @@
   (add-conj 1612690 '(11 "exp" :null :null)
             "ございましたら")
   ;;;  いる / る
-  (add-reading 1577980 "る" :conjugate-p nil)
+  ;; (add-reading 1577980 "る" :conjugate-p nil)
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
 

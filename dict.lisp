@@ -705,77 +705,61 @@
 (defun init-suffixes ()
   (unless *suffix-cache*
     (setf *suffix-cache* (make-hash-table :test 'equal))
-    (loop for kf in (get-kana-forms 2013800)
-       do (setf (gethash (cons (text kf) :chau) *suffix-cache*) kf))
-    (loop for kf in (get-kana-forms  2017560)
-       do (setf (gethash (cons (text kf) :tai) *suffix-cache*) kf))
-    ))
+    (flet ((load-conjs (key seq)
+             (loop for kf in (get-kana-forms seq)
+                do (setf (gethash (text kf) *suffix-cache*) (list key kf)))))
+
+      (load-conjs :chau 2013800)
+      (load-conjs :tai 2017560)
+
+      (loop for kf in (get-kana-forms 1577980) ;; いる (る)
+           for tkf = (text kf)
+           for val = (list :te kf)
+         do (setf (gethash tkf *suffix-cache*) val)
+           (when (> (length tkf) 1)
+             (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
+           
+      (load-conjs :te 1296400) ;; ある
+      )))
 
 (defparameter *suffix-list* nil)
 
-(defmacro defsuffix (name (str-var) &body body)
+(defmacro defsuffix (name key (root-var suf-var suf-obj-var) &body body)
   `(progn
-     (defun ,name (,str-var)
+     (defun ,name (,root-var ,suf-var ,suf-obj-var)
        ,@body)
-     (pushnew ',name *suffix-list*)))
+     (pushnew (cons ,key ',name) *suffix-list*)))
 
-(defmacro simple-suffix (name (suffix seq &key (stem 1) (score 15)) (root-var) &body get-primary-words)
-  (alexandria:with-gensyms (str len-diff primary-words suf-obj)
-    `(defsuffix ,name (,str)
-       (let ((,len-diff (- (length ,str) (length ,suffix))))
-         (when (and (> ,len-diff 0)
-                    (alexandria:ends-with-subseq ,suffix ,str))
-           (let* ((,root-var (subseq ,str 0 ,len-diff))
-                  (,primary-words (progn ,@get-primary-words)))
-             (when ,primary-words
-               (let ((,suf-obj (car (select-dao 'kana-text (:and (:= 'seq ,seq) 
-                                                                 (:= 'text ,suffix))))))
-                 (mapcar (lambda (pw)
-                           (adjoin-word pw ,suf-obj
-                                        :text ,str
-                                        :kana (let ((k (get-kana pw)))
-                                                (concatenate 'string
-                                                             (subseq k 0 (- (length k) ,stem))
-                                                             ,suffix))
-                                        :score-mod ,score))
-                         ,primary-words)))))))))
-
-(defmacro conj-suffix (name (suffix-start keyword &key (stem 1) (score 15) (connector "")) (root-var) &body get-primary-words)
-  (alexandria:with-gensyms (str pos suf primary-words)
-    `(defsuffix ,name (,str)
-       (let ((,pos (search ,suffix-start ,str :from-end t)))
-         (when ,pos
-           (let ((,suf (gethash (cons (subseq ,str ,pos) ,keyword) *suffix-cache*)))
-             (when ,suf
-               (let* ((,root-var (subseq ,str 0 ,pos))
-                      (,primary-words (progn ,@get-primary-words)))
-                 (mapcar (lambda (pw)
-                           (adjoin-word pw ,suf
-                                        :text ,str
-                                        :kana (let ((k (get-kana pw)))
-                                                (concatenate 'string
-                                                             (subseq k 0 (- (length k) ,stem))
-                                                             ,connector
-                                                             (text ,suf)))
-                                        :score-mod ,score))
-                         ,primary-words)))))))))
+(defmacro conj-suffix (name keyword (&key (stem 0) (score 15) (connector "")) (root-var &optional suf-var) &body get-primary-words)
+  (alexandria:with-gensyms (suf primary-words)
+    (unless suf-var (setf suf-var (gensym "SV")))
+    `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
+       (let ((,primary-words (progn ,@get-primary-words)))
+         (mapcar (lambda (pw)
+                   (adjoin-word pw ,suf
+                                :text (concatenate 'string ,root-var ,suf-var)
+                                :kana (let ((k (get-kana pw)))
+                                        (concatenate 'string
+                                                     (subseq k 0 (- (length k) ,stem))
+                                                     ,connector
+                                                     ,suf-var))
+                                :score-mod ,score))
+                 ,primary-words)))))
   
-         
-(conj-suffix suffix-chau ("ちゃ" :chau) (root)
-  (find-word-with-conj-type (concatenate 'string root "て") 3))
+(conj-suffix suffix-chau :chau (:stem 1) (root suf)
+  (let ((te (case (char suf 0)
+              (#\HIRAGANA_LETTER_ZI "で")
+              (#\HIRAGANA_LETTER_TI "て"))))
+    (when te
+      (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(conj-suffix suffix-jau ("じゃ" :chau) (root)
-  (find-word-with-conj-type (concatenate 'string root "で") 3))
-
-(conj-suffix suffix-tai ("たい" :tai :stem 0 :connector "-") (root)
+(conj-suffix suffix-tai :tai (:connector "-") (root)
   (find-word-with-conj-type root 13))
 
+(conj-suffix suffix-te :te (:connector "-") (root)
+  (and (find (char root (1- (length root))) "てで")
+       (find-word-with-conj-type root 3)))
 
-(defun find-word-full (word)
-  (init-suffixes)
-  (nconc (find-word word)
-         (loop for suffix-fn in *suffix-list*
-              nconcing (funcall suffix-fn word))))
 
 (defstruct segment
   start end word (score nil) (info nil) (top nil)) ;; (accum 0) (path nil)
@@ -797,7 +781,7 @@
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
-         (len (or use-length (mora-length (text reading)))))
+         (len (mora-length (text reading))))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (root-p (root-p entry))
@@ -847,7 +831,7 @@
           (setf score (max 5 score))
           (when (and long-p kanji-p)
             (incf score 2)))
-        (setf score (* score (length-multiplier len (if (or kanji-p katakana-p) 3 2) 5)))
+        (setf score (* score (length-multiplier (or use-length len) (if (or kanji-p katakana-p) 3 2) 5)))
         (values score (list :posi posi :seq-set (cons seq conj-of)
                             :conj (get-conj-data seq)
                             :kpcl (list kanji-p primary-p common-p long-p)))))))
@@ -901,8 +885,31 @@
       (if seg (segment-score seg) 0))))
 
 
+(defun get-suffix-map (str &optional sticky)
+  (init-suffixes)
+  (let ((result (make-hash-table)))
+    (loop for start from 0 below (length str)
+         unless (member start sticky)
+         do (loop for end from (1+ start) upto (length str)
+                 unless (member end sticky)
+                 do (let* ((substr (subseq str start end))
+                           (val (gethash substr *suffix-cache*)))
+                      (when val
+                        (push (cons substr val) (gethash end result nil))))))
+    result))
+
+
+(defun find-word-full (word &optional suffixes)
+  (nconc (find-word word)
+         (loop for (suffix keyword kf) in suffixes
+              for suffix-fn = (cdr (assoc keyword *suffix-list*))
+              for offset = (- (length word) (length suffix))
+              when (and suffix-fn (> offset 0 ))
+              nconc (funcall suffix-fn (subseq word 0 offset) suffix kf))))
+
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
+       with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
        unless (member start sticky)
        nconcing 
@@ -913,7 +920,8 @@
                              (lambda (word)
                                (gen-score (make-segment :start start :end end :word word)
                                           (= end (length str))))
-                             (find-word-full (subseq str start end)))))
+                             (find-word-full (subseq str start end)
+                                             (gethash end suffix-map)))))
               (when segments
                 (list (make-segment-list :segments (cull-segments segments)
                                          :start start :end end)))))))
@@ -1034,11 +1042,12 @@
    :score 10
    :connector " "))
 
+;; should be a suffix
 (defsynergy synergy-te-verbs (l r)
   (generic-synergy (l r)
    (filter-is-conjugation 3)
-   (filter-in-seq-set 1577980 1296400 1305380) ;;  [いる] [ある] [しまう]
-   :description "-te+iru/aru"
+   (filter-in-seq-set 1305380) ;; [しまう]
+   :description "-te+something"
    :score 10
    :connector ""))
 

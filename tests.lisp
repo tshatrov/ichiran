@@ -15,7 +15,7 @@
   (assert-segment "お姉ちゃんにまかせて地球まるごと"
                   "お姉ちゃん" "に" "まかせて" "地球" "まるごと")
   (assert-segment "大人になってるはず"
-                  "大人" "に" "なって" "る" "はず")
+                  "大人" "に" "なってる" "はず")
   (assert-segment "いいとこ" "いいとこ")
   (assert-segment "そういうお隣どうし"
                   "そういう" "お" "隣" "どうし")
@@ -39,6 +39,7 @@
   (assert-segment "感じたいでしょ" "感じたい" "でしょ")
   (assert-segment "まじで" "まじ" "で")
   (assert-segment "その山を越えたとき" "その" "山" "を" "越えた" "とき")
+  (assert-segment "遊びたいのに" "遊びたい" "のに")
   )
 
 (defun run-all-tests ()
