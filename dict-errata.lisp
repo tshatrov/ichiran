@@ -37,7 +37,7 @@
           (make-dao 'conj-prop :conj-id (id conj)
                     :pos pos :conj-type conj-type :neg neg :fml fml))))))
 
-(defun add-reading (seq reading &optional (common :null) (conjugate-p t))
+(defun add-reading (seq reading &key (common :null) (conjugate-p t))
   (let* ((is-kana (test-word reading :kana))
          (table (if is-kana 'kana-text 'kanji-text))
          (entry (get-dao 'entry seq)))
@@ -97,11 +97,6 @@
   (add-reading 1577980 "る" :conjugate-p nil)
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
-
-  ;; delete hiragana reading for 鯛 (タイ)
-  (delete-reading 1411550 "たい")
-  ;; same for カモ
-  (delete-reading 1209250 "かも")
 
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")

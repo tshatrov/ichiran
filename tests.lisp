@@ -37,6 +37,8 @@
   (assert-segment "遠慮しないでね" "遠慮" "しないで" "ね")
   (assert-segment "出かけるまえに" "出かける" "まえ" "に")
   (assert-segment "感じたいでしょ" "感じたい" "でしょ")
+  (assert-segment "まじで" "まじ" "で")
+  (assert-segment "その山を越えたとき" "その" "山" "を" "越えた" "とき")
   )
 
 (defun run-all-tests ()
