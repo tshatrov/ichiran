@@ -34,6 +34,9 @@
   (assert-segment "飲んで笑っちゃえば"
                   "飲んで" "笑っちゃえば")
   (assert-segment "なんで" "なんで")
+  (assert-segment "遠慮しないでね" "遠慮" "しないで" "ね")
+  (assert-segment "出かけるまえに" "出かける" "まえ" "に")
+  (assert-segment "感じたいでしょ" "感じたい" "でしょ")
   )
 
 (defun run-all-tests ()

@@ -783,7 +783,7 @@
       (let* ((entry (get-dao 'entry seq))
              (root-p (root-p entry))
              (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
-             (seq-set (if root-p (list seq) (cons seq conj-of)))
+             (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
              (prefer-kana
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
              (posi (query (:select 'text :distinct :from 'sense-prop
@@ -792,12 +792,13 @@
              (common-p (not (eql common :null)))
              (particle-p (member "prt" posi :test 'equal))
              (pronoun-p (member "pn" posi :test 'equal))
+             (cop-da-p (member "cop-da" posi :test 'equal))
              (long-p (> len (if (or kanji-p (and common-p (< 0 common 10))) 2 3)))
-             (primary-p (and (= ord 0)
-                             (or (and common-p pronoun-p)
-                                 (and prefer-kana (not kanji-p))
-                                 (and (not prefer-kana) kanji-p)
-                                 (= (n-kanji entry) 0)))))
+             (primary-p (or (and prefer-kana (not kanji-p))
+                            (and (= ord 0)
+                                 (or (and common-p pronoun-p)
+                                     kanji-p
+                                     (= (n-kanji entry) 0))))))
         (unless common-p
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
                  (conj-of-common (query (:select 'id :from table
@@ -816,12 +817,14 @@
             (when final
               (incf score 5))))
         (when (and common-p (not particle-p)) 
-          (cond ((or long-p (and primary-p root-p (> len 1)))
+          (cond ((or long-p cop-da-p (and primary-p root-p (> len 1)))
                  (incf score (if (= common 0) 10 (max (- 20 common) 10))))
                 ((> len 2) (incf score 3))
                 (t (incf score 2))))
         (when (or long-p kanji-p)
-          (setf score (max 5 score)))
+          (setf score (max 5 score))
+          (when (and long-p kanji-p)
+            (incf score 2)))
         (setf score (* score (length-multiplier len (if (or kanji-p katakana-p) 3 2) 5)))
         (values score (list :posi posi :seq-set (cons seq conj-of)
                             :conj (get-conj-data seq)
