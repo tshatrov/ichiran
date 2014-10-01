@@ -810,7 +810,7 @@
         (when primary-p
           (incf score (cond ((or kanji-p long-p) 10)
                             ((or common-p prefer-kana) 5)
-                            (t 1)))
+                            (t 2)))
           (when particle-p
             (when common-p
               (incf score 5))
@@ -819,7 +819,7 @@
         (when (and common-p (not particle-p)) 
           (cond ((or long-p cop-da-p (and primary-p root-p (> len 1)))
                  (incf score (if (= common 0) 10 (max (- 20 common) 10))))
-                ((> len 2) (incf score 3))
+                ((or (> len 2) (< 0 common 10)) (incf score 3))
                 (t (incf score 2))))
         (when (or long-p kanji-p)
           (setf score (max 5 score))
