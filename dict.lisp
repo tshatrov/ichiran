@@ -676,14 +676,6 @@
                                              (:= 'conj.from seq)))))
 
 
-;; (defmacro find-word-with-conj-prop (word condition)
-;;   (alexandria:with-gensyms (table)
-;;     `(let ((,table (if (test-word ,word :kana) 'kana-text 'kanji-text)))
-;;        (query-dao ,table (:select 'kt.* :from (:as ,table 'kt)
-;;                                   :inner-join (:as 'conjugation 'conj) :on (:= 'kt.seq 'conj.seq)
-;;                                   :inner-join 'conj-prop :on (:= 'conj-id 'conj.id)
-;;                                   :where (:and (:= 'kt.text ,word) ,condition))))))
-
 (defgeneric word-conj-data (word)
   (:documentation "conjugation data for word"))
 
@@ -693,14 +685,19 @@
 (defmethod word-conj-data ((word compound-text))
   (word-conj-data (car (last (words word)))))
 
+
+(defparameter *suffix-cache* nil)
+
+;;; Those are only bound during join-substring-words calls
+(defvar *suffix-map-temp* nil)
+(defvar *suffix-next-end* nil)
+
 (defmacro find-word-with-conj-prop (word (conj-data-var) &body condition)
   `(remove-if-not (lambda (,conj-data-var) ,@condition) (find-word-full ,word) :key 'word-conj-data))
 
 (defmacro find-word-with-conj-type (word conj-type)
   `(find-word-with-conj-prop ,word (conj-data)
       (member ,conj-type conj-data :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
-
-(defparameter *suffix-cache* nil)
 
 (defun init-suffixes ()
   (unless *suffix-cache*
@@ -898,14 +895,15 @@
                         (push (cons substr val) (gethash end result nil))))))
     result))
 
-
-(defun find-word-full (word &optional suffixes)
+(defun find-word-full (word)
   (nconc (find-word word)
-         (loop for (suffix keyword kf) in suffixes
+         (loop with suffixes = (and *suffix-map-temp* (gethash *suffix-next-end* *suffix-map-temp*))
+              for (suffix keyword kf) in suffixes
               for suffix-fn = (cdr (assoc keyword *suffix-list*))
               for offset = (- (length word) (length suffix))
               when (and suffix-fn (> offset 0 ))
-              nconc (funcall suffix-fn (subseq word 0 offset) suffix kf))))
+              nconc (let ((*suffix-next-end* (- *suffix-next-end* (length suffix))))
+                      (funcall suffix-fn (subseq word 0 offset) suffix kf)))))
 
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
@@ -920,8 +918,9 @@
                              (lambda (word)
                                (gen-score (make-segment :start start :end end :word word)
                                           (= end (length str))))
-                             (find-word-full (subseq str start end)
-                                             (gethash end suffix-map)))))
+                             (let ((*suffix-map-temp* suffix-map)
+                                   (*suffix-next-end* end))
+                               (find-word-full (subseq str start end))))))
               (when segments
                 (list (make-segment-list :segments (cull-segments segments)
                                          :start start :end end)))))))
