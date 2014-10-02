@@ -731,7 +731,8 @@
   (alexandria:with-gensyms (suf primary-words)
     (unless suf-var (setf suf-var (gensym "SV")))
     `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
-       (let ((,primary-words (progn ,@get-primary-words)))
+       (let* ((*suffix-map-temp* ,(if (= stem 0) '*suffix-map-temp* nil))
+              (,primary-words (progn ,@get-primary-words)))
          (mapcar (lambda (pw)
                    (adjoin-word pw ,suf
                                 :text (concatenate 'string ,root-var ,suf-var)
@@ -895,14 +896,24 @@
                         (push (cons substr val) (gethash end result nil))))))
     result))
 
+(defun get-suffixes (word)
+  (init-suffixes)
+  (loop for start from (1- (length word)) downto 1
+       for substr = (subseq word start)
+       for val = (gethash substr *suffix-cache*)
+       when val
+       collect (cons substr val)))
+
 (defun find-word-full (word)
   (nconc (find-word word)
-         (loop with suffixes = (and *suffix-map-temp* (gethash *suffix-next-end* *suffix-map-temp*))
+         (loop with suffixes = (if *suffix-map-temp* 
+                                   (gethash *suffix-next-end* *suffix-map-temp*)
+                                   (get-suffixes word))
               for (suffix keyword kf) in suffixes
               for suffix-fn = (cdr (assoc keyword *suffix-list*))
               for offset = (- (length word) (length suffix))
               when (and suffix-fn (> offset 0 ))
-              nconc (let ((*suffix-next-end* (- *suffix-next-end* (length suffix))))
+              nconc (let ((*suffix-next-end* (and *suffix-next-end* (- *suffix-next-end* (length suffix)))))
                       (funcall suffix-fn (subseq word 0 offset) suffix kf)))))
 
 (defun join-substring-words (str)
