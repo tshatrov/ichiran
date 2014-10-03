@@ -179,9 +179,9 @@
 (defmethod r-special or ((method modified-hepburn) word)
   (when (equal word "を") "o"))
 
-(defun romanize-word (word &key (method *default-romanization-method*))
+(defun romanize-word (word &key (method *default-romanization-method*) original-spelling)
   "Romanize a word according to method"
-  (or (r-special method word)
+  (or (r-special method (or original-spelling word))
       (romanize-list (get-character-classes word) :method method)))
 
 (defun join-parts (parts)
@@ -205,9 +205,11 @@
      nconc
        (if (eql split-type :word)
            (mapcar (lambda (word)
-                     (let ((rom (map-word-info-kana
-                                 (lambda (wk) (romanize-word wk :method method))
-                                 word)))
+                     (let* ((orig-text (word-info-text word))
+                            (rom (map-word-info-kana
+                                  (lambda (wk) (romanize-word wk :method method
+                                                              :original-spelling orig-text))
+                                  word)))
                        (when with-info
                          (push (cons rom (word-info-str word)) definitions))
                        rom))
