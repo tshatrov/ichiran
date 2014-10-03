@@ -1077,6 +1077,14 @@
    :score 15
    :connector ""))
 
+(defsynergy synergy-suffix-chu (l r)
+  (generic-synergy (l r)
+   #'filter-is-noun
+   (filter-in-seq-set 1620400 2083570)
+   :description "suffix-chu"
+   :score 5
+   :connector "-"))
+
 ;; (defsynergy synergy-tai (l r)
 ;;   (generic-synergy (l r)
 ;;    (filter-is-conjugation 13)
