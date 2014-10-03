@@ -770,11 +770,9 @@
 (defun calc-score (reading &optional final use-length)
   (when (typep reading 'compound-text)
     (multiple-value-bind (score info) (calc-score (primary reading) nil (mora-length (text reading)))
-      (multiple-value-bind (score-suf info-suf) (calc-score (car (last (words reading))))
-        (declare (ignore score-suf))
-        (setf (getf info :conj) (getf info-suf :conj))
-        (return-from calc-score
-          (values (+ score (score-mod reading)) info)))))
+      (setf (getf info :conj) (word-conj-data reading))
+      (return-from calc-score
+        (values (+ score (score-mod reading)) info))))
 
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
@@ -783,7 +781,9 @@
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (root-p (root-p entry))
-             (conj-of (query (:select 'from :from 'conjugation :where (:= 'seq seq)) :column))
+             (conj-data (word-conj-data reading))
+             (conj-of (mapcar #'conj-data-from conj-data))
+             (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
              (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
              (prefer-kana
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
@@ -803,7 +803,7 @@
                                  (or (and common-p pronoun-p)
                                      kanji-p
                                      (= (n-kanji entry) 0))))))
-        (unless common-p
+        (unless (or common-p secondary-conj-p)
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
                  (conj-of-common (query (:select 'id :from table
                                                  :where (:and (:in 'seq (:set conj-of))
@@ -831,7 +831,7 @@
             (incf score 2)))
         (setf score (* score (length-multiplier (or use-length len) (if (or kanji-p katakana-p) 3 2) 5)))
         (values score (list :posi posi :seq-set (cons seq conj-of)
-                            :conj (get-conj-data seq)
+                            :conj conj-data
                             :kpcl (list kanji-p primary-p common-p long-p)))))))
 
 (defun gen-score (segment &optional final)
@@ -1267,9 +1267,10 @@
       (when sense-str (princ sense-str s)))))
 
 (defun print-conj-info (seq &optional (out *standard-output*))
-  (loop for conj in (select-dao 'conjugation (:= 'seq seq))
-       do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
-             do (format out "~%[ Conjugation: ~a" (conj-info-short conj-prop)))
+  (loop with straight-conj = (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
+     for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
+     do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+           do (format out "~%[ Conjugation: ~a" (conj-info-short conj-prop)))
        (if (eql (seq-via conj) :null)
            (format out "~%  ~a" (entry-info-short (seq-from conj)))
            (progn
