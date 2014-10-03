@@ -1144,7 +1144,7 @@
                         (segment-list (list (car (segment-list-segments obj))))))
                     (car item))))))
 
-(defstruct word-info type text kana (score 0) (seq nil) (components nil))
+(defstruct word-info type text kana (score 0) (seq nil) (components nil) (alternative nil))
 
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
   (make-word-info :type (word-type word)
@@ -1159,25 +1159,51 @@
                                                              :seq (seq wrd))))
                   :score (segment-score segment)))
 
+(defparameter *segment-score-cutoff* 4/5)
+
+(defun word-info-from-segment-list (segment-list)
+  (let* ((segments (segment-list-segments segment-list))
+         (wi-list* (mapcar #'word-info-from-segment segments))
+         (wi1 (car wi-list*))
+         (max-score (word-info-score wi1))
+         (wi-list (remove-if (lambda (wi)
+                               (< (word-info-score wi)
+                                  (* *segment-score-cutoff* max-score)))
+                             wi-list*)))
+    (if (= (length wi-list) 1)
+        wi1
+        (loop for wi in wi-list
+           collect (word-info-kana wi) into kana-list
+           collect (word-info-seq wi) into seq-list
+           finally (return (make-word-info :type (word-info-type wi1)
+                                           :text (word-info-text wi1)
+                                           :kana (remove-duplicates kana-list :test 'equal)
+                                           :seq seq-list
+                                           :components wi-list
+                                           :alternative t
+                                           :score (word-info-score wi1)))))))
+    
+
 (defun fill-segment-path (str path)
   (flet ((make-substr-gap (start end)
            (let ((substr (subseq str start end)))
              (make-word-info :type :gap :text substr :kana substr))))
     (loop with idx = 0 and result
-       for segment in path
-       if (> (segment-start segment) idx)
-         do (push (make-substr-gap idx (segment-start segment)) result)
-       do (push (word-info-from-segment segment) result)
-          (setf idx (segment-end segment))
+       for segment-list in path
+       when (typep segment-list 'segment-list)
+       if (> (segment-list-start segment-list) idx)
+         do (push (make-substr-gap idx (segment-list-start segment-list)) result)
+         end
+       and do (push (word-info-from-segment-list segment-list) result)
+              (setf idx (segment-list-end segment-list))
        finally
          (when (< idx (length str))
            (push (make-substr-gap idx (length str)) result))
          (return (nreverse result)))))
   
-                      
 (defun dict-segment (str &key (limit 5))
   (with-connection *connection*
-    (loop for (path . score) in (find-best-path* (join-substring-words str) :limit limit)
+    (loop for (path . score) in (find-best-path (join-substring-words str) :limit limit)
          collect (cons (fill-segment-path str path) score))))
 
 (defun simple-segment (str &key (limit 5))
@@ -1235,12 +1261,23 @@
 (defun print-conj-info (seq &optional (out *standard-output*))
   (loop for conj in (select-dao 'conjugation (:= 'seq seq))
        do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
-             do (format out "~%Conjugation: ~a" (conj-info-short conj-prop)))
+             do (format out "~%[ Conjugation: ~a" (conj-info-short conj-prop)))
        (if (eql (seq-via conj) :null)
            (format out "~%  ~a" (entry-info-short (seq-from conj)))
            (progn
              (format out "~% --(via)--")
-             (print-conj-info (seq-via conj) out)))))
+             (print-conj-info (seq-via conj) out)))
+       (princ " ]" out)))
+
+(defun map-word-info-kana (fn word-info &key (separator "/")
+                           &aux (wkana (word-info-kana word-info)))
+  (if (listp wkana)
+      (with-output-to-string (s)
+        (loop for wk in wkana
+             for first = t then nil
+             unless first do (princ separator s)
+             do (princ (funcall fn wk) s)))
+      (funcall fn wkana)))
 
 (defun word-info-str (word-info)
   (with-connection *connection*
@@ -1261,5 +1298,10 @@
                        (princ (if seq (get-senses-str seq) "???") s)
                        (when seq
                          (print-conj-info seq s))))))
-        (inner word-info)))))
+        (if (word-info-alternative word-info)
+            (loop for wi in (word-info-components word-info)
+                 for i from 1
+                 when (> i 1) do (terpri s)
+                 do (format s "<~a>. " i) (inner wi))
+            (inner word-info))))))
           

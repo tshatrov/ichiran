@@ -205,7 +205,9 @@
      nconc
        (if (eql split-type :word)
            (mapcar (lambda (word)
-                     (let ((rom (romanize-word (word-info-kana word) :method method)))
+                     (let ((rom (map-word-info-kana
+                                 (lambda (wk) (romanize-word wk :method method))
+                                 word)))
                        (when with-info
                          (push (cons rom (word-info-str word)) definitions))
                        rom))
