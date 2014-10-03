@@ -78,6 +78,12 @@
   (let ((props (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag tag) (:= 'text text)))))
     (mapc #'delete-dao props)))
 
+(defun add-sense-prop (seq sense-ord tag text)
+  (let ((sense (car (select-dao 'sense (:and (:= 'seq seq) (:= 'ord sense-ord))))))
+    (when sense
+      (unless (select-dao 'sense-prop (:and (:= 'sense-id (id sense)) (:= 'tag tag) (:= 'text text)))
+        (make-dao 'sense-prop :sense-id (id sense) :tag tag :text text :ord 0 :seq seq)))))
+
 (defun add-sense (seq ord &rest glosses)
   (unless (select-dao 'sense (:and (:= 'seq seq) (:= 'ord ord)))
     (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
@@ -103,10 +109,12 @@
   ;; 品 ( しな)
   (delete-sense-prop 1583470 "misc" "uk")
 
+  (add-sense-prop 1360480 0 "misc" "uk")
+
   ;; unset common flag for choice kana readings
   (loop for kt in (select-dao 'kana-text (:= 'seq 1310920))
        do (setf (slot-value kt 'common) :null)
-       (save-dao kt))
+       (update-dao kt))
 
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))
