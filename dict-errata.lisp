@@ -93,8 +93,6 @@
             "ございました")
   (add-conj 1612690 '(11 "exp" :null :null)
             "ございましたら")
-  ;;;  いる / る
-  ;; (add-reading 1577980 "る" :conjugate-p nil)
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
 
@@ -102,6 +100,13 @@
   (delete-sense-prop 1611000 "misc" "uk")
   ;; 仕手 (して) 
   (delete-sense-prop 1305070 "misc" "uk")
+  ;; 品 ( しな)
+  (delete-sense-prop 1583470 "misc" "uk")
+
+  ;; unset common flag for choice kana readings
+  (loop for kt in (select-dao 'kana-text (:= 'seq 1310920))
+       do (setf (slot-value kt 'common) :null)
+       (save-dao kt))
 
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))

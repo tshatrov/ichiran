@@ -1002,6 +1002,7 @@
 (defmacro filter-is-pos (pos-list (segment &rest kpcl-vars) &body kpcl-test)
   `(lambda (,segment)
      (destructuring-bind ,kpcl-vars (getf (segment-info ,segment) :kpcl)
+       (declare (ignorable ,@kpcl-vars))
        (and (progn ,@kpcl-test)
             (intersection ',pos-list
                           (getf (segment-info ,segment) :posi)
@@ -1085,21 +1086,10 @@
    :score 5
    :connector "-"))
 
-;; (defsynergy synergy-tai (l r)
-;;   (generic-synergy (l r)
-;;    (filter-is-conjugation 13)
-;;    (filter-in-seq-set 2017560) ;; たい 
-;;    :description "verb+tai"
-;;    :score 10
-;;    :connector "-"))
-
 (defsynergy synergy-o-prefix (l r)
   (generic-synergy (l r)
-   (lambda (segment)
-     (eql 1270190 (seq (segment-word segment))))
-   (lambda (segment)
-     (and (typep (segment-word segment) 'kanji-text)
-          (member "n" (getf (segment-info segment) :posi) :test 'equal)))
+   (filter-in-seq-set 1270190)
+   (filter-is-pos ("n") (segment k p c l) (or k l))
    :description "o+noun"
    :score 10
    :connector ""))
