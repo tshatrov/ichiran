@@ -717,6 +717,15 @@
              (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
            
       (load-conjs :te 1296400) ;; ある
+
+      (loop for kf in (get-kana-forms 1421850)  ;; おく(く)
+           for tkf = (text kf)
+           for tkf-short = (subseq tkf 1)
+           for val = (list :te kf)
+           do (setf (gethash tkf *suffix-cache*) val)
+           (unless (gethash tkf-short *suffix-cache*)
+             (setf (gethash tkf-short *suffix-cache*) val)))
+
       )))
 
 (defparameter *suffix-list* nil)
