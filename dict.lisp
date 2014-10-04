@@ -718,6 +718,8 @@
            
       (load-conjs :te 1296400) ;; ある
 
+      (load-conjs :te 1547720) ;; くる
+
       (loop for kf in (get-kana-forms 1421850)  ;; おく(く)
            for tkf = (text kf)
            for tkf-short = (subseq tkf 1)
@@ -775,6 +777,17 @@
   "len^power until len-lim, goes linear after"
   (cond ((<= length len-lim) (expt length power))
         (t (* length (expt len-lim (1- power))))))
+
+(defparameter *length-coeff-sequences*
+  '((:strong 1 8 24 48 100)
+    (:weak 1 4 9 16 25)
+    (:tail 1 4 9 16)))
+
+(defun length-multiplier-coeff (length class)
+  (let ((coeffs (assoc class *length-coeff-sequences*)))
+    (if (< length (length coeffs))
+        (elt coeffs length)
+        (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
 (defparameter *final-prt* '(2029120 2086640 2029110))
 
@@ -840,7 +853,9 @@
           (setf score (max 5 score))
           (when (and long-p kanji-p)
             (incf score 2)))
-        (setf score (* score (length-multiplier (or use-length len) (if (or kanji-p katakana-p) 3 2) 5)))
+        (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
+                                (if use-length (length-multiplier-coeff use-length :tail) 0))))
+
         (values score (list :posi posi :seq-set (cons seq conj-of)
                             :conj conj-data
                             :kpcl (list kanji-p primary-p common-p long-p)))))))

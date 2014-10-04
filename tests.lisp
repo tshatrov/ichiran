@@ -47,7 +47,10 @@
   (assert-segment "内緒なの" "内緒" "なの")
   (assert-segment "魚が好きじゃない" "魚" "が" "好き" "じゃない")
   (assert-segment "物語になってく" "物語" "に" "なってく")
+  (assert-segment "書いてきてくださった" "書いてきて" "くださった")
   )
 
 (defun run-all-tests ()
-  (run-tests :all :ichiran/test))
+  (let ((res (run-tests :all :ichiran/test)))
+    (print-failures res)
+    res))
