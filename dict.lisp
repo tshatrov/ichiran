@@ -976,21 +976,28 @@
     (setf (segment-list-segments new-segment-list) segments)
     new-segment-list))
 
-(defmacro generic-synergy ((segment-list-left segment-list-right)
-                           filter-left filter-right &key description connector score)
+(defmacro defsynergy (name (left-var right-var) &body body)
+  `(progn
+     (defun ,name (,left-var ,right-var)
+       ,@body)
+     (pushnew ',name *synergy-list*)))
+
+(defmacro def-generic-synergy (name (segment-list-left segment-list-right)
+                               filter-left filter-right &key description connector score)
   (alexandria:with-gensyms (start end left right)
-  `(let ((,start (segment-list-end ,segment-list-left))
-         (,end (segment-list-start ,segment-list-right)))
-     (when (= ,start ,end)
-       (let ((,left (remove-if-not ,filter-left (segment-list-segments ,segment-list-left)))
-             (,right (remove-if-not ,filter-right (segment-list-segments ,segment-list-right))))
-          (when (and ,left ,right)
-            (list (list (make-segment-list-from ,segment-list-right ,right)
-                        (make-synergy :start ,start :end ,end
-                                      :description ,description
-                                      :connector ,connector
-                                      :score ,score)
-                        (make-segment-list-from ,segment-list-left ,left)))))))))
+   `(defsynergy ,name (,segment-list-left ,segment-list-right)
+      (let ((,start (segment-list-end ,segment-list-left))
+            (,end (segment-list-start ,segment-list-right)))
+        (when (= ,start ,end)
+          (let ((,left (remove-if-not ,filter-left (segment-list-segments ,segment-list-left)))
+                (,right (remove-if-not ,filter-right (segment-list-segments ,segment-list-right))))
+            (when (and ,left ,right)
+              (list (list (make-segment-list-from ,segment-list-right ,right)
+                          (make-synergy :start ,start :end ,end
+                                        :description ,description
+                                        :connector ,connector
+                                        :score ,score)
+                          (make-segment-list-from ,segment-list-left ,left))))))))))
 
 (defparameter *synergy-list* nil)
 
@@ -1021,80 +1028,66 @@
     (member conj-type (getf (segment-info segment) :conj)
             :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
 
-(defmacro defsynergy (name (left-var right-var) &body body)
-  `(progn
-     (defun ,name (,left-var ,right-var)
-       ,@body)
-     (pushnew ',name *synergy-list*)))
+(def-generic-synergy synergy-noun-particle (l r)
+  #'filter-is-noun
+  (lambda (segment)
+    (and (not (eql (common (segment-word segment)) :null))
+         (intersection '("prt")
+                       (getf (segment-info segment) :posi)
+                       :test 'equal)))
+  :description "noun+prt"
+  :score 10
+  :connector " ")
 
-(defsynergy synergy-noun-particle (l r)
-  (generic-synergy (l r)
-   #'filter-is-noun
-   (lambda (segment)
-     (and (not (eql (common (segment-word segment)) :null))
-          (intersection '("prt")
-                        (getf (segment-info segment) :posi)
-                        :test 'equal)))
-   :description "noun+prt"
-   :score 10
-   :connector " "))
+(def-generic-synergy synergy-suru-verb (l r)
+  (filter-is-pos ("vs") (segment k p c l) (or k l (and p c)))
+  (filter-in-seq-set 1157170) ;; する
+  :description "noun+suru"
+  :score 10
+  :connector "")
 
-(defsynergy synergy-suru-verb (l r)
-  (generic-synergy (l r)
-   (filter-is-pos ("vs") (segment k p c l) (or k l (and p c)))
-   (filter-in-seq-set 1157170) ;; する
-   :description "noun+suru"
-   :score 10
-   :connector ""))
-
-(defsynergy synergy-noun-da (l r)
-  (generic-synergy (l r)
-   #'filter-is-noun
-   (filter-in-seq-set 2089020) ;; だ 
-   :description "noun+da"
-   :score 10
-   :connector " "))
+(def-generic-synergy synergy-noun-da (l r)
+  #'filter-is-noun
+  (filter-in-seq-set 2089020) ;; だ 
+  :description "noun+da"
+  :score 10
+  :connector " ")
 
 ;; should be a suffix
-(defsynergy synergy-te-verbs (l r)
-  (generic-synergy (l r)
-   (filter-is-conjugation 3)
-   (filter-in-seq-set 1305380) ;; [しまう]
-   :description "-te+something"
-   :score 10
-   :connector ""))
+(def-generic-synergy synergy-te-verbs (l r)
+  (filter-is-conjugation 3)
+  (filter-in-seq-set 1305380) ;; [しまう]
+  :description "-te+something"
+  :score 10
+  :connector "")
 
-(defsynergy synergy-no-adjectives (l r)
-  (generic-synergy (l r)
-   (filter-is-pos ("adj-no") (segment k p c l) (or k l (and p c)))
-   (filter-in-seq-set 1469800) ;; の
-   :description "no-adjective"
-   :score 15
-   :connector ""))
+(def-generic-synergy synergy-no-adjectives (l r)
+  (filter-is-pos ("adj-no") (segment k p c l) (or k l (and p c)))
+  (filter-in-seq-set 1469800) ;; の
+  :description "no-adjective"
+  :score 15
+  :connector "")
 
-(defsynergy synergy-na-adjectives (l r)
-  (generic-synergy (l r)
-   (filter-is-pos ("adj-na") (segment k p c l) (or k l (and p c)))
-   (filter-in-seq-set 2029110 2028990) ;; な ; に 
-   :description "na-adjective"
-   :score 15
-   :connector ""))
+(def-generic-synergy synergy-na-adjectives (l r)
+  (filter-is-pos ("adj-na") (segment k p c l) (or k l (and p c)))
+  (filter-in-seq-set 2029110 2028990) ;; な ; に 
+  :description "na-adjective"
+  :score 15
+  :connector "")
 
-(defsynergy synergy-suffix-chu (l r)
-  (generic-synergy (l r)
-   #'filter-is-noun
-   (filter-in-seq-set 1620400 2083570)
-   :description "suffix-chu"
-   :score 5
-   :connector "-"))
+(def-generic-synergy synergy-suffix-chu (l r)
+  #'filter-is-noun
+  (filter-in-seq-set 1620400 2083570)
+  :description "suffix-chu"
+  :score 5
+  :connector "-")
 
-(defsynergy synergy-o-prefix (l r)
-  (generic-synergy (l r)
-   (filter-in-seq-set 1270190)
-   (filter-is-pos ("n") (segment k p c l) (or k l))
-   :description "o+noun"
-   :score 10
-   :connector ""))
+(def-generic-synergy synergy-o-prefix (l r)
+  (filter-in-seq-set 1270190)
+  (filter-is-pos ("n") (segment k p c l) (or k l))
+  :description "o+noun"
+  :score 10
+  :connector "")
 
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
