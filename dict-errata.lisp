@@ -91,6 +91,10 @@
            for gloss in glosses
            do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord)))))
 
+(defun set-common (table seq text common)
+  (loop for kt in (select-dao table (:and (:= 'seq seq) (:= 'text text)))
+     do (setf (slot-value kt 'common) common)
+       (update-dao kt)))
 
 (defun add-deha-ja-readings ()
   (let ((deha-list (query (:select 'conj.seq 'kt.text :distinct
@@ -102,8 +106,17 @@
          for ja = (concatenate 'string "じゃ" (subseq deha 2))
          do (add-reading seq ja))))
 
+(defun remove-hiragana-nokanji ()
+  (loop with kts = (remove-if-not (lambda (kt) (test-word (text kt) :hiragana))
+                                 (select-dao 'kana-text 'nokanji))
+     for entry in (select-dao 'entry (:in 'seq (:set (mapcar #'seq kts))))
+     do (setf (slot-value entry 'primary-nokanji) nil)
+       (update-dao entry)
+       (print entry)))
+
 (defun add-errata ()
   (add-deha-ja-readings)
+  (remove-hiragana-nokanji)
 
   ;;; add sense for な 
   (add-sense 2029110 4 "(used with nouns) な-adjective")
@@ -124,10 +137,12 @@
 
   (add-sense-prop 1360480 0 "misc" "uk")
 
-  ;; unset common flag for choice kana readings
-  (loop for kt in (select-dao 'kana-text (:= 'seq 1310920))
-       do (setf (slot-value kt 'common) :null)
-       (update-dao kt))
+  (add-sense-prop 2425930 0 "pos" "prt")
+
+  ;; set/unset common flag for choice kana readings
+  (set-common 'kana-text 1310920 "したい" :null)
+  (set-common 'kana-text 1523060 "ほんと" 2)
+  (set-common 'kana-text 1577100 "なん" 2)
 
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))

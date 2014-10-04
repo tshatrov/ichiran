@@ -767,7 +767,7 @@
   (cond ((<= length len-lim) (expt length power))
         (t (* length (expt len-lim (1- power))))))
 
-(defparameter *final-prt* '(2029120 2086640))
+(defparameter *final-prt* '(2029120 2086640 2029110))
 
 (defun calc-score (reading &optional final use-length)
   (when (typep reading 'compound-text)
@@ -802,8 +802,8 @@
                                  (or (not (primary-nokanji entry))
                                      (nokanji reading)))
                             (and (= ord 0)
-                                 (or (and common-p pronoun-p)
-                                     kanji-p
+                                 (or kanji-p
+                                     (and common-p pronoun-p)
                                      (= (n-kanji entry) 0))))))
         (unless (or common-p secondary-conj-p)
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
@@ -813,11 +813,11 @@
                                        :column)))
             (when conj-of-common
               (setf common 0 common-p t))))
-        (when (and primary-p (or final (not (member seq *final-prt*))))
+        (when primary-p
           (incf score (cond ((or kanji-p long-p) 10)
                             ((or common-p prefer-kana) 5)
                             (t 2)))
-          (when particle-p
+          (when (and particle-p (or final (not (member seq *final-prt*))))
             (when (and common-p)
               (incf score 5))
             (when final
@@ -1032,6 +1032,7 @@
   #'filter-is-noun
   (lambda (segment)
     (and (not (eql (common (segment-word segment)) :null))
+         (not (intersection *final-prt* (getf (segment-info segment) :seq-set)))
          (intersection '("prt")
                        (getf (segment-info segment) :posi)
                        :test 'equal)))

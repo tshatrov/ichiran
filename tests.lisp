@@ -43,6 +43,8 @@
   (assert-segment "しながき" "しながき")
   (assert-segment "楽しさ求めて" "楽" "しさ" "求めて")
   (assert-segment "日常のなかにも" "日常" "の" "なか" "に" "も")
+  ;;(assert-segment "ほんとは好きなんだと" "ほんと" "は" "好き" "なん" "だと")
+  (assert-segment "内緒なの" "内緒" "なの")
   (assert-segment "魚が好きじゃない" "魚" "が" "好き" "じゃない")
   )
 
