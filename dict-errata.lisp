@@ -91,7 +91,20 @@
            for gloss in glosses
            do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord)))))
 
+
+(defun add-deha-ja-readings ()
+  (let ((deha-list (query (:select 'conj.seq 'kt.text :distinct
+                                   :from (:as 'conjugation 'conj) (:as 'kana-text 'kt)
+                                   :where (:and (:= 'conj.from 2089020)
+                                                (:= 'kt.seq 'conj.seq)
+                                                (:like 'kt.text "では%"))))))
+    (loop for (seq deha) in deha-list
+         for ja = (concatenate 'string "じゃ" (subseq deha 2))
+         do (add-reading seq ja))))
+
 (defun add-errata ()
+  (add-deha-ja-readings)
+
   ;;; add sense for な 
   (add-sense 2029110 4 "(used with nouns) な-adjective")
   ;;; gozaimashita / gozaimashitara
