@@ -1093,6 +1093,51 @@
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))
 
+(defparameter *penalty-list* nil)
+
+(defmacro defpenalty (name (left-var right-var) &body body)
+  `(progn
+     (defun ,name (,left-var ,right-var)
+       ,@body)
+     (pushnew ',name *penalty-list*)))
+  
+(defmacro def-generic-penalty (name (segment-list-left segment-list-right)
+                               test-left test-right &key (serial t) description score (connector " "))
+  (alexandria:with-gensyms (start end)
+   `(defpenalty ,name (,segment-list-left ,segment-list-right)
+      (let ((,start (segment-list-end ,segment-list-left))
+            (,end (segment-list-start ,segment-list-right)))
+        (when (and ,(if serial `(= ,start ,end) t)
+                   (funcall ,test-left ,segment-list-left)
+                   (funcall ,test-right ,segment-list-right))
+          (make-synergy :start ,start :end ,end
+                        :description ,description
+                        :connector ,connector
+                        :score ,score))))))
+
+(declaim (inline filter-too-short))
+(defun filter-short-kana (len)
+  (lambda (segment-list)
+    (and
+     (<= (- (segment-list-end segment-list)
+            (segment-list-start segment-list)) len)
+     (let ((seg (car (segment-list-segments segment-list))))
+       (not (car (getf (segment-info seg) :kpcl)))))))
+
+(def-generic-penalty penalty-short (l r)
+  (filter-short-kana 1)
+  (filter-short-kana 1)
+  :description "short"
+  :serial nil
+  :score -10)
+
+(defun get-penalties (seg-left seg-right)
+  (loop for fn in *penalty-list*
+     for penalty = (funcall fn seg-left seg-right)
+     when penalty
+       do (return (list seg-right penalty seg-left))
+     finally (return (list seg-right seg-left))))
+
 (defun find-best-path (segment-lists &key (limit 5))
   "generalized version of old find-best-path that operates on segment-lists and uses synergies"
   (let ((top (make-instance 'top-array :limit limit)))
@@ -1115,7 +1160,7 @@
                    for (seg-left . tail) = (tai-payload tai)
                    for score3 = (get-segment-score seg-left)
                    for score-tail = (- (tai-score tai) score3)
-                   do (loop for split in (cons (list seg2 seg-left) (get-synergies seg-left seg2))
+                   do (loop for split in (cons (get-penalties seg-left seg2) (get-synergies seg-left seg2))
                            for accum = (+ (reduce #'+ split :key #'get-segment-score) score-tail)
                            for path = (nconc split tail)
                            do (register-item (segment-list-top seg2) accum path)

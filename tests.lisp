@@ -42,6 +42,7 @@
   (assert-segment "遊びたいのに" "遊びたい" "のに")
   (assert-segment "しながき" "しながき")
   (assert-segment "楽しさ求めて" "楽" "しさ" "求めて")
+  (assert-segment "日常のなかにも" "日常" "の" "なか" "に" "も")
   )
 
 (defun run-all-tests ()
