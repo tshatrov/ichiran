@@ -115,15 +115,11 @@
              (ppcre:split regex str :with-registers-p t)))
 
 (defun basic-split (str)
-  "splits string into segments of katakana, traditional and misc characters"
+  "splits string into segments of japanese and misc characters"
   (let ((split1 (split-by-regex (format nil "(~a+)" *nonword-regex*) str)))
     (loop for segment in split1
          for misc = (test-word segment :nonword) then (not misc)
-         append (if misc
-                    (list (cons :misc segment))
-                    (mapcar (lambda (seg) (cons :word seg))
-                            (split-by-regex "([ァ-ヺ][ァ-ヺヽヾゝゞー]*)" segment))))))
-                      
+         collect (cons (if misc :misc :word) segment))))
 
 (defun mora-length (str)
   "like length but doesn't count modifier characters"
