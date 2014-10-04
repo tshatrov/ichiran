@@ -767,6 +767,8 @@
   (cond ((<= length len-lim) (expt length power))
         (t (* length (expt len-lim (1- power))))))
 
+(defparameter *final-prt* '(2029120 2086640))
+
 (defun calc-score (reading &optional final use-length)
   (when (typep reading 'compound-text)
     (multiple-value-bind (score info) (calc-score (primary reading) nil (mora-length (text reading)))
@@ -811,12 +813,12 @@
                                        :column)))
             (when conj-of-common
               (setf common 0 common-p t))))
-        (when primary-p
+        (when (and primary-p (or final (not (member seq *final-prt*))))
           (incf score (cond ((or kanji-p long-p) 10)
                             ((or common-p prefer-kana) 5)
                             (t 2)))
           (when particle-p
-            (when common-p
+            (when (and common-p)
               (incf score 5))
             (when final
               (incf score 5))))

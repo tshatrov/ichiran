@@ -41,6 +41,7 @@
   (assert-segment "その山を越えたとき" "その" "山" "を" "越えた" "とき")
   (assert-segment "遊びたいのに" "遊びたい" "のに")
   (assert-segment "しながき" "しながき")
+  (assert-segment "楽しさ求めて" "楽" "しさ" "求めて")
   )
 
 (defun run-all-tests ()
