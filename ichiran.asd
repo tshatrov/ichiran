@@ -21,6 +21,7 @@
                (:file "tokenize")
                (:file "romanize")
                (:file "dict")
+               (:file "dict-grammar")
                (:file "dict-errata")
                (:file "ichiran")
                (:file "tests"))
