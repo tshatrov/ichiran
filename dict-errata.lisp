@@ -114,6 +114,23 @@
        (update-dao entry)
        (print entry)))
 
+(defun rearrange-readings (seq table prefix)
+  "Rearrange readings with prefix before the rest of them"
+  (loop
+     with offset = (query (:select (:count 'id) :from table
+                                   :where (:and (:= 'seq seq) (:like 'text (:|| prefix "%"))))
+                          :single)
+     with cnt1 = -1 and cnt2 = (1- offset)
+     for kt in (select-dao table (:= 'seq seq) 'ord)
+     for new-ord = (if (alexandria:starts-with-subseq prefix (text kt))
+                       (incf cnt1) (incf cnt2))
+     do (setf (slot-value kt 'ord) new-ord) (update-dao kt)))
+
+(defun rearrange-readings-conj (seq table prefix)
+  (rearrange-readings seq table prefix)
+  (dolist (seq (query (:select 'seq :distinct :from 'conjugation :where (:= 'from seq)) :column))
+    (rearrange-readings seq table prefix)))
+
 (defun add-errata ()
   (add-deha-ja-readings)
   (remove-hiragana-nokanji)
@@ -143,6 +160,10 @@
   (set-common 'kana-text 1310920 "したい" :null)
   (set-common 'kana-text 1523060 "ほんと" 2)
   (set-common 'kana-text 1577100 "なん" 2)
+
+  ;; 包む is read as tsutsumu
+  (rearrange-readings-conj 1584060 'kana-text "つつ")
+  (set-common 'kana-text 1584060 "つつむ" 6)
 
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))

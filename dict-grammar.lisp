@@ -18,6 +18,10 @@
   (find-word-with-conj-prop word (conj-data)
     (member conj-type conj-data :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
 
+(defun find-word-seq (word &rest seqs)
+  (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
+    (select-dao table (:and (:= 'text word) (:in 'seq (:set seqs))))))
+
 (defun init-suffixes ()
   (unless *suffix-cache*
     (setf *suffix-cache* (make-hash-table :test 'equal))
@@ -39,14 +43,18 @@
 
       (load-conjs :te 1547720) ;; くる
 
-      (loop for kf in (get-kana-forms 1421850)  ;; おく(く)
+      (load-conjs :te 1421850) ;; おく ;; TODO: implement teo -> to
+
+      (loop for kf in (get-kana-forms 1578850) ;;  いく / く
            for tkf = (text kf)
            for tkf-short = (subseq tkf 1)
            for val = (list :te kf)
+           when (char= (char tkf 0) #\HIRAGANA_LETTER_I)
            do (setf (gethash tkf *suffix-cache*) val)
            (unless (gethash tkf-short *suffix-cache*)
              (setf (gethash tkf-short *suffix-cache*) val)))
 
+      (load-conjs :kara 1002980)
       )))
 
 (defparameter *suffix-list* nil)
@@ -59,7 +67,10 @@
 
 ;;(defvar *suffix-map-temp* nil) defined in dict.lisp
 
-(defmacro def-conj-suffix (name keyword (&key (stem 0) (score 15) (connector "")) (root-var &optional suf-var) &body get-primary-words)
+(defmacro def-simple-suffix (name keyword
+                             (&key (stem 0) (score 0) (connector ""))
+                                (root-var &optional suf-var)
+                             &body get-primary-words)
   (alexandria:with-gensyms (suf primary-words)
     (unless suf-var (setf suf-var (gensym "SV")))
     `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
@@ -76,19 +87,24 @@
                                 :score-mod ,score))
                  ,primary-words)))))
   
-(def-conj-suffix suffix-chau :chau (:stem 1) (root suf)
+(def-simple-suffix suffix-chau :chau (:stem 1 :score 10) (root suf)
   (let ((te (case (char suf 0)
               (#\HIRAGANA_LETTER_ZI "で")
               (#\HIRAGANA_LETTER_TI "て"))))
     (when te
       (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(def-conj-suffix suffix-tai :tai (:connector "-") (root)
+(def-simple-suffix suffix-tai :tai (:connector "-" :score 10) (root)
   (find-word-with-conj-type root 13))
 
-(def-conj-suffix suffix-te :te (:connector "-") (root)
+(def-simple-suffix suffix-te :te (:connector "-" :score 0) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
+
+(def-simple-suffix suffix-kara :kara (:connector " " :score 5) (root)
+  (or (find-word-seq root 1577100)
+      (and (find (char root (1- (length root))) "てで")
+           (find-word-with-conj-type root 3))))
 
 (defun get-suffix-map (str &optional sticky)
   (init-suffixes)

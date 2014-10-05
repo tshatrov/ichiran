@@ -48,6 +48,9 @@
   (assert-segment "魚が好きじゃない" "魚" "が" "好き" "じゃない")
   (assert-segment "物語になってく" "物語" "に" "なってく")
   (assert-segment "書いてきてくださった" "書いてきて" "くださった")
+  (assert-segment "今日は何の日" "今日" "は" "何の" "日")
+  (assert-segment "何から話そうか" "何から" "話そう" "か")
+  (assert-segment "話したくなる" "話したく" "なる")
   )
 
 (defun run-all-tests ()

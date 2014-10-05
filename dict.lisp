@@ -699,12 +699,14 @@
 
 (defparameter *final-prt* '(2029120 2086640 2029110))
 
-(defun calc-score (reading &optional final use-length)
+(defun calc-score (reading &key final use-length (score-mod 0))
   (when (typep reading 'compound-text)
-    (multiple-value-bind (score info) (calc-score (primary reading) nil (mora-length (text reading)))
+    (multiple-value-bind (score info) (calc-score (primary reading)
+                                                  :use-length (mora-length (text reading))
+                                                  :score-mod (score-mod reading))
       (setf (getf info :conj) (word-conj-data reading))
       (return-from calc-score
-        (values (+ score (score-mod reading)) info))))
+        (values score info))))
 
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
@@ -726,13 +728,13 @@
              (particle-p (member "prt" posi :test 'equal))
              (pronoun-p (member "pn" posi :test 'equal))
              (cop-da-p (member "cop-da" posi :test 'equal))
-             (long-p (> len (if (or kanji-p (and common-p (< 0 common 10))) 2 3)))
+             (long-p (> len (if (or (and kanji-p root-p (not prefer-kana)) (and common-p (< 0 common 10))) 2 3)))
              (primary-p (or (and prefer-kana
                                  (not kanji-p)
                                  (or (not (primary-nokanji entry))
                                      (nokanji reading)))
                             (and (= ord 0)
-                                 (or kanji-p
+                                 (or (and kanji-p (not prefer-kana))
                                      (and common-p pronoun-p)
                                      (= (n-kanji entry) 0))))))
         (unless (or common-p secondary-conj-p)
@@ -753,7 +755,7 @@
             (when final
               (incf score 5))))
         (when (and common-p (not particle-p)) 
-          (cond ((or long-p cop-da-p (and primary-p root-p (> len 1)))
+          (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
                  (incf score (if (= common 0) 10 (max (- 20 common) 10))))
                 ((or (> len 2) (< 0 common 10)) (incf score 3))
                 (t (incf score 2))))
@@ -762,7 +764,8 @@
           (when (and long-p kanji-p)
             (incf score 2)))
         (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
-                                (if use-length (length-multiplier-coeff use-length :tail) 0))))
+                                (if use-length (length-multiplier-coeff use-length :tail) 0)
+                                score-mod)))
 
         (values score (list :posi posi :seq-set (cons seq conj-of)
                             :conj conj-data
@@ -770,7 +773,7 @@
 
 (defun gen-score (segment &optional final)
   (setf (values (segment-score segment) (segment-info segment))
-        (calc-score (segment-word segment) final))
+        (calc-score (segment-word segment) :final final))
   segment)
 
 (defun find-sticky-positions (str)
