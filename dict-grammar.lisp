@@ -13,9 +13,10 @@
 (defmacro find-word-with-conj-prop (word (conj-data-var) &body condition)
   `(remove-if-not (lambda (,conj-data-var) ,@condition) (find-word-full ,word) :key 'word-conj-data))
 
-(defmacro find-word-with-conj-type (word conj-type)
-  `(find-word-with-conj-prop ,word (conj-data)
-      (member ,conj-type conj-data :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
+(declaim (inline find-word-with-conj-type))
+(defun find-word-with-conj-type (word conj-type)
+  (find-word-with-conj-prop word (conj-data)
+    (member conj-type conj-data :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
 
 (defun init-suffixes ()
   (unless *suffix-cache*
@@ -58,7 +59,7 @@
 
 ;;(defvar *suffix-map-temp* nil) defined in dict.lisp
 
-(defmacro conj-suffix (name keyword (&key (stem 0) (score 15) (connector "")) (root-var &optional suf-var) &body get-primary-words)
+(defmacro def-conj-suffix (name keyword (&key (stem 0) (score 15) (connector "")) (root-var &optional suf-var) &body get-primary-words)
   (alexandria:with-gensyms (suf primary-words)
     (unless suf-var (setf suf-var (gensym "SV")))
     `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
@@ -75,17 +76,17 @@
                                 :score-mod ,score))
                  ,primary-words)))))
   
-(conj-suffix suffix-chau :chau (:stem 1) (root suf)
+(def-conj-suffix suffix-chau :chau (:stem 1) (root suf)
   (let ((te (case (char suf 0)
               (#\HIRAGANA_LETTER_ZI "で")
               (#\HIRAGANA_LETTER_TI "て"))))
     (when te
       (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(conj-suffix suffix-tai :tai (:connector "-") (root)
+(def-conj-suffix suffix-tai :tai (:connector "-") (root)
   (find-word-with-conj-type root 13))
 
-(conj-suffix suffix-te :te (:connector "-") (root)
+(def-conj-suffix suffix-te :te (:connector "-") (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
