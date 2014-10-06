@@ -689,7 +689,7 @@
 (defparameter *length-coeff-sequences*
   '((:strong 1 8 24 48 100)
     (:weak 1 4 9 16 25)
-    (:tail 1 4 9 16)))
+    (:tail 4 9 16)))
 
 (defun length-multiplier-coeff (length class)
   (let ((coeffs (assoc class *length-coeff-sequences*)))
@@ -711,7 +711,9 @@
   (let* ((score 1)
          (kanji-p (typep reading 'kanji-text))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
-         (len (mora-length (text reading))))
+         (text (text reading))
+         (n-kanji (count-char-class text :kanji))
+         (len (mora-length text)))
     (with-slots (seq ord) reading
       (let* ((entry (get-dao 'entry seq))
              (root-p (root-p entry))
@@ -746,7 +748,7 @@
             (when conj-of-common
               (setf common 0 common-p t))))
         (when primary-p
-          (incf score (cond ((or kanji-p long-p) 10)
+          (incf score (cond (long-p 10)
                             ((or common-p prefer-kana) 5)
                             (t 2)))
           (when (and particle-p (or final (not (member seq *final-prt*))))
@@ -757,6 +759,7 @@
         (when (and common-p (not particle-p)) 
           (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
                  (incf score (if (= common 0) 10 (max (- 20 common) 10))))
+                (kanji-p (incf score 5))
                 ((or (> len 2) (< 0 common 10)) (incf score 3))
                 (t (incf score 2))))
         (when (or long-p kanji-p)
@@ -764,7 +767,8 @@
           (when (and long-p kanji-p)
             (incf score 2)))
         (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
-                                (if use-length (length-multiplier-coeff use-length :tail) 0)
+                                (if (> n-kanji 1) (* n-kanji 5) 0)
+                                (if use-length (length-multiplier-coeff (- use-length len) :tail) 0)
                                 score-mod)))
 
         (values score (list :posi posi :seq-set (cons seq conj-of)

@@ -80,20 +80,32 @@
 
 (defparameter *nonword-regex* "[^々一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
 
+(defparameter *char-class-regex-mapping* 
+  `((:katakana ,*katakana-regex*)
+    (:hiragana ,*hiragana-regex*)
+    (:kanji ,*kanji-regex*)
+    (:kana ,(format nil "(~a|~a)" *katakana-regex* *hiragana-regex*))
+    (:traditional ,(format nil "(~a|~a)" *hiragana-regex* *kanji-regex*))
+    (:nonword ,*nonword-regex*)))
+
+(deftype char-class () '(member :katakana :hiragana :kanji :kana :traditional :nonword))
+
 (defparameter *char-scanners*
   (mapcar (lambda (pair) (cons (car pair) (ppcre:create-scanner (format nil "^~a+$" (cadr pair)))))
-          `((:katakana ,*katakana-regex*)
-            (:hiragana ,*hiragana-regex*)
-            (:kanji ,*kanji-regex*)
-            (:kana ,(format nil "(~a|~a)" *katakana-regex* *hiragana-regex*))
-            (:traditional ,(format nil "(~a|~a)" *hiragana-regex* *kanji-regex*))
-            (:nonword ,*nonword-regex*))))
+          *char-class-regex-mapping*))
 
 (defun test-word (word char-class)
-  (declare (type (member :katakana :hiragana :kanji :kana :traditional :nonword) char-class))
+  (declare (type char-class char-class))
   (let ((regex (cdr (assoc char-class *char-scanners*))))
     (ppcre:scan regex word)))
-    
+
+(defun count-char-class (word char-class)
+  (declare (type char-class char-class))
+  (let ((cnt 0)
+        (regex (cadr (assoc char-class *char-class-regex-mapping*))))
+    (ppcre:do-matches (s e regex word cnt)
+      (incf cnt))))
+
 (defun simplify-ngrams (str map)
   (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
          (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))
