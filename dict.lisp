@@ -929,7 +929,7 @@
                         (segment-list (list (car (segment-list-segments obj))))))
                     (car item))))))
 
-(defstruct word-info type text kana (score 0) (seq nil) (components nil) (alternative nil))
+(defstruct word-info type text kana (score 0) (seq nil) (components nil) (alternative nil) (primary t))
 
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
   (make-word-info :type (word-type word)
@@ -937,11 +937,13 @@
                   :kana (get-kana word)
                   :seq (seq word)
                   :components (when (typep word 'compound-text)
-                                (loop for wrd in (words word)
-                                     collect (make-word-info :type (word-type wrd)
-                                                             :text (get-text wrd)
-                                                             :kana (get-kana wrd)
-                                                             :seq (seq wrd))))
+                                (loop with primary-id = (id (primary word)) 
+                                   for wrd in (words word)
+                                   collect (make-word-info :type (word-type wrd)
+                                                           :text (get-text wrd)
+                                                           :kana (get-kana wrd)
+                                                           :seq (seq wrd)
+                                                           :primary (= (id wrd) primary-id))))
                   :score (segment-score segment)))
 
 (defparameter *segment-score-cutoff* 4/5)
@@ -1047,7 +1049,8 @@
   (loop with straight-conj = (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
      for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
      do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
-           do (format out "~%[ Conjugation: ~a" (conj-info-short conj-prop)))
+             for first = t then nil
+           do (format out "~%~:[ ~;[~] Conjugation: ~a" first (conj-info-short conj-prop)))
        (if (eql (seq-via conj) :null)
            (format out "~%  ~a" (entry-info-short (seq-from conj)))
            (progn
@@ -1068,7 +1071,8 @@
 (defun word-info-str (word-info)
   (with-connection *connection*
     (with-output-to-string (s)
-      (labels ((inner (word-info)
+      (labels ((inner (word-info &optional suffix marker)
+                 (when marker (princ " * " s))
                  (princ (reading-str (case (word-info-type word-info)
                                        (:kanji (word-info-text word-info))
                                        (t nil))
@@ -1078,16 +1082,17 @@
                        (format s " Compound word: ~{~a~^ + ~}" (mapcar #'word-info-text (word-info-components word-info)))
                        (dolist (comp (word-info-components word-info))
                          (terpri s)
-                         (inner comp)))
-                     (let ((seq (word-info-seq word-info)))
-                       (terpri s)
-                       (princ (if seq (get-senses-str seq) "???") s)
+                         (inner comp (not (word-info-primary comp)) t)))
+                     (let ((seq (word-info-seq word-info)) desc)
+                       (if (and suffix (setf desc (get-suffix-description seq)))
+                           (format s "  [suffix]: ~a " desc)
+                           (progn (terpri s) (princ (if seq (get-senses-str seq) "???") s)))
                        (when seq
                          (print-conj-info seq s))))))
         (if (word-info-alternative word-info)
             (loop for wi in (word-info-components word-info)
                  for i from 1
                  when (> i 1) do (terpri s)
-                 do (format s "<~a>. " i) (inner wi))
+                 do (format s "<~a>. " i) (inner wi nil nil))
             (inner word-info))))))
           

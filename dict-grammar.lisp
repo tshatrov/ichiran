@@ -3,6 +3,11 @@
 ;;; SUFFIXES (makes compound word primary + suffix)
 
 (defparameter *suffix-cache* nil)
+(defparameter *suffix-class* nil) ;; seq -> class
+
+(defun init-suffix-hashtables ()
+  (setf *suffix-cache* (make-hash-table :test 'equal)
+        *suffix-class* (make-hash-table :test 'eql)))
 
 (defun get-kana-forms (seq)
   (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
@@ -30,12 +35,31 @@
                               :where (:and (:= 'kt.text word)
                                            (:in 'sp.text (:set posi)))))))
 
+(defun get-suffix-class-description (class)
+  (case class
+    (:chau "indicates completion (to finish ...)")
+    (:tai "want to... / would like to...")
+    (:iru "indicates continuing action (to be ...ing)")
+    (:aru "indicates completion / finished action")
+    (:kuru "indicates action that had been continuing up till now / came to be ")
+    (:oku "to do in advance / to leave in the current state expecting a later change")
+    (:kuneru "do something for you")
+    (:iku "is becoming / action starting now and continuing")
+    (:suru "makes a verb from a noun")
+    ;;(:kara "")
+    ))
+
+(defun get-suffix-description (seq)
+  (get-suffix-class-description (gethash seq *suffix-class*)))
+
 (defun init-suffixes ()
   (unless *suffix-cache*
-    (setf *suffix-cache* (make-hash-table :test 'equal))
-    (flet ((load-conjs (key seq)
+    (init-suffix-hashtables)
+    (flet ((load-conjs (key seq &optional class)
              (loop for kf in (get-kana-forms seq)
-                do (setf (gethash (text kf) *suffix-cache*) (list key kf)))))
+                do (setf (gethash (text kf) *suffix-cache*) (list key kf)
+                         (gethash (seq kf) *suffix-class*) (or class key)
+                         ))))
 
       (load-conjs :chau 2013800)
       (load-conjs :tai 2017560)
@@ -43,24 +67,26 @@
       (loop for kf in (get-kana-forms 1577980) ;; いる (る)
            for tkf = (text kf)
            for val = (list :te kf)
-         do (setf (gethash tkf *suffix-cache*) val)
+         do (setf (gethash tkf *suffix-cache*) val
+                  (gethash (seq kf) *suffix-class*) :iru)
            (when (> (length tkf) 1)
              (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
            
-      (load-conjs :te 1296400) ;; ある
+      (load-conjs :te 1296400 :aru) ;; ある
 
-      (load-conjs :te 1547720) ;; くる
+      (load-conjs :te 1547720 :kuru) ;; くる
 
-      (load-conjs :te 1421850) ;; おく ;; TODO: implement teo -> to
+      (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
 
-      (load-conjs :te 1269130) ;; くれる
+      (load-conjs :te 1269130 :kuneru) ;; くれる
 
       (loop for kf in (get-kana-forms 1578850) ;;  いく / く
            for tkf = (text kf)
            for tkf-short = (subseq tkf 1)
            for val = (list :te kf)
            when (char= (char tkf 0) #\HIRAGANA_LETTER_I)
-           do (setf (gethash tkf *suffix-cache*) val)
+           do (setf (gethash tkf *suffix-cache*) val
+                    (gethash (seq kf) *suffix-class*) :iku)
            (unless (gethash tkf-short *suffix-cache*)
              (setf (gethash tkf-short *suffix-cache*) val)))
 
@@ -118,6 +144,7 @@
 
 (def-simple-suffix suffix-kara :kara (:connector " " :score 5) (root)
   (or (find-word-seq root 1577100)
+      #-(and)
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
 
