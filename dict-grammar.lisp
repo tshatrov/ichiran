@@ -22,6 +22,14 @@
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
     (select-dao table (:and (:= 'text word) (:in 'seq (:set seqs))))))
 
+(defun find-word-with-pos (word &rest posi)
+  (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
+    (query-dao table (:select 'kt.* :distinct :from (:as table 'kt) 
+                              :inner-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.seq 'kt.seq)
+                                                                          (:= 'sp.tag "pos"))
+                              :where (:and (:= 'kt.text word)
+                                           (:in 'sp.text (:set posi)))))))
+
 (defun init-suffixes ()
   (unless *suffix-cache*
     (setf *suffix-cache* (make-hash-table :test 'equal))
@@ -45,6 +53,8 @@
 
       (load-conjs :te 1421850) ;; おく ;; TODO: implement teo -> to
 
+      (load-conjs :te 1269130) ;; くれる
+
       (loop for kf in (get-kana-forms 1578850) ;;  いく / く
            for tkf = (text kf)
            for tkf-short = (subseq tkf 1)
@@ -54,7 +64,9 @@
            (unless (gethash tkf-short *suffix-cache*)
              (setf (gethash tkf-short *suffix-cache*) val)))
 
-      (load-conjs :kara 1002980)
+      (load-conjs :suru 1157170) ;; する
+
+      (load-conjs :kara 1002980) ;; から
       )))
 
 (defparameter *suffix-list* nil)
@@ -94,12 +106,15 @@
     (when te
       (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(def-simple-suffix suffix-tai :tai (:connector "-" :score 10) (root)
+(def-simple-suffix suffix-tai :tai (:connector "-" :score 5) (root)
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-te :te (:connector "-" :score 0) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
+
+(def-simple-suffix suffix-suru :suru (:connector " " :score 5) (root)
+  (find-word-with-pos root "vs"))
 
 (def-simple-suffix suffix-kara :kara (:connector " " :score 5) (root)
   (or (find-word-seq root 1577100)
@@ -216,12 +231,12 @@
   :score 10
   :connector " ")
 
-(def-generic-synergy synergy-suru-verb (l r)
-  (filter-is-pos ("vs") (segment k p c l) (or k l (and p c)))
-  (filter-in-seq-set 1157170) ;; する
-  :description "noun+suru"
-  :score 10
-  :connector "")
+;; (def-generic-synergy synergy-suru-verb (l r)
+;;   (filter-is-pos ("vs") (segment k p c l) (or k l (and p c)))
+;;   (filter-in-seq-set 1157170) ;; する
+;;   :description "noun+suru"
+;;   :score 10
+;;   :connector "")
 
 (def-generic-synergy synergy-noun-da (l r)
   #'filter-is-noun

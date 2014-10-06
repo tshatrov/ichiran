@@ -160,6 +160,8 @@
   (set-common 'kana-text 1310920 "したい" :null)
   (set-common 'kana-text 1523060 "ほんと" 2)
   (set-common 'kana-text 1577100 "なん" 2)
+  (set-common 'kana-text 1012440 "めく" :null)
+
 
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")

@@ -689,7 +689,7 @@
 (defparameter *length-coeff-sequences*
   '((:strong 1 8 24 48 100)
     (:weak 1 4 9 16 25)
-    (:tail 4 9 16)))
+    (:tail 4 9 16 24)))
 
 (defun length-multiplier-coeff (length class)
   (let ((coeffs (assoc class *length-coeff-sequences*)))
@@ -768,8 +768,10 @@
             (incf score 2)))
         (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
                                 (if (> n-kanji 1) (* n-kanji 5) 0)
-                                (if use-length (length-multiplier-coeff (- use-length len) :tail) 0)
-                                score-mod)))
+                                (if use-length
+                                    (+ (length-multiplier-coeff (- use-length len) :tail)
+                                       (* score-mod (- use-length len)))
+                                    0))))
 
         (values score (list :posi posi :seq-set (cons seq conj-of)
                             :conj conj-data
