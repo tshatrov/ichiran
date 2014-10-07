@@ -93,6 +93,8 @@
       (load-conjs :suru 1157170) ;; する
 
       (load-conjs :kara 1002980) ;; から
+
+      (load-conjs :sou 1006610) ;; そう
       )))
 
 (defparameter *suffix-list* nil)
@@ -147,6 +149,10 @@
       #-(and)
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
+
+(def-simple-suffix suffix-sou :sou (:stem 1 :connector "" :score 3) (root)
+  (unless (member root '("な" "よ") :test 'equal)
+    (find-word-with-conj-type (concatenate 'string root "く") +conj-adverbial+)))
 
 (defun get-suffix-map (str &optional sticky)
   (init-suffixes)
