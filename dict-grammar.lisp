@@ -15,6 +15,9 @@
                                  :where (:or (:= 'kt.seq seq)
                                              (:= 'conj.from seq)))))
 
+(defun get-kana-form (seq text)
+  (car (select-dao 'kana-text (:and (:= 'text text) (:= 'seq seq)))))
+
 (defmacro find-word-with-conj-prop (word (conj-data-var) &body condition)
   `(remove-if-not (lambda (,conj-data-var) ,@condition) (find-word-full ,word) :key 'word-conj-data))
 
@@ -46,7 +49,8 @@
     (:kuneru "do something for you")
     (:iku "is becoming / action starting now and continuing")
     (:suru "makes a verb from a noun")
-    ;;(:kara "")
+    (:rou "probably / it seems that... / I guess ...")
+    (:ii "it's ok if ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -55,11 +59,12 @@
 (defun init-suffixes ()
   (unless *suffix-cache*
     (init-suffix-hashtables)
-    (flet ((load-conjs (key seq &optional class)
-             (loop for kf in (get-kana-forms seq)
-                do (setf (gethash (text kf) *suffix-cache*) (list key kf)
-                         (gethash (seq kf) *suffix-class*) (or class key)
-                         ))))
+    (labels ((load-kf (key kf &key class text)
+               (setf (gethash (or text (text kf)) *suffix-cache*) (list key kf)
+                     (gethash (seq kf) *suffix-class*) (or class key)))
+             (load-conjs (key seq &optional class)
+               (loop for kf in (get-kana-forms seq)
+                  do (load-kf key kf :class class))))
 
       (load-conjs :chau 2013800)
       (load-conjs :tai 2017560)
@@ -90,11 +95,15 @@
            (unless (gethash tkf-short *suffix-cache*)
              (setf (gethash tkf-short *suffix-cache*) val)))
 
+      (load-kf :te (get-kana-form 2820690 "いい") :class :ii)
+
       (load-conjs :suru 1157170) ;; する
 
       (load-conjs :kara 1002980) ;; から
 
       (load-conjs :sou 1006610) ;; そう
+
+      (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
       )))
 
 (defparameter *suffix-list* nil)
@@ -153,6 +162,9 @@
 (def-simple-suffix suffix-sou :sou (:stem 1 :connector "" :score 3) (root)
   (unless (member root '("な" "よ") :test 'equal)
     (find-word-with-conj-type (concatenate 'string root "く") +conj-adverbial+)))
+
+(def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
+  (find-word-with-conj-type root 2)) 
 
 (defun get-suffix-map (str &optional sticky)
   (init-suffixes)
