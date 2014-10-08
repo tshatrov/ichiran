@@ -833,6 +833,8 @@
   (nconc (find-word word)
          (find-word-suffix word)))
 
+(defparameter *score-cutoff* 5) ;; this must filter out ONLY bad kana spellings, and NOT filter out any kanji spellings
+
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
        with suffix-map = (get-suffix-map str)
@@ -842,10 +844,11 @@
        (loop for end from (1+ start) upto (length str)
             unless (member end sticky)
             nconcing 
-            (let ((segments (mapcar 
+            (let ((segments (mapcan 
                              (lambda (word)
-                               (gen-score (make-segment :start start :end end :word word)
-                                          (= end (length str))))
+                               (let ((segment (gen-score (make-segment :start start :end end :word word)
+                                                         (= end (length str)))))
+                                 (when (>= (segment-score segment) *score-cutoff*) (list segment))))
                              (let ((*suffix-map-temp* suffix-map)
                                    (*suffix-next-end* end))
                                (find-word-full (subseq str start end))))))
@@ -881,8 +884,13 @@
     (with-slots (array count) obj
       (if (>= count (length array)) array (subseq array 0 count)))))
 
+(defparameter *gap-penalty* -50)
 
-(defun find-best-path (segment-lists &key (limit 5))
+(declaim (inline gap-penalty))
+(defun gap-penalty (start end)
+  (* (- end start) *gap-penalty*))
+
+(defun find-best-path (segment-lists str-length &key (limit 5))
   "generalized version of old find-best-path that operates on segment-lists and uses synergies"
   (let ((top (make-instance 'top-array :limit limit)))
     (register-item top 0 nil)
@@ -893,25 +901,29 @@
     ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
     (loop for (seg1 . rest) on segment-lists
          for score1 = (get-segment-score seg1)
-       when (> score1 0) do 
-         (register-item (segment-list-top seg1) score1 (list seg1))
-         (register-item top score1 (list seg1))
+       do
+         (let ((gap-left (gap-penalty 0 (segment-list-start seg1)))
+               (gap-right (gap-penalty (segment-list-end seg1) str-length)))
+           (register-item (segment-list-top seg1) (+ gap-left score1) (list seg1))
+           (register-item top (+ gap-left score1 gap-right) (list seg1)))
          (loop for seg2 in rest
             for score2 = (get-segment-score seg2)
-            when (and (> score2 0)
-                      (>= (segment-list-start seg2) (segment-list-end seg1))) do
-              (loop for tai across (get-array (segment-list-top seg1))
+            when (>= (segment-list-start seg2) (segment-list-end seg1)) do
+              (loop with gap-left = (gap-penalty (segment-list-end seg1) (segment-list-start seg2))
+                   and gap-right = (gap-penalty (segment-list-end seg2) str-length)
+                   for tai across (get-array (segment-list-top seg1))
                    for (seg-left . tail) = (tai-payload tai)
                    for score3 = (get-segment-score seg-left)
                    for score-tail = (- (tai-score tai) score3)
                    do (loop for split in (cons (get-penalties seg-left seg2) (get-synergies seg-left seg2))
-                           for accum = (+ (max (reduce #'+ split :key #'get-segment-score)
+                           for accum = (+ gap-left
+                                          (max (reduce #'+ split :key #'get-segment-score)
                                                (1+ score3)
                                                (1+ score2))
                                           score-tail)
                            for path = (nconc split tail)
                            do (register-item (segment-list-top seg2) accum path)
-                              (register-item top accum path)))))
+                              (register-item top (+ accum gap-right) path)))))
 
     (dolist (segment segment-lists)
       (setf (segment-list-top segment) nil))
@@ -919,15 +931,15 @@
     (loop for tai across (get-array top)
          collect (cons (reverse (tai-payload tai)) (tai-score tai)))))
 
-(defun find-best-path* (segment-lists &key (limit 5))
-  "convert find-best-path results to single word format"
-  (let ((result (find-best-path segment-lists :limit limit)))
-    (dolist (item result result)
-      (setf (car item)
-            (mapcan (lambda (obj)
-                      (typecase obj
-                        (segment-list (list (car (segment-list-segments obj))))))
-                    (car item))))))
+;; (defun find-best-path* (segment-lists &key (limit 5))
+;;   "convert find-best-path results to single word format"
+;;   (let ((result (find-best-path segment-lists :limit limit)))
+;;     (dolist (item result result)
+;;       (setf (car item)
+;;             (mapcan (lambda (obj)
+;;                       (typecase obj
+;;                         (segment-list (list (car (segment-list-segments obj))))))
+;;                     (car item))))))
 
 (defstruct word-info type text kana (score 0) (seq nil) (components nil) (alternative nil) (primary t))
 
@@ -990,7 +1002,7 @@
   
 (defun dict-segment (str &key (limit 5))
   (with-connection *connection*
-    (loop for (path . score) in (find-best-path (join-substring-words str) :limit limit)
+    (loop for (path . score) in (find-best-path (join-substring-words str) (length str) :limit limit)
          collect (cons (fill-segment-path str path) score))))
 
 (defun simple-segment (str &key (limit 5))
