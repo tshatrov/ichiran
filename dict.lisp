@@ -893,7 +893,7 @@
 (defun find-best-path (segment-lists str-length &key (limit 5))
   "generalized version of old find-best-path that operates on segment-lists and uses synergies"
   (let ((top (make-instance 'top-array :limit limit)))
-    (register-item top 0 nil)
+    (register-item top (gap-penalty 0 str-length) nil)
 
     (dolist (segment-list segment-lists)
       (setf (segment-list-top segment-list) (make-instance 'top-array :limit limit)))
