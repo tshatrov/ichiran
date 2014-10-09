@@ -90,6 +90,7 @@
                   :pa "pa"    :pi "pi"    :pu "pu"    :pe "pe"    :po "po"
                   :+a "a"     :+i "i"     :+u "u"     :+e "e"     :+o "o"
                   :+ya "ya"               :+yu "yu"               :+yo "yo"
+                  :vu "vu"
                   ))
 
 (defclass generic-hepburn (generic-romanization)

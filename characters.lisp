@@ -26,6 +26,7 @@
     :da "だダ"    :dji "ぢヂ"   :dzu "づヅ"   :de "でデ"    :do "どド"
     :ba "ばバ"    :bi "びビ"    :bu "ぶブ"    :be "べベ"    :bo "ぼボ"
     :pa "ぱパ"    :pi "ぴピ"    :pu "ぷプ"    :pe "ぺペ"    :po "ぽポ"
+    :vu "ヴ"
     ))
 
 (defparameter *all-characters* (append *sokuon-characters*
@@ -53,7 +54,8 @@
                 '(:ka :ga :ki :gi :ku :gu :ke :ge :ko :go
                   :sa :za :shi :ji :su :zu :se :ze :so :zo
                   :ta :da :chi :dji :tsu :dzu :te :de :to :do
-                  :ha :ba :hi :bi :fu :bu :he :be :ho :bo))
+                  :ha :ba :hi :bi :fu :bu :he :be :ho :bo
+                  :u :vu))
 
 (defun voice-char (cc)
   "Returns a voiced form of character class, or the same character class"
