@@ -884,7 +884,7 @@
     (with-slots (array count) obj
       (if (>= count (length array)) array (subseq array 0 count)))))
 
-(defparameter *gap-penalty* -50)
+(defparameter *gap-penalty* -500)
 
 (declaim (inline gap-penalty))
 (defun gap-penalty (start end)

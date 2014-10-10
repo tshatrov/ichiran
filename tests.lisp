@@ -2,7 +2,9 @@
 
 (defmacro assert-segment (str &rest segmentation)
   `(assert-equal ',segmentation
-                 (mapcar #'word-info-text (simple-segment ,str))
+                 (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
+                                          (word-info-text wi)))
+                         (simple-segment ,str))
                  ))
 
 (define-test segmentation-test
@@ -68,6 +70,7 @@
   (assert-segment "体に悪いと知りながらタバコをやめることはできない"
                   "体" "に" "悪い" "と" "知り" "ながら" "タバコ" "を" "やめる" "こと" "は" "できない")
   (assert-segment "いつもどうり" "いつも" "どうり")
+  (assert-segment "微笑みはまぶしすぎる" "微笑み" "は" "まぶし" "すぎる")
   )
 
 (defun run-all-tests ()

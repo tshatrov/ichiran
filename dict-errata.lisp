@@ -151,8 +151,10 @@
   (delete-sense-prop 1305070 "misc" "uk")
   ;; 品 ( しな)
   (delete-sense-prop 1583470 "misc" "uk")
-
+  ;; しな
   (delete-sense-prop 1446760 "misc" "uk")
+  ;; だし
+  (delete-sense-prop 1302910 "misc" "uk")
 
   (add-sense-prop 1360480 0 "misc" "uk")
 
@@ -164,6 +166,7 @@
   (set-common 'kana-text 1577100 "なん" 2)
   (set-common 'kana-text 1012440 "めく" :null)
   (set-common 'kana-text 1005600 "しまった" :null)
+  (set-common 'kana-text 2139720 "ん" 0)
 
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")
