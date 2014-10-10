@@ -697,7 +697,14 @@
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
-(defparameter *final-prt* '(2029120 2086640 2029110))
+(defparameter *final-prt* '(2029120 2086640 2029110)
+  "Particles that only have meaning when they're final")
+
+(defparameter *skip-words* '(2458040  ;; てもいい
+                             2013800  ;; ちゃう
+                             )
+  "seq of words that aren't really words, like suffixes etc."
+  )
 
 (defun calc-score (reading &key final use-length (score-mod 0))
   (when (typep reading 'compound-text)
@@ -739,6 +746,8 @@
                                  (or (and kanji-p (not prefer-kana))
                                      (and common-p pronoun-p)
                                      (= (n-kanji entry) 0))))))
+        (when (intersection seq-set *skip-words*)
+          (return-from calc-score 0))
         (unless (or common-p secondary-conj-p)
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
                  (conj-of-common (query (:select 'id :from table

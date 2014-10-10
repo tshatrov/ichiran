@@ -51,7 +51,8 @@
     (:suru "makes a verb from a noun")
     (:itasu "makes a verb from a noun (humble)")
     (:rou "probably / it seems that... / I guess ...")
-    (:ii "it's ok if ...")
+    (:ii "it's ok if ... / is it ok if ...?")
+    (:mo "even if ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -97,6 +98,9 @@
              (setf (gethash tkf-short *suffix-cache*) val)))
 
       (load-kf :te (get-kana-form 2820690 "いい") :class :ii)
+      (load-kf :te (get-kana-form 2820690 "いい") :class :ii :text "もいい")
+      (load-kf :te (get-kana-form 2028940 "も") :class :mo)
+
 
       (load-conjs :suru 1157170) ;; する
       (load-conjs :suru 1421900 :itasu) ;; いたす  
@@ -145,7 +149,7 @@
     (when te
       (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(def-simple-suffix suffix-tai :tai (:connector "-" :score 5) (root)
+(def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-te :te (:connector "-" :score 0) (root)
