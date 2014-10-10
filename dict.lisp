@@ -717,6 +717,8 @@
   "seq of words that aren't really words, like suffixes etc."
   )
 
+(defparameter *weak-conj-types* (list +conj-adjective-stem+))
+
 (defun calc-score (reading &key final use-length (score-mod 0))
   (when (typep reading 'compound-text)
     (multiple-value-bind (score info) (calc-score (primary reading)
@@ -738,6 +740,8 @@
              (conj-data (word-conj-data reading))
              (conj-of (mapcar #'conj-data-from conj-data))
              (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
+             (conj-types (unless root-p (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)))
+             (conj-types-p (or root-p (set-difference conj-types *weak-conj-types*)))
              (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
              (prefer-kana
               (select-dao 'sense-prop (:and (:in 'seq (:set seq-set)) (:= 'tag "misc") (:= 'text "uk"))))
@@ -749,17 +753,18 @@
              (pronoun-p (member "pn" posi :test 'equal))
              (cop-da-p (member "cop-da" posi :test 'equal))
              (long-p (> len (if (or (and kanji-p root-p (not prefer-kana)) (and common-p (< 0 common 10))) 2 3)))
-             (primary-p (or (and prefer-kana
+             (primary-p (or (and prefer-kana conj-types-p
                                  (not kanji-p)
                                  (or (not (primary-nokanji entry))
                                      (nokanji reading)))
                             (and (= ord 0)
+                                 (or kanji-p conj-types-p)
                                  (or (and kanji-p (not prefer-kana))
                                      (and common-p pronoun-p)
                                      (= (n-kanji entry) 0))))))
         (when (intersection seq-set *skip-words*)
           (return-from calc-score 0))
-        (unless (or common-p secondary-conj-p)
+        (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
                  (conj-of-common (query (:select 'id :from table
                                                  :where (:and (:in 'seq (:set conj-of))

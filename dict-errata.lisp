@@ -106,6 +106,25 @@
          for ja = (concatenate 'string "じゃ" (subseq deha 2))
          do (add-reading seq ja))))
 
+(defun delete-conjugation (seq from &optional (via :null))
+  (let ((conj (query-dao 'conjugation 
+                         (sql-compile
+                          `(:select * :from conjugation
+                                    :where (:and (:= seq ,seq)
+                                                 (:= from ,from)
+                                                 ,(sql-eql-or-null 'via via))))))
+        (entry (get-dao 'entry seq)))
+    (when conj
+      (let* ((conj-ids (mapcar #'id conj))
+             (delete-entry (not (or (root-p entry)
+                                    (select-dao 'conjugation (:and (:= 'seq seq)
+                                                                   (:not (:in 'id (:set conj-ids))))))))
+             )
+        (query (:delete-from 'conj-prop :where (:in 'conj-id (:set conj-ids))))
+        (query (:delete-from 'conjugation :where (:in 'id (:set conj-ids))))
+        (when delete-entry
+          (delete-dao entry))))))
+
 (defun remove-hiragana-nokanji ()
   (loop with kts = (remove-if-not (lambda (kt) (test-word (text kt) :hiragana))
                                  (select-dao 'kana-text 'nokanji))
@@ -156,7 +175,8 @@
   ;; だし
   (delete-sense-prop 1302910 "misc" "uk")
 
-  (add-sense-prop 1360480 0 "misc" "uk")
+  ;; こころ
+  ;; (add-sense-prop 1360480 0 "misc" "uk")
 
   (add-sense-prop 2425930 0 "pos" "prt")
 
@@ -169,6 +189,7 @@
   (set-common 'kana-text 2139720 "ん" 0)
   (set-common 'kana-text 1309910 "してい" 0)
   (set-common 'kana-text 1311320 "してい" 0)
+  (set-common 'kana-text 1423310 "なか" 1)
 
 
   ;; 包む is read as tsutsumu
@@ -181,20 +202,26 @@
   ;; delete prt sense for たい
   (delete-senses 2017560 (lambda (prop) (and (equal (text prop) "prt") (equal (tag prop) "pos"))))
 
+  ;; delete adj stem conjugation for ない
+  (delete-conjugation 2029110 2257550)
+
   )
 
 
 ;; Additional conjugations
 
 (defconstant +conj-adverbial+ 50)
+(defconstant +conj-adjective-stem+ 51)
 
 (defun errata-conj-description-hook (hash)
-  (setf (gethash +conj-adverbial+ hash) "Adverbial"))
+  (setf (gethash +conj-adverbial+ hash) "Adverbial")
+  (setf (gethash +conj-adjective-stem+ hash) "Adjective Stem"))
 
 (defun errata-conj-rules-hook (hash)
-  (let ((pos (get-pos-index "adj-i")))
-    (push 
-     (make-conjugation-rule
-      pos +conj-adverbial+ nil nil 1 
-      1 "く" "" "")
-     (gethash pos hash nil))))
+  (let* ((pos (get-pos-index "adj-i"))
+         (rules (list (make-conjugation-rule pos +conj-adverbial+ nil nil 1 
+                                             1 "く" "" "")
+                      (make-conjugation-rule pos +conj-adjective-stem+ nil nil 1
+                                             1 "" "" ""))))
+    (dolist (rule rules)
+      (push rule (gethash pos hash nil)))))
