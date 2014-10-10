@@ -140,3 +140,13 @@
   (count-if-not (lambda (char)
                   (find char "っッぁァぃィぅゥぇェぉォゃャゅュょョー"))
                 str))
+
+(defun as-hiragana (str)
+  "convert katakana to hiragana"
+  (map 'string
+       (lambda (char)
+         (let ((class (gethash char *char-class-hash*)))
+           (if class
+               (char (getf *all-characters* class) 0)
+               char)))
+       str))
