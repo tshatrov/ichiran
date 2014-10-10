@@ -80,7 +80,18 @@
     (format stream "~a ~a" (seq obj) (text obj))))
 
 (defmethod get-kana ((obj kanji-text))
-  (text (car (select-dao 'kana-text (:and (:= 'seq (seq obj)) (:= 'ord 0))))))
+  (loop with regex = (ppcre:create-scanner 
+                      `(:sequence :start-anchor 
+                                  ,@(loop for part in (ppcre:split *kanji-regex* (text obj))
+                                       for first = t then nil
+                                       unless first collect '(:GREEDY-REPETITION 0 NIL :EVERYTHING)
+                                       collect part)
+                                  :end-anchor))
+     and kts = (select-dao 'kana-text (:= 'seq (seq obj)) 'ord)
+     for kt in kts
+     for tkt = (text kt)
+     if (ppcre:scan regex tkt) do (return tkt)
+     finally (return (text (car kts)))))
 
 (defmethod word-type ((obj kanji-text)) :kanji)
 
