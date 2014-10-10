@@ -49,6 +49,7 @@
     (:kuneru "do something for you")
     (:iku "is becoming / action starting now and continuing")
     (:suru "makes a verb from a noun")
+    (:itasu "makes a verb from a noun (humble)")
     (:rou "probably / it seems that... / I guess ...")
     (:ii "it's ok if ...")
     ))
@@ -98,6 +99,7 @@
       (load-kf :te (get-kana-form 2820690 "いい") :class :ii)
 
       (load-conjs :suru 1157170) ;; する
+      (load-conjs :suru 1421900 :itasu) ;; いたす  
 
       (load-conjs :kara 1002980) ;; から
 
