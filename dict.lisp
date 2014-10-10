@@ -1059,15 +1059,19 @@
 
 (defun print-conj-info (seq &optional (out *standard-output*))
   (loop with straight-conj = (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
+       and via-used = nil
      for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
+     for via = (seq-via conj)
+     unless (member via via-used)
      do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
              for first = t then nil
            do (format out "~%~:[ ~;[~] Conjugation: ~a" first (conj-info-short conj-prop)))
-       (if (eql (seq-via conj) :null)
+       (if (eql via :null)
            (format out "~%  ~a" (entry-info-short (seq-from conj)))
            (progn
              (format out "~% --(via)--")
-             (print-conj-info (seq-via conj) out)))
+             (print-conj-info via out)
+             (push via via-used)))
        (princ " ]" out)))
 
 (defun map-word-info-kana (fn word-info &key (separator "/")
