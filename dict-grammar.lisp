@@ -53,6 +53,7 @@
     (:rou "probably / it seems that... / I guess ...")
     (:ii "it's ok if ... / is it ok if ...?")
     (:mo "even if ...")
+    (:sugiru "to be too (much) ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -110,6 +111,9 @@
       (load-conjs :sou 1006610) ;; そう
 
       (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
+
+      (load-conjs :sugiru 1195970) ;; すぎる
+
       )))
 
 (defparameter *suffix-list* nil)
@@ -124,19 +128,22 @@
 
 (defmacro def-simple-suffix (name keyword
                              (&key (stem 0) (score 0) (connector ""))
-                                (root-var &optional suf-var)
+                                (root-var &optional suf-var kana-var)
                              &body get-primary-words)
   (alexandria:with-gensyms (suf primary-words)
     (unless suf-var (setf suf-var (gensym "SV")))
+    (unless kana-var (setf kana-var (gensym "KV")))
     `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
        (let* ((*suffix-map-temp* ,(if (= stem 0) '*suffix-map-temp* nil))
+              (,kana-var nil)
               (,primary-words (progn ,@get-primary-words)))
          (mapcar (lambda (pw)
                    (adjoin-word pw ,suf
                                 :text (concatenate 'string ,root-var ,suf-var)
                                 :kana (let ((k (get-kana pw)))
                                         (concatenate 'string
-                                                     (subseq k 0 (- (length k) ,stem))
+                                                     (or ,kana-var
+                                                         (subseq k 0 (- (length k) ,stem)))
                                                      ,connector
                                                      ,suf-var))
                                 :score-mod ,score))
@@ -170,7 +177,14 @@
     (find-word-with-conj-type (concatenate 'string root "く") +conj-adverbial+)))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
-  (find-word-with-conj-type root 2)) 
+  (find-word-with-conj-type root 2))
+
+(def-simple-suffix suffix-sugiru :sugiru (:stem 1 :connector "" :score 5) (root suf kana)
+  (let ((root (cond ((equal root "い") nil)
+                    ((equal root "なさ") (setf kana "なさ") "ない")
+                    (t (concatenate 'string root "い")))))
+    (when root
+      (find-word-with-pos root "adj-i"))))
 
 (defun get-suffix-map (str &optional sticky)
   (init-suffixes)
