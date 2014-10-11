@@ -59,8 +59,11 @@
 (defun get-suffix-description (seq)
   (get-suffix-class-description (gethash seq *suffix-class*)))
 
+(defvar *init-suffixes-lock* (bordeaux-threads:make-lock "init-suffixes-lock"))
+
 (defun init-suffixes ()
   (unless *suffix-cache*
+    (bordeaux-threads:acquire-lock *init-suffixes-lock*)
     (init-suffix-hashtables)
     (labels ((load-kf (key kf &key class text)
                (setf (gethash (or text (text kf)) *suffix-cache*) (list key kf)
@@ -102,7 +105,6 @@
       (load-kf :te (get-kana-form 2820690 "いい") :class :ii :text "もいい")
       (load-kf :te (get-kana-form 2028940 "も") :class :mo)
 
-
       (load-conjs :suru 1157170) ;; する
       (load-conjs :suru 1421900 :itasu) ;; いたす  
 
@@ -113,8 +115,9 @@
       (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
 
       (load-conjs :sugiru 1195970) ;; すぎる
-
-      )))
+      )
+    (bordeaux-threads:release-lock *init-suffixes-lock*)
+    ))
 
 (defparameter *suffix-list* nil)
 
