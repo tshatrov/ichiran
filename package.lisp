@@ -25,7 +25,7 @@
 
 (defpackage #:ichiran
   (:use #:cl #:ichiran/characters #:ichiran/dict)
-  (:export :romanize :romanize-word
+  (:export :romanize :romanize-word :romanize* :romanize-word-info
            :generic-romanization :generic-hepburn :kana-table
            :simplified-hepburn :simplifications
            :*hepburn-basic* :*hepburn-simple* :*hepburn-passport*

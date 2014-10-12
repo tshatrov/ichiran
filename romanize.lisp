@@ -198,6 +198,13 @@
          (unless (zerop len)
            (setf last-space (cl-unicode:has-property (char part (1- len)) "WhiteSpace"))))))
 
+(defun romanize-word-info (word-info &key (method *default-romanization-method*))
+  "Romanize word-info instance"
+  (let* ((orig-text (word-info-text word-info)))
+    (map-word-info-kana
+     (lambda (wk) (romanize-word wk :method method :original-spelling orig-text))
+     word-info)))
+
 (defun romanize (input &key (method *default-romanization-method*) (with-info nil))
   "Romanize a sentence according to method"
   (setf input (normalize input))
@@ -206,15 +213,27 @@
      nconc
        (if (eql split-type :word)
            (mapcar (lambda (word)
-                     (let* ((orig-text (word-info-text word))
-                            (rom (map-word-info-kana
-                                  (lambda (wk) (romanize-word wk :method method
-                                                              :original-spelling orig-text))
-                                  word)))
+                     (let ((rom (romanize-word-info word :method method)))
                        (when with-info
                          (push (cons rom (word-info-str word)) definitions))
                        rom))
                    (simple-segment split-text))
            (list split-text)) into parts
      finally (return (values (join-parts parts) (nreverse definitions)))))
-  
+
+(defun romanize* (input &key (method *default-romanization-method*) (limit 5))
+  "Romanizes text with very detailed metadata"
+  (setf input (normalize input))
+  (loop for (split-type . split-text) in (basic-split input)
+     collect
+       (if (eql split-type :word)
+           (mapcar (lambda (pair)
+                     (let ((word-list (car pair))
+                           (score (cdr pair)))
+                       (cons
+                        (mapcar (lambda (word)
+                                  (cons (romanize-word-info word :method method) word))
+                                word-list)
+                        score)))
+                   (dict-segment split-text :limit limit))
+           split-text)))
