@@ -174,6 +174,8 @@
   (delete-sense-prop 1446760 "misc" "uk")
   ;; だし
   (delete-sense-prop 1302910 "misc" "uk")
+  ;; う
+  (delete-sense-prop 2802220 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")

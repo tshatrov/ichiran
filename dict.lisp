@@ -699,7 +699,7 @@
 
 (defparameter *length-coeff-sequences*
   '((:strong 1 8 24 48 100)
-    (:weak 1 4 9 16 25)
+    (:weak 1 4 9 16 25 36)
     (:tail 4 9 16 24)))
 
 (defun length-multiplier-coeff (length class)
