@@ -184,6 +184,7 @@
 
   ;; set/unset common flag for choice kana readings
   (set-common 'kana-text 1310920 "したい" :null)
+  (set-common 'kana-text 1159430 "いたい" :null)
   (set-common 'kana-text 1523060 "ほんと" 2)
   (set-common 'kana-text 1577100 "なん" 2)
   (set-common 'kana-text 1012440 "めく" :null)
@@ -206,6 +207,7 @@
 
   ;; delete adj stem conjugation for ない
   (delete-conjugation 2029110 2257550)
+  (delete-conjugation 2086640 2684620) ;; しい
 
   )
 
