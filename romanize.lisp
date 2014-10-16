@@ -192,7 +192,7 @@
          for len = (length part) do 
          (when (and (not (zerop len))
                     (not last-space)
-                    (alpha-char-p (char part 0)))
+                    (alphanumericp (char part 0)))
            (princ #\Space s))
          (princ part s)
          (unless (zerop len)
