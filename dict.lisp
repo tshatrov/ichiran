@@ -816,8 +816,20 @@
      if (eql char-class :sokuon) collect (1+ pos)
      else if (member char-class modifiers) collect pos))
 
+(defun make-slice ()
+  (make-array 0 :element-type 'character
+              :displaced-to ""))
+
+(defun subseq-slice (slice str start &optional (end (length str)))
+  (assert (>= end start))
+  (unless slice (setf slice (make-slice)))
+  (adjust-array slice (- end start)
+                :displaced-to str
+                :displaced-index-offset start))
+
 (defun find-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
+       and slice = (make-slice)
        for start from 0 below (length str)
        unless (member start sticky)
        nconcing 
@@ -827,7 +839,7 @@
                       (lambda (word)
                         (gen-score (make-segment :start start :end end :word word)
                                    (= end (length str))))
-                      (find-word (subseq str start end))))))
+                      (find-word (subseq-slice slice str start end))))))
 
 (defparameter *identical-word-score-cutoff* 1/2)
 
@@ -863,6 +875,7 @@
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
        with suffix-map = (get-suffix-map str)
+       and slice = (make-slice)
        for start from 0 below (length str)
        unless (member start sticky)
        nconcing 
@@ -876,7 +889,7 @@
                                  (when (>= (segment-score segment) *score-cutoff*) (list segment))))
                              (let ((*suffix-map-temp* suffix-map)
                                    (*suffix-next-end* end))
-                               (find-word-full (subseq str start end))))))
+                               (find-word-full (subseq-slice slice str start end))))))
               (when segments
                 (list (make-segment-list :segments (cull-segments segments)
                                          :start start :end end)))))))
