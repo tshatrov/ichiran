@@ -20,6 +20,7 @@
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score :map-word-info-kana
            :word-info-str :word-info-components :word-info-alternative
+           :word-info-start :word-info-end
            :init-suffixes
            ))
 

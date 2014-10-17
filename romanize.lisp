@@ -230,9 +230,9 @@
            (mapcar (lambda (pair)
                      (let ((word-list (car pair))
                            (score (cdr pair)))
-                       (cons
+                       (list
                         (mapcar (lambda (word)
-                                  (cons (romanize-word-info word :method method) word))
+                                  (list (romanize-word-info word :method method) word))
                                 word-list)
                         score)))
                    (dict-segment split-text :limit limit))

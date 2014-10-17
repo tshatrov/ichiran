@@ -966,22 +966,36 @@
 ;;                         (segment-list (list (car (segment-list-segments obj))))))
 ;;                     (car item))))))
 
-(defstruct word-info type text kana (score 0) (seq nil) (components nil) (alternative nil) (primary t))
+(defclass word-info ()
+  ((type :initarg :type :accessor word-info-type)
+   (text :initarg :text :accessor word-info-text)
+   (kana :initarg :kana :accessor word-info-kana)
+   (seq :initarg :seq :initform nil :accessor word-info-seq)
+   (score :initarg :score :initform 0 :accessor word-info-score)
+   (components :initarg :components :initform nil :accessor word-info-components)
+   (alternative :initarg :alternative :initform nil :accessor word-info-alternative)
+   (primary :initarg :primary :initform t :accessor word-info-primary)
+   (start :initarg :start :initform nil :accessor word-info-start)
+   (end :initarg :end :initform nil :accessor word-info-end)
+   ))
 
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
-  (make-word-info :type (word-type word)
-                  :text (get-text word)
-                  :kana (get-kana word)
-                  :seq (seq word)
-                  :components (when (typep word 'compound-text)
-                                (loop with primary-id = (id (primary word)) 
-                                   for wrd in (words word)
-                                   collect (make-word-info :type (word-type wrd)
-                                                           :text (get-text wrd)
-                                                           :kana (get-kana wrd)
-                                                           :seq (seq wrd)
-                                                           :primary (= (id wrd) primary-id))))
-                  :score (segment-score segment)))
+  (make-instance 'word-info
+                 :type (word-type word)
+                 :text (get-text word)
+                 :kana (get-kana word)
+                 :seq (seq word)
+                 :components (when (typep word 'compound-text)
+                               (loop with primary-id = (id (primary word)) 
+                                  for wrd in (words word)
+                                  collect (make-word-info :type (word-type wrd)
+                                                          :text (get-text wrd)
+                                                          :kana (get-kana wrd)
+                                                          :seq (seq wrd)
+                                                          :primary (= (id wrd) primary-id))))
+                 :score (segment-score segment)
+                 :start (segment-start segment)
+                 :end (segment-end segment)))
 
 (defparameter *segment-score-cutoff* 4/5)
 
@@ -999,19 +1013,24 @@
         (loop for wi in wi-list
            collect (word-info-kana wi) into kana-list
            collect (word-info-seq wi) into seq-list
-           finally (return (make-word-info :type (word-info-type wi1)
-                                           :text (word-info-text wi1)
-                                           :kana (remove-duplicates kana-list :test 'equal)
-                                           :seq seq-list
-                                           :components wi-list
-                                           :alternative t
-                                           :score (word-info-score wi1)))))))
-    
+           finally (return (make-instance 'word-info
+                                          :type (word-info-type wi1)
+                                          :text (word-info-text wi1)
+                                          :kana (remove-duplicates kana-list :test 'equal)
+                                          :seq seq-list
+                                          :components wi-list
+                                          :alternative t
+                                          :score (word-info-score wi1)
+                                          :start (segment-list-start segment-list)
+                                          :end (segment-list-end segment-list)
+                                          ))))))
 
 (defun fill-segment-path (str path)
   (flet ((make-substr-gap (start end)
            (let ((substr (subseq str start end)))
-             (make-word-info :type :gap :text substr :kana substr))))
+             (make-instance 'word-info
+                            :type :gap :text substr :kana substr
+                            :start start :end end))))
     (loop with idx = 0 and result
        for segment-list in path
        when (typep segment-list 'segment-list)
