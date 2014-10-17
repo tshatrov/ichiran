@@ -992,6 +992,11 @@
    (end :initarg :end :initform nil :accessor word-info-end)
    ))
 
+(defmethod print-object ((obj word-info) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a ~a[~a] score=~a"
+            (word-info-seq obj) (word-info-text obj) (word-info-kana obj) (word-info-score obj))))
+
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
   (make-instance 'word-info
                  :type (word-type word)
@@ -1001,11 +1006,12 @@
                  :components (when (typep word 'compound-text)
                                (loop with primary-id = (id (primary word)) 
                                   for wrd in (words word)
-                                  collect (make-word-info :type (word-type wrd)
-                                                          :text (get-text wrd)
-                                                          :kana (get-kana wrd)
-                                                          :seq (seq wrd)
-                                                          :primary (= (id wrd) primary-id))))
+                                  collect (make-instance 'word-info 
+                                                         :type (word-type wrd)
+                                                         :text (get-text wrd)
+                                                         :kana (get-kana wrd)
+                                                         :seq (seq wrd)
+                                                         :primary (= (id wrd) primary-id))))
                  :score (segment-score segment)
                  :start (segment-start segment)
                  :end (segment-end segment)))
