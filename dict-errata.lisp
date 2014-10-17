@@ -176,6 +176,8 @@
   (delete-sense-prop 1302910 "misc" "uk")
   ;; う
   (delete-sense-prop 2802220 "misc" "uk")
+  ;; もち
+  (delete-sense-prop 1535790 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -193,7 +195,7 @@
   (set-common 'kana-text 1309910 "してい" 0)
   (set-common 'kana-text 1311320 "してい" 0)
   (set-common 'kana-text 1423310 "なか" 1)
-
+  (set-common 'kanji-text 1245280 "空" 0)
 
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")
