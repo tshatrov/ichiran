@@ -230,6 +230,18 @@
           (case (conj-fml obj) ((nil) 0) ((t) 1))
           ))
 
+(defun conj-prop-json (obj)
+  (let ((js (jsown:new-js
+              ("pos" (pos obj))
+              ("type" (get-conj-description (conj-type obj)))))
+        (neg (conj-neg obj))
+        (fml (conj-neg obj)))
+    (unless (eql neg :null)
+      (jsown:extend-js js ("neg" neg)))
+    (unless (eql fml :null)
+      (jsown:extend-js js ("fml" fml)))
+    js))
+
 (defmethod print-object ((obj conj-prop) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (princ (conj-info-short obj) stream)))
@@ -992,6 +1004,40 @@
    (end :initarg :end :initform nil :accessor word-info-end)
    ))
 
+(defun word-info-json (word-info)
+  (with-slots (type text kana seq score components alternative primary start end)
+      word-info
+    (jsown:new-js
+      ("type" type)
+      ("text" text)
+      ("kana" kana)
+      ("seq" seq)
+      ("score" score)
+      ("components" (mapcar #'word-info-json components))
+      ("alternative" alternative)
+      ("primary" primary)
+      ("start" start)
+      ("end" end))))
+
+;; define appropriate defmethods so that word-info-str and
+;; word-info-gloss-json work both on CLOS objects and jsown objects
+
+(defmacro def-reader-for-json (name slot)
+  (alexandria:with-gensyms (obj)
+    `(defmethod ,name ((,obj cons))
+       (jsown:val ,obj ,slot))))
+
+(def-reader-for-json word-info-type "type")
+(def-reader-for-json word-info-text "text")
+(def-reader-for-json word-info-kana "kana")
+(def-reader-for-json word-info-seq "seq")
+(def-reader-for-json word-info-score "score")
+(def-reader-for-json word-info-components "components")
+(def-reader-for-json word-info-alternative "alternative")
+(def-reader-for-json word-info-primary "primary")
+(def-reader-for-json word-info-start "start")
+(def-reader-for-json word-info-end "end")
+
 (defmethod print-object ((obj word-info) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a ~a[~a] score=~a"
@@ -1090,6 +1136,11 @@
           when (> i 1) do (terpri s)
           do (format s "~a. ~a ~a" i rpos gloss))))
 
+(defun get-senses-json (seq)
+  (loop for (pos gloss) in (get-senses seq)
+     for rpos = pos then (if (equal pos "[]") rpos pos)
+     collect (list rpos gloss)))
+
 (defun short-sense-str (seq &key with-pos)
   (query 
    (sql-compile
@@ -1112,12 +1163,15 @@
       (format nil "~a 【~a】" kanji kana)
       kana))
 
+(defun reading-str-seq (seq)
+  (let* ((kanji-text (car (query (:select 'text :from 'kanji-text :where (:and (:= 'seq seq) (:= 'ord 0))) :column)))
+         (kana-text (car (query (:select 'text :from 'kana-text :where (:and (:= 'seq seq) (:= 'ord 0))) :column))))
+    (reading-str kanji-text kana-text)))
+
 (defun entry-info-short (seq &key with-pos)
-  (let ((kanji-text (car (query (:select 'text :from 'kanji-text :where (:and (:= 'seq seq) (:= 'ord 0))) :column)))
-        (kana-text (car (query (:select 'text :from 'kana-text :where (:and (:= 'seq seq) (:= 'ord 0))) :column)))
-        (sense-str (short-sense-str seq :with-pos with-pos)))
+  (let ((sense-str (short-sense-str seq :with-pos with-pos)))
     (with-output-to-string (s)
-      (format s "~a : " (reading-str kanji-text kana-text))
+      (format s "~a : " (reading-str-seq seq))
       (when sense-str (princ sense-str s)))))
 
 (defun print-conj-info (seq &optional (out *standard-output*))
@@ -1137,6 +1191,25 @@
              (push via via-used)))
        (princ " ]" out)))
 
+(defun conj-info-json (seq)
+  (loop with straight-conj = (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
+       and via-used = nil
+     for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
+     for via = (seq-via conj)
+     unless (member via via-used)
+     collect (let ((js (jsown:new-js 
+                         ("prop" (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+                                    collect (conj-prop-json conj-prop))))))
+               (if (eql via :null)
+                   (jsown:extend-js js
+                     ("reading" (reading-str-seq (seq-from conj)))
+                     ("gloss" (get-senses-json (seq-from conj))))
+                   (progn
+                     (jsown:extend-js js
+                       ("via" (conj-info-json via)))
+                     (push via via-used)))
+               js)))
+
 (defun map-word-info-kana (fn word-info &key (separator "/")
                            &aux (wkana (word-info-kana word-info)))
   (if (listp wkana)
@@ -1147,15 +1220,18 @@
              do (princ (funcall fn wk) s)))
       (funcall fn wkana)))
 
+(defun word-info-reading-str (word-info)
+  (reading-str (case (word-info-type word-info)
+                 (:kanji (word-info-text word-info))
+                 (t nil))
+               (word-info-kana word-info)))
+
 (defun word-info-str (word-info)
   (with-connection *connection*
     (with-output-to-string (s)
       (labels ((inner (word-info &optional suffix marker)
                  (when marker (princ " * " s))
-                 (princ (reading-str (case (word-info-type word-info)
-                                       (:kanji (word-info-text word-info))
-                                       (t nil))
-                                     (word-info-kana word-info)) s)
+                 (princ (word-info-reading-str word-info) s)
                  (if (word-info-components word-info)
                      (progn
                        (format s " Compound word: ~{~a~^ + ~}" (mapcar #'word-info-text (word-info-components word-info)))
@@ -1174,4 +1250,21 @@
                  when (> i 1) do (terpri s)
                  do (format s "<~a>. " i) (inner wi nil nil))
             (inner word-info))))))
-          
+
+(defun word-info-gloss-json (word-info)
+  (labels ((inner (word-info &optional suffix)
+             (let ((js (jsown:new-js ("reading" (word-info-reading-str word-info)))))
+               (if (word-info-components word-info)
+                   (jsown:extend-js js
+                     ("compound" (mapcar #'word-info-text (word-info-components word-info)))
+                     ("components" (loop for wi in (word-info-components word-info)
+                                      collect (inner wi (not (word-info-primary wi))))))
+                   (let ((seq (word-info-seq word-info)) desc)
+                     (cond ((and suffix (setf desc (get-suffix-description seq)))
+                            (jsown:extend-js js ("suffix" desc)))
+                           (seq (jsown:extend-js js ("gloss" (get-senses-json seq)))))
+                     (jsown:extend-js js ("conj" (conj-info-json seq)))))
+               js)))
+    (if (word-info-alternative word-info)
+        (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
+        (inner word-info))))

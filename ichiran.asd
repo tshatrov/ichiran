@@ -16,6 +16,7 @@
                #:cl-csv
                #:lisp-unit
                #:bordeaux-threads
+               #:jsown
                )
   :components ((:file "package")
                (:file "characters")
