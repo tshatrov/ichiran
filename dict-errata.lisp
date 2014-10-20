@@ -178,6 +178,14 @@
   (delete-sense-prop 2802220 "misc" "uk")
   ;; もち
   (delete-sense-prop 1535790 "misc" "uk")
+  ;; なんだ
+  (delete-sense-prop  2119750 "misc" "uk")
+  ;; つ
+  (delete-sense-prop 2220330 "misc" "uk")
+  ;; かけ
+  (delete-sense-prop 1207600 "misc" "uk")
+  ;; かく
+  (delete-sense-prop 1399970 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")

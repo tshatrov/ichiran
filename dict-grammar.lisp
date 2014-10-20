@@ -46,7 +46,7 @@
     (:aru "indicates completion / finished action")
     (:kuru "indicates action that had been continuing up till now / came to be ")
     (:oku "to do in advance / to leave in the current state expecting a later change")
-    (:kuneru "do something for you")
+    (:kureru "(asking) to let do something")
     (:iku "is becoming / action starting now and continuing")
     (:suru "makes a verb from a noun")
     (:itasu "makes a verb from a noun (humble)")
@@ -90,7 +90,7 @@
 
           (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
 
-          (load-conjs :te 1269130 :kuneru) ;; くれる
+          (load-conjs :te 1269130 :kureru) ;; くれる
 
           (loop for kf in (get-kana-forms 1578850) ;;  いく / く
              for tkf = (text kf)
