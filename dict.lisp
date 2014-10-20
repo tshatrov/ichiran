@@ -1263,7 +1263,8 @@
                      (cond ((and suffix (setf desc (get-suffix-description seq)))
                             (jsown:extend-js js ("suffix" desc)))
                            (seq (jsown:extend-js js ("gloss" (get-senses-json seq)))))
-                     (jsown:extend-js js ("conj" (conj-info-json seq)))))
+                     (when seq
+                       (jsown:extend-js js ("conj" (conj-info-json seq))))))
                js)))
     (if (word-info-alternative word-info)
         (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
