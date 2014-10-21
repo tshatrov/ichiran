@@ -168,8 +168,8 @@
 (def-simple-suffix suffix-suru :suru (:connector " " :score 5) (root)
   (find-word-with-pos root "vs"))
 
-(def-simple-suffix suffix-kara :kara (:connector " " :score 5) (root)
-  (or (find-word-seq root 1577100)
+(def-simple-suffix suffix-kara :kara (:connector " " :score 1) (root)
+  (or (find-word-seq root 1577100 2089020)
       #-(and)
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
@@ -310,6 +310,13 @@
   (filter-in-seq-set 2089020) ;; だ 
   :description "noun+da"
   :score 10
+  :connector " ")
+
+(def-generic-synergy synergy-no-da (l r)
+  (filter-in-seq-set 1469800 2139720) 
+  (filter-in-seq-set 2089020)
+  :description "no da/desu"
+  :score 5
   :connector " ")
 
 ;; should be a suffix

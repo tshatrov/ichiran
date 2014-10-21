@@ -45,7 +45,7 @@
   (assert-segment "しながき" "しながき")
   (assert-segment "楽しさ求めて" "楽し" "さ" "求めて")
   (assert-segment "日常のなかにも" "日常" "の" "なか" "に" "も")
-  ;;(assert-segment "ほんとは好きなんだと" "ほんと" "は" "好き" "なん" "だと")
+  (assert-segment "ほんとは好きなんだと" "ほんと" "は" "好き" "な" "ん" "だと")
   (assert-segment "内緒なの" "内緒" "なの")
   (assert-segment "魚が好きじゃない" "魚" "が" "好き" "じゃない")
   (assert-segment "物語になってく" "物語" "に" "なってく")
@@ -75,6 +75,8 @@
   (assert-segment "優しすぎそのうえカッコいいの" "優しすぎ" "そのうえ" "カッコいい" "の")
   (assert-segment "この本は複雑すぎるから" "この" "本" "は" "複雑" "すぎる" "から")
   (assert-segment "かわいいです" "かわいいです")
+  (assert-segment "学生なんだ" "学生" "な" "ん" "だ")
+  (assert-segment "なんだから" "な" "ん" "だから")
   )
 
 (defun run-all-tests ()

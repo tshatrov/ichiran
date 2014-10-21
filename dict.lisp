@@ -1062,7 +1062,7 @@
                  :start (segment-start segment)
                  :end (segment-end segment)))
 
-(defparameter *segment-score-cutoff* 4/5)
+(defparameter *segment-score-cutoff* 2/3)
 
 (defun word-info-from-segment-list (segment-list)
   (let* ((segments (segment-list-segments segment-list))
