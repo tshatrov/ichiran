@@ -1136,9 +1136,15 @@
           when (> i 1) do (terpri s)
           do (format s "~a. ~a ~a" i rpos gloss))))
 
-(defun get-senses-json (seq)
+(defun split-pos (pos-str)
+  (split-sequence #\, pos-str :start 1 :end (1- (length pos-str))))
+
+(defun get-senses-json (seq &key pos-list)
   (loop for (pos gloss) in (get-senses seq)
-     for rpos = pos then (if (equal pos "[]") rpos pos)
+     for emptypos = (equal pos "[]")
+     for rpos = pos then (if emptypos rpos pos)
+     for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
+     when (or (not pos-list) (intersection lpos pos-list :test 'equal))
      collect (list rpos gloss)))
 
 (defun short-sense-str (seq &key with-pos)
@@ -1197,13 +1203,15 @@
      for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
      for via = (seq-via conj)
      unless (member via via-used)
-     collect (let ((js (jsown:new-js 
-                         ("prop" (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
-                                    collect (conj-prop-json conj-prop))))))
+     collect (let* ((conj-pos nil)
+                    (js (jsown:new-js 
+                          ("prop" (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+                                     do (push (pos conj-prop) conj-pos)
+                                     collect (conj-prop-json conj-prop))))))
                (if (eql via :null)
                    (jsown:extend-js js
                      ("reading" (reading-str-seq (seq-from conj)))
-                     ("gloss" (get-senses-json (seq-from conj))))
+                     ("gloss" (get-senses-json (seq-from conj) :pos-list conj-pos)))
                    (progn
                      (jsown:extend-js js
                        ("via" (conj-info-json via)))
