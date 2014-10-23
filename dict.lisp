@@ -1260,20 +1260,21 @@
             (inner word-info))))))
 
 (defun word-info-gloss-json (word-info)
-  (labels ((inner (word-info &optional suffix)
-             (let ((js (jsown:new-js ("reading" (word-info-reading-str word-info)))))
-               (if (word-info-components word-info)
-                   (jsown:extend-js js
-                     ("compound" (mapcar #'word-info-text (word-info-components word-info)))
-                     ("components" (loop for wi in (word-info-components word-info)
-                                      collect (inner wi (not (word-info-primary wi))))))
-                   (let ((seq (word-info-seq word-info)) desc)
-                     (cond ((and suffix (setf desc (get-suffix-description seq)))
-                            (jsown:extend-js js ("suffix" desc)))
-                           (seq (jsown:extend-js js ("gloss" (get-senses-json seq)))))
-                     (when seq
-                       (jsown:extend-js js ("conj" (conj-info-json seq))))))
-               js)))
-    (if (word-info-alternative word-info)
-        (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
-        (inner word-info))))
+  (with-connection *connection*
+    (labels ((inner (word-info &optional suffix)
+               (let ((js (jsown:new-js ("reading" (word-info-reading-str word-info)))))
+                 (if (word-info-components word-info)
+                     (jsown:extend-js js
+                       ("compound" (mapcar #'word-info-text (word-info-components word-info)))
+                       ("components" (loop for wi in (word-info-components word-info)
+                                        collect (inner wi (not (word-info-primary wi))))))
+                     (let ((seq (word-info-seq word-info)) desc)
+                       (cond ((and suffix (setf desc (get-suffix-description seq)))
+                              (jsown:extend-js js ("suffix" desc)))
+                             (seq (jsown:extend-js js ("gloss" (get-senses-json seq)))))
+                       (when seq
+                         (jsown:extend-js js ("conj" (conj-info-json seq))))))
+                 js)))
+      (if (word-info-alternative word-info)
+          (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
+          (inner word-info)))))
