@@ -204,6 +204,7 @@
   (set-common 'kana-text 1311320 "してい" 0)
   (set-common 'kana-text 1423310 "なか" 1)
   (set-common 'kanji-text 1245280 "空" 0)
+  (set-common 'kana-text 1308640 "しない" 0)
 
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")

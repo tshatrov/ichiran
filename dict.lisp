@@ -764,7 +764,11 @@
              (particle-p (member "prt" posi :test 'equal))
              (pronoun-p (member "pn" posi :test 'equal))
              (cop-da-p (member "cop-da" posi :test 'equal))
-             (long-p (> len (if (or (and kanji-p root-p (not prefer-kana)) (and common-p (< 0 common 10))) 2 3)))
+             (long-p (> len
+                        (if (or (and kanji-p (not prefer-kana)
+                                     (or root-p (and use-length (member 13 conj-types))))
+                                (and common-p (< 0 common 10)))
+                            2 3)))
              (primary-p (or (and prefer-kana conj-types-p
                                  (not kanji-p)
                                  (or (not (primary-nokanji entry))

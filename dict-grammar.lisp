@@ -158,7 +158,7 @@
     (when te
       (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
+(def-simple-suffix suffix-tai :tai (:connector "" :score 10) (root)
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-te :te (:connector "-" :score 0) (root)
