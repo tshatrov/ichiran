@@ -800,7 +800,7 @@
         (when (and common-p (not particle-p)) 
           (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
                  (incf score (if (= common 0) 10 (max (- 20 common) 10))))
-                (kanji-p (incf score 5))
+                (kanji-p (incf score 8))
                 ((or (> len 2) (< 0 common 10)) (incf score 3))
                 (t (incf score 2))))
         (when (or long-p kanji-p)
