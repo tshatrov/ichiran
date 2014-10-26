@@ -720,16 +720,7 @@
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
-(defparameter *final-prt* '(2029120 2086640 2029110)
-  "Particles that only have meaning when they're final")
-
-(defparameter *skip-words* '(2458040  ;; てもいい
-                             2013800  ;; ちゃう
-                             )
-  "seq of words that aren't really words, like suffixes etc."
-  )
-
-(defparameter *weak-conj-types* (list +conj-adjective-stem+))
+;; *skip-words* *final-prt* *weak-conj-types* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0))
   (when (typep reading 'compound-text)

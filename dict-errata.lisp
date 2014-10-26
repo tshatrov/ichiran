@@ -223,6 +223,15 @@
 
   )
 
+(defparameter *skip-words* '(2458040  ;; てもいい
+                             2013800  ;; ちゃう
+                             2029040  ;; ば
+                             )
+  "seq of words that aren't really words, like suffixes etc."
+  )
+
+(defparameter *final-prt* '(2029120 2086640 2029110)
+  "Particles that only have meaning when they're final")
 
 ;; Additional conjugations
 
@@ -241,3 +250,5 @@
                                              1 "" "" ""))))
     (dolist (rule rules)
       (push rule (gethash pos hash nil)))))
+
+(defparameter *weak-conj-types* (list +conj-adjective-stem+))
