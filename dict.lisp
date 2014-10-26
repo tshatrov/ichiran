@@ -754,6 +754,7 @@
              (common-p (not (eql common :null)))
              (particle-p (member "prt" posi :test 'equal))
              (pronoun-p (member "pn" posi :test 'equal))
+             (no-common-bonus (or particle-p (equal posi '("int"))))
              (cop-da-p (member "cop-da" posi :test 'equal))
              (long-p (> len
                         (if (or (and kanji-p (not prefer-kana)
@@ -788,9 +789,9 @@
               (incf score 5))
             (when final
               (incf score 5))))
-        (when (and common-p (not particle-p)) 
+        (when (and common-p (not no-common-bonus)) 
           (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
-                 (incf score (if (= common 0) 10 (max (- 20 common) 10))))
+                 (incf score (if (or (= common 0) (not primary-p)) 10 (max (- 20 common) 10))))
                 (kanji-p (incf score 8))
                 ((or (> len 2) (< 0 common 10)) (incf score 3))
                 (t (incf score 2))))
