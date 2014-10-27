@@ -54,6 +54,8 @@
     (:ii "it's ok if ... / is it ok if ...?")
     (:mo "even if ...")
     (:sugiru "to be too (much) ...")
+    (:nikui "difficult to...")
+    (:kara "because/why")
     ))
 
 (defun get-suffix-description (seq)
@@ -75,6 +77,7 @@
 
           (load-conjs :chau 2013800)
           (load-conjs :tai 2017560)
+          (load-conjs :ren 2772730 :nikui)
 
           (loop for kf in (get-kana-forms 1577980) ;; いる (る)
              for tkf = (text kf)
@@ -161,7 +164,11 @@
 (def-simple-suffix suffix-tai :tai (:connector "" :score 10) (root)
   (find-word-with-conj-type root 13))
 
-(def-simple-suffix suffix-te :te (:connector "-" :score 0) (root)
+(def-simple-suffix suffix-ren :ren (:connector "" :score 5) (root)
+  ;; generic ren'youkei suffix
+  (find-word-with-conj-type root 13))
+
+(def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
