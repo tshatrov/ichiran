@@ -771,7 +771,8 @@
                                  (or (and kanji-p (not prefer-kana))
                                      (and common-p pronoun-p)
                                      (= (n-kanji entry) 0))))))
-        (when (intersection seq-set *skip-words*)
+        (when (or (intersection seq-set *skip-words*)
+                  (and particle-p (not final) (intersection seq-set *final-prt*)))
           (return-from calc-score 0))
         (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
           (let* ((table (if kanji-p 'kanji-text 'kana-text))
@@ -785,7 +786,7 @@
           (incf score (cond (long-p 10)
                             ((or common-p prefer-kana) 5)
                             (t 2)))
-          (when (and particle-p (or final (not (member seq *final-prt*))))
+          (when (and particle-p (or final (not (member seq *semi-final-prt*))))
             (when (and common-p)
               (incf score 5))
             (when final

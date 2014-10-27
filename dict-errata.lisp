@@ -188,6 +188,8 @@
   (delete-sense-prop 1399970 "misc" "uk")
   ;; らい
   (delete-sense-prop 2094480 "misc" "uk")
+  ;; いる
+  (delete-sense-prop 2729170 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -208,6 +210,7 @@
   (set-common 'kanji-text 1245280 "空" 0)
   (set-common 'kana-text 1308640 "しない" 0)
   (set-common 'kana-text 1579130 "ことし" 0)
+  (set-common 'kana-text 2084660 "いなくなった" 0)
 
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")
@@ -232,7 +235,14 @@
   "seq of words that aren't really words, like suffixes etc."
   )
 
-(defparameter *final-prt* '(2029120 2086640 2029110)
+(defparameter *semi-final-prt* '(2029120 ;; さ
+                                 2086640 ;; し
+                                 2029110 ;; な
+                                 )
+  "Particles that are final, but also have other uses")
+
+(defparameter *final-prt* '(2017770 ;; かい
+                            )
   "Particles that only have meaning when they're final")
 
 ;; Additional conjugations
