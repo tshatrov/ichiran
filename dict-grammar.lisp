@@ -293,14 +293,33 @@
     (member conj-type (getf (segment-info segment) :conj)
             :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
 
+(defparameter *noun-particles*
+  '(2028920 ;; は
+    2028930 ;; が
+    2028990 ;; に
+    2028980 ;; で
+    2029000 ;; へ
+    1007340 ;; だけ
+    1579080 ;; ごろ
+    1525680 ;; まで
+    2028940 ;; も
+    1582300 ;; など
+    2039380 ;; にて
+    2215430 ;; には
+    1469800 ;; の
+    1009990 ;; のみ
+    2029010 ;; を
+    1005120 ;; さえ
+    2034520 ;; でさえ
+    1005120 ;; すら
+    1008490 ;; と
+    1008530 ;; とか
+    2028960 ;; や
+    ))
+
 (def-generic-synergy synergy-noun-particle (l r)
   #'filter-is-noun
-  (lambda (segment)
-    (and (not (eql (common (segment-word segment)) :null))
-         (not (intersection *final-prt* (getf (segment-info segment) :seq-set)))
-         (intersection '("prt")
-                       (getf (segment-info segment) :posi)
-                       :test 'equal)))
+ (apply #'filter-in-seq-set *noun-particles*)
   :description "noun+prt"
   :score 10
   :connector " ")
