@@ -3,11 +3,11 @@
 
 (in-package #:ichiran/dict)
 
-(defparameter *jmdict-path* #p"foobar")
+(defvar *jmdict-path* #p"foobar")
 
-(defparameter *jmdict-data* #p"foobar")
+(defvar *jmdict-data* #p"foobar")
 
-(defparameter *connection* '("jmdict" "postgres" "" "localhost"))
+(defvar *connection* '("jmdict" "postgres" "" "localhost"))
 
 (eval-when (:load-toplevel)
   (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil))
