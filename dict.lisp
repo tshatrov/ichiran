@@ -720,7 +720,7 @@
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
-;; *skip-words* *final-prt* *weak-conj-types* are defined in dict-errata.lisp
+;; *skip-words* *final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0))
   (when (typep reading 'compound-text)
@@ -772,7 +772,8 @@
                                      (and common-p pronoun-p)
                                      (= (n-kanji entry) 0))))))
         (when (or (intersection seq-set *skip-words*)
-                  (and particle-p (not final) (intersection seq-set *final-prt*)))
+                  (and particle-p (not final) (intersection seq-set *final-prt*))
+                  (and (not root-p) (skip-by-conj-data conj-data)))
           (return-from calc-score 0))
         (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
           (let* ((table (if kanji-p 'kanji-text 'kana-text))

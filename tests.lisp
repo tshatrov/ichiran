@@ -81,6 +81,7 @@
   (assert-segment "切なくなってしまう" "切なく" "なって" "しまう")
   (assert-segment "らいかな" "らい" "かな")
   (assert-segment "誰かいなくなった" "誰か" "いなくなった")
+  (assert-segment "思い出すな" "思い出す" "な")
   )
 
 (defun run-all-tests ()

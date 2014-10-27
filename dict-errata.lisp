@@ -264,3 +264,15 @@
       (push rule (gethash pos hash nil)))))
 
 (defparameter *weak-conj-types* (list +conj-adjective-stem+))
+
+(defparameter *skip-conj-forms* ;; (type neg fml), :any matches whatever
+  '((10 t :any)))
+
+(defun skip-by-conj-data (conj-data)
+  (flet ((matches (cd)
+           (let* ((prop (conj-data-prop cd))
+                  (prop-list (list (conj-type prop) (conj-neg prop) (conj-fml prop))))
+             (some (lambda (sk)
+                     (every (lambda (l r) (or (eql r :any) (eql l r))) prop-list sk))
+                   *skip-conj-forms*))))
+    (every #'matches conj-data)))
