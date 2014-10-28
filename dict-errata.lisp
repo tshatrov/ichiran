@@ -275,4 +275,4 @@
              (some (lambda (sk)
                      (every (lambda (l r) (or (eql r :any) (eql l r))) prop-list sk))
                    *skip-conj-forms*))))
-    (every #'matches conj-data)))
+    (and conj-data (every #'matches conj-data))))

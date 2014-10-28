@@ -10,10 +10,14 @@
         *suffix-class* (make-hash-table :test 'eql)))
 
 (defun get-kana-forms (seq)
-  (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
-                                 :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
-                                 :where (:or (:= 'kt.seq seq)
-                                             (:= 'conj.from seq)))))
+  (loop for kt in 
+       (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
+                                      :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
+                                      :where (:or (:= 'kt.seq seq)
+                                                  (:= 'conj.from seq))))
+       for conj-data = (get-conj-data (seq kt))
+       unless (skip-by-conj-data conj-data)
+       collect kt))
 
 (defun get-kana-form (seq text)
   (car (select-dao 'kana-text (:and (:= 'text text) (:= 'seq seq)))))
