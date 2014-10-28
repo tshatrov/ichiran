@@ -22,7 +22,7 @@
            :word-info-str :word-info-components :word-info-alternative
            :word-info-start :word-info-end :word-info-json
            :word-info-gloss-json
-           :init-suffixes
+           :init-suffixes :init-suffixes-running-p
            ))
 
 (defpackage #:ichiran

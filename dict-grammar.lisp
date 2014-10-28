@@ -65,65 +65,73 @@
 (defun get-suffix-description (seq)
   (get-suffix-class-description (gethash seq *suffix-class*)))
 
-(defvar *init-suffixes-lock* (bordeaux-threads:make-lock "init-suffixes-lock"))
+(defvar *init-suffixes-lock* (sb-thread:make-mutex :name "init-suffixes-lock"))
+
+(defun init-suffixes-running-p ()
+  (or (not *suffix-cache*)
+      (sb-thread:mutex-value *init-suffixes-lock*)))
+
+(defun init-suffixes-thread ()
+  (sb-thread:with-mutex (*init-suffixes-lock* :wait-p nil)
+    (init-suffix-hashtables)
+    (with-connection *connection*
+      (labels ((load-kf (key kf &key class text)
+                 (setf (gethash (or text (text kf)) *suffix-cache*) (list key kf)
+                       (gethash (seq kf) *suffix-class*) (or class key)))
+               (load-conjs (key seq &optional class)
+                 (loop for kf in (get-kana-forms seq)
+                    do (load-kf key kf :class class))))
+
+        (load-conjs :chau 2013800)
+        (load-conjs :tai 2017560)
+        (load-conjs :ren 2772730 :nikui)
+
+        (loop for kf in (get-kana-forms 1577980) ;; いる (る)
+           for tkf = (text kf)
+           for val = (list :te kf)
+           do (setf (gethash tkf *suffix-cache*) val
+                    (gethash (seq kf) *suffix-class*) :iru)
+             (when (> (length tkf) 1)
+               (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
+        
+        (load-conjs :te 1296400 :aru) ;; ある
+
+        (load-conjs :te 1547720 :kuru) ;; くる
+
+        (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
+
+        (load-conjs :te 1269130 :kureru) ;; くれる
+
+        (loop for kf in (get-kana-forms 1578850) ;;  いく / く
+           for tkf = (text kf)
+           for tkf-short = (subseq tkf 1)
+           for val = (list :te kf)
+           when (char= (char tkf 0) #\HIRAGANA_LETTER_I)
+           do (setf (gethash tkf *suffix-cache*) val
+                    (gethash (seq kf) *suffix-class*) :iku)
+             (unless (gethash tkf-short *suffix-cache*)
+               (setf (gethash tkf-short *suffix-cache*) val)))
+
+        (load-kf :te (get-kana-form 2820690 "いい") :class :ii)
+        (load-kf :te (get-kana-form 2820690 "いい") :class :ii :text "もいい")
+        (load-kf :te (get-kana-form 2028940 "も") :class :mo)
+
+        (load-conjs :suru 1157170) ;; する
+        (load-conjs :suru 1421900 :itasu) ;; いたす  
+
+        (load-conjs :kara 1002980) ;; から
+
+        (load-conjs :sou 1006610) ;; そう
+
+        (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
+
+        (load-conjs :sugiru 1195970) ;; すぎる
+        ))))
 
 (defun init-suffixes ()
   (unless *suffix-cache*
-    (bordeaux-threads:with-lock-held (*init-suffixes-lock*)
-      (init-suffix-hashtables)
-      (with-connection *connection*
-        (labels ((load-kf (key kf &key class text)
-                   (setf (gethash (or text (text kf)) *suffix-cache*) (list key kf)
-                         (gethash (seq kf) *suffix-class*) (or class key)))
-                 (load-conjs (key seq &optional class)
-                   (loop for kf in (get-kana-forms seq)
-                      do (load-kf key kf :class class))))
-
-          (load-conjs :chau 2013800)
-          (load-conjs :tai 2017560)
-          (load-conjs :ren 2772730 :nikui)
-
-          (loop for kf in (get-kana-forms 1577980) ;; いる (る)
-             for tkf = (text kf)
-             for val = (list :te kf)
-             do (setf (gethash tkf *suffix-cache*) val
-                      (gethash (seq kf) *suffix-class*) :iru)
-               (when (> (length tkf) 1)
-                 (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
-          
-          (load-conjs :te 1296400 :aru) ;; ある
-
-          (load-conjs :te 1547720 :kuru) ;; くる
-
-          (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
-
-          (load-conjs :te 1269130 :kureru) ;; くれる
-
-          (loop for kf in (get-kana-forms 1578850) ;;  いく / く
-             for tkf = (text kf)
-             for tkf-short = (subseq tkf 1)
-             for val = (list :te kf)
-             when (char= (char tkf 0) #\HIRAGANA_LETTER_I)
-             do (setf (gethash tkf *suffix-cache*) val
-                      (gethash (seq kf) *suffix-class*) :iku)
-               (unless (gethash tkf-short *suffix-cache*)
-                 (setf (gethash tkf-short *suffix-cache*) val)))
-
-          (load-kf :te (get-kana-form 2820690 "いい") :class :ii)
-          (load-kf :te (get-kana-form 2820690 "いい") :class :ii :text "もいい")
-          (load-kf :te (get-kana-form 2028940 "も") :class :mo)
-
-          (load-conjs :suru 1157170) ;; する
-          (load-conjs :suru 1421900 :itasu) ;; いたす  
-
-          (load-conjs :kara 1002980) ;; から
-
-          (load-conjs :sou 1006610) ;; そう
-
-          (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
-
-          (load-conjs :sugiru 1195970) ;; すぎる
-          )))))
+    (sb-thread:make-thread #'init-suffixes-thread))
+  (init-suffixes-running-p))
 
 (defparameter *suffix-list* nil)
 
