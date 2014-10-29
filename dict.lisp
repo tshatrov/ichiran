@@ -710,7 +710,7 @@
         (t (* length (expt len-lim (1- power))))))
 
 (defparameter *length-coeff-sequences*
-  '((:strong 1 8 24 48 100)
+  '((:strong 1 8 24 48)
     (:weak 1 4 9 16 25 36)
     (:tail 4 9 16 24)))
 
@@ -805,7 +805,7 @@
           (when (and long-p kanji-p)
             (incf score 2)))
         (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
-                                (if (> n-kanji 1) (* n-kanji 5) 0)
+                                (if (> n-kanji 1) (* (1- n-kanji) 10 (if use-length (1+ (- use-length len)) 1)) 0)
                                 (if use-length
                                     (+ (length-multiplier-coeff (- use-length len) :tail)
                                        (* score-mod (- use-length len)))
