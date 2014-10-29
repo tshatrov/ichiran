@@ -133,6 +133,11 @@
        (update-dao entry)
        (print entry)))
 
+(defun set-primary-nokanji (seq value)
+  (let ((entry (get-dao 'entry seq)))
+    (setf (slot-value entry 'primary-nokanji) value)
+    (update-dao entry)))
+
 (defun rearrange-readings (seq table prefix)
   "Rearrange readings with prefix before the rest of them"
   (loop
@@ -153,6 +158,8 @@
 (defun add-errata ()
   (add-deha-ja-readings)
   (remove-hiragana-nokanji)
+
+  (set-primary-nokanji 1538900 nil)
 
   ;;; add sense for な 
   (add-sense 2029110 4 "(used with nouns) な-adjective")

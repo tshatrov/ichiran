@@ -86,6 +86,7 @@
   (assert-segment "ことすら難しい" "こと" "すら" "難しい")
   (assert-segment "投下しました" "投下しました")
   (assert-segment "車止める" "車" "止める")
+  (assert-segment "円盤はただの" "円盤" "は" "ただ" "の")
   )
 
 (defun run-all-tests ()
