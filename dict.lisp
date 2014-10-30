@@ -786,7 +786,8 @@
               (setf common 0 common-p t))))
         (when primary-p
           (incf score (cond (long-p 10)
-                            ((or common-p prefer-kana) 5)
+                            (common-p 5)
+                            ((or prefer-kana (= (n-kanji entry) 0)) 3)
                             (t 2))))
         (when (and particle-p (or final (not (member seq *semi-final-prt*))))
           (incf score 2)

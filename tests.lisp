@@ -87,6 +87,9 @@
   (assert-segment "投下しました" "投下しました")
   (assert-segment "車止める" "車" "止める")
   (assert-segment "円盤はただの" "円盤" "は" "ただ" "の")
+  (assert-segment "なんですね" "な" "ん" "です" "ね")
+  (assert-segment "ズボンからすねをむき出しにする"
+                  "ズボン" "から" "すね" "を" "むき" "出しにする")
   )
 
 (defun run-all-tests ()
