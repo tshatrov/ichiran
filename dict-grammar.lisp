@@ -15,8 +15,10 @@
                                       :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
                                       :where (:or (:= 'kt.seq seq)
                                                   (:= 'conj.from seq))))
-       for conj-data = (get-conj-data (seq kt))
-       unless (skip-by-conj-data conj-data)
+       for conj-data = (get-conj-data (seq kt) seq)
+       for conj-types = (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)
+       unless (or (and conj-types (not (set-difference conj-types *weak-conj-types*)))
+                  (skip-by-conj-data conj-data))
        collect kt))
 
 (defun get-kana-form (seq text)

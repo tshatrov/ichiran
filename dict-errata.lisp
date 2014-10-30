@@ -159,7 +159,7 @@
   (add-deha-ja-readings)
   (remove-hiragana-nokanji)
 
-  (set-primary-nokanji 1538900 nil)
+  (set-primary-nokanji 1538900 nil) ;; ただ
 
   ;;; add sense for な 
   (add-sense 2029110 4 "(used with nouns) な-adjective")
@@ -200,6 +200,8 @@
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
+  ;; そういう
+  (add-sense-prop 1394680 0 "misc" "uk")
 
   (add-sense-prop 2425930 0 "pos" "prt")
 
@@ -219,6 +221,7 @@
   (set-common 'kana-text 1579130 "ことし" 0)
   (set-common 'kana-text 2084660 "いなくなった" 0)
   (set-common 'kana-text 1570850 "すね" :null)
+  (set-common 'kana-text 1470740 "のうち" 0)
 
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")

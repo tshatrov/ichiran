@@ -90,6 +90,12 @@
   (assert-segment "なんですね" "な" "ん" "です" "ね")
   (assert-segment "ズボンからすねをむき出しにする"
                   "ズボン" "から" "すね" "を" "むき" "出しにする")
+  (assert-segment "駅の前で会いましょう"
+                  "駅" "の" "前" "で" "会いましょう")
+  (assert-segment "あなたの質問は答えにくい"
+                  "あなた" "の" "質問" "は" "答えにくい")
+  (assert-segment "とかそういう" "とか" "そういう")
+  (assert-segment "好評のうちに" "好評" "の" "うち" "に")
   )
 
 (defun run-all-tests ()

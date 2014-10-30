@@ -248,8 +248,10 @@
 
 (defstruct conj-data seq from via prop)
 
-(defun get-conj-data (seq)
-  (loop for conj in (select-dao 'conjugation (:= 'seq seq))
+(defun get-conj-data (seq &optional from)
+  (loop for conj in (if from 
+                        (select-dao 'conjugation (:and (:= 'seq seq) (:= 'from from)))
+                        (select-dao 'conjugation (:= 'seq seq)))
        nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
                                              :via (let ((via (seq-via conj)))
@@ -1010,7 +1012,7 @@
   (with-slots (type text kana seq score components alternative primary start end)
       word-info
     (jsown:new-js
-      ("type" type)
+      ("type" (symbol-name type))
       ("text" text)
       ("kana" kana)
       ("seq" seq)
