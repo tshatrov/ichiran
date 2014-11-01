@@ -1031,7 +1031,13 @@
     `(defmethod ,name ((,obj cons))
        (jsown:val ,obj ,slot))))
 
-(def-reader-for-json word-info-type "type")
+;;(def-reader-for-json word-info-type "type")
+(defmethod word-info-type ((obj cons))
+  (let ((val (jsown:val obj "type")))
+    (cond ((equal val "KANJI") :kanji)
+          ((equal val "KANA") :kana)
+          (t :gap))))
+
 (def-reader-for-json word-info-text "text")
 (def-reader-for-json word-info-kana "kana")
 (def-reader-for-json word-info-seq "seq")
