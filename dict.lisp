@@ -53,7 +53,9 @@
                   'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
                   'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq)))))
 
-(defclass simple-text () ())
+(defclass simple-text () 
+  ((conjugations :accessor word-conjugations :initform nil)
+   ))
 
 (defclass kanji-text (simple-text)
   ((id :reader id :col-type serial)
@@ -248,10 +250,15 @@
 
 (defstruct conj-data seq from via prop)
 
-(defun get-conj-data (seq &optional from)
-  (loop for conj in (if from 
-                        (select-dao 'conjugation (:and (:= 'seq seq) (:= 'from from)))
-                        (select-dao 'conjugation (:= 'seq seq)))
+(defun get-conj-data (seq &optional from/conj-ids)
+  "from/conj-ids can be either from which word to find conjugations or a list of conj-ids"
+  (loop for conj in (cond
+                      ((eql from/conj-ids :root) nil)
+                      ((null from/conj-ids)
+                       (select-dao 'conjugation (:= 'seq seq)))
+                      ((listp from/conj-ids)
+                       (select-dao 'conjugation (:and (:= 'seq seq) (:in 'id (:set from/conj-ids)))))
+                      (t (select-dao 'conjugation (:and (:= 'seq seq) (:= 'from from/conj-ids)))))
        nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
                                              :via (let ((via (seq-via conj)))
@@ -697,11 +704,16 @@
   (:documentation "conjugation data for word"))
 
 (defmethod word-conj-data ((word simple-text))
-  (get-conj-data (seq word)))
+  (get-conj-data (seq word) (word-conjugations word)))
 
 (defmethod word-conj-data ((word compound-text))
   (word-conj-data (car (last (words word)))))
 
+(defmethod word-conjugations ((word compound-text))
+  (word-conjugations (car (last (words word)))))
+
+(defmethod (setf word-conjugations) (value (word compound-text))
+  (setf (word-conjugations (car (last (words word)))) value))
 
 (defstruct segment
   start end word (score nil) (info nil) (top nil)) ;; (accum 0) (path nil)

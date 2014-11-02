@@ -9,28 +9,43 @@
   (setf *suffix-cache* (make-hash-table :test 'equal)
         *suffix-class* (make-hash-table :test 'eql)))
 
+(defun get-kana-forms-conj-data-filter (conj-data)
+  (unless (skip-by-conj-data conj-data)
+    (loop for cd in conj-data
+       for prop = (conj-data-prop cd)
+       for ctype = (conj-type prop)
+       unless (member ctype *weak-conj-types*)
+       collect (conj-id prop)))) 
+
 (defun get-kana-forms (seq)
   (loop for kt in 
        (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
                                       :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
                                       :where (:or (:= 'kt.seq seq)
                                                   (:= 'conj.from seq))))
-       for conj-data = (get-conj-data (seq kt) seq)
-       for conj-types = (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)
-       unless (or (and conj-types (not (set-difference conj-types *weak-conj-types*)))
-                  (skip-by-conj-data conj-data))
-       collect kt))
+       if (= (seq kt) seq)
+       do (setf (word-conjugations kt) :root) and collect kt
+       else if (let ((conj-ids (get-kana-forms-conj-data-filter (get-conj-data (seq kt) seq))))
+                 (when conj-ids
+                   (setf (word-conjugations kt) conj-ids)))
+            collect kt))
 
 (defun get-kana-form (seq text)
   (car (select-dao 'kana-text (:and (:= 'text text) (:= 'seq seq)))))
 
-(defmacro find-word-with-conj-prop (word (conj-data-var) &body condition)
-  `(remove-if-not (lambda (,conj-data-var) ,@condition) (find-word-full ,word) :key 'word-conj-data))
+(defun find-word-with-conj-prop (wordstr filter-fn)
+  (loop for word in (find-word-full wordstr)
+       for conj-data = (funcall filter-fn (word-conj-data word))
+       for conj-ids = (mapcar (lambda (cdata) (conj-id (conj-data-prop cdata))) conj-data)
+       when conj-data
+       do (setf (word-conjugations word) conj-ids)
+       and collect word))
 
-(declaim (inline find-word-with-conj-type))
 (defun find-word-with-conj-type (word conj-type)
-  (find-word-with-conj-prop word (conj-data)
-    (member conj-type conj-data :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
+  (find-word-with-conj-prop word 
+      (lambda (conj-data)
+        (remove-if-not (lambda (cdata) (= (conj-type (conj-data-prop cdata)) conj-type))
+                       conj-data))))
 
 (defun find-word-seq (word &rest seqs)
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
@@ -133,9 +148,11 @@
         (load-conjs :sugiru 1195970) ;; すぎる
         ))))
 
-(defun init-suffixes ()
+(defun init-suffixes (&optional blocking)
   (unless *suffix-cache*
-    (sb-thread:make-thread #'init-suffixes-thread))
+    (if blocking
+        (init-suffixes-thread)
+        (sb-thread:make-thread #'init-suffixes-thread)))
   (init-suffixes-running-p))
 
 (defparameter *suffix-list* nil)

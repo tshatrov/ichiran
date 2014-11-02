@@ -99,6 +99,8 @@
   )
 
 (defun run-all-tests ()
+  (init-suffixes t)
   (let ((res (run-tests :all :ichiran/test)))
     (print-failures res)
+    (print-errors res)
     res))
