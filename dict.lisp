@@ -1012,6 +1012,7 @@
    (text :initarg :text :accessor word-info-text)
    (kana :initarg :kana :accessor word-info-kana)
    (seq :initarg :seq :initform nil :accessor word-info-seq)
+   (conjugations :initarg :conjugations :initform nil :accessor word-info-conjugations)
    (score :initarg :score :initform 0 :accessor word-info-score)
    (components :initarg :components :initform nil :accessor word-info-components)
    (alternative :initarg :alternative :initform nil :accessor word-info-alternative)
@@ -1021,13 +1022,14 @@
    ))
 
 (defun word-info-json (word-info)
-  (with-slots (type text kana seq score components alternative primary start end)
+  (with-slots (type text kana seq conjugations score components alternative primary start end)
       word-info
     (jsown:new-js
       ("type" (symbol-name type))
       ("text" text)
       ("kana" kana)
       ("seq" seq)
+      ("conjugations" (if (eql conjugations :root) "ROOT" conjugations))
       ("score" score)
       ("components" (mapcar #'word-info-json components))
       ("alternative" alternative)
@@ -1050,6 +1052,11 @@
           ((equal val "KANA") :kana)
           (t :gap))))
 
+(defmethod word-info-conjugations ((obj cons))
+  (let ((val (jsown:val obj "type")))
+    (cond ((equal val "ROOT") :root)
+          (t val))))
+
 (def-reader-for-json word-info-text "text")
 (def-reader-for-json word-info-kana "kana")
 (def-reader-for-json word-info-seq "seq")
@@ -1071,6 +1078,7 @@
                  :text (get-text word)
                  :kana (get-kana word)
                  :seq (seq word)
+                 :conjugations (when (typep word 'simple-text) (word-conjugations word))
                  :components (when (typep word 'compound-text)
                                (loop with primary-id = (id (primary word)) 
                                   for wrd in (words word)
@@ -1079,6 +1087,7 @@
                                                          :text (get-text wrd)
                                                          :kana (get-kana wrd)
                                                          :seq (seq wrd)
+                                                         :conjugations (word-conjugations wrd)
                                                          :primary (= (id wrd) primary-id))))
                  :score (segment-score segment)
                  :start (segment-start segment)
@@ -1202,10 +1211,17 @@
       (format s "~a : " (reading-str-seq seq))
       (when sense-str (princ sense-str s)))))
 
-(defun print-conj-info (seq &optional (out *standard-output*))
-  (loop with straight-conj = (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
-       and via-used = nil
-     for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
+(defun select-conjs (seq &optional conj-ids)
+  (if conj-ids
+      (unless (eql conj-ids :root)
+        (select-dao 'conjugation (:and (:= 'seq seq) (:in 'id (:set conj-ids)))))
+      (or
+       (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
+       (select-dao 'conjugation (:= 'seq seq)))))
+
+(defun print-conj-info (seq &key conjugations (out *standard-output*))
+  (loop with via-used = nil
+     for conj in (select-conjs seq conjugations)
      for via = (seq-via conj)
      unless (member via via-used)
      do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
@@ -1215,14 +1231,13 @@
            (format out "~%  ~a" (entry-info-short (seq-from conj)))
            (progn
              (format out "~% --(via)--")
-             (print-conj-info via out)
+             (print-conj-info via :out out)
              (push via via-used)))
        (princ " ]" out)))
 
-(defun conj-info-json (seq)
-  (loop with straight-conj = (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
-       and via-used = nil
-     for conj in (or straight-conj (select-dao 'conjugation (:= 'seq seq)))
+(defun conj-info-json (seq &key conjugations)
+  (loop with via-used = nil
+     for conj in (select-conjs seq conjugations)
      for via = (seq-via conj)
      unless (member via via-used)
      collect (let* ((conj-pos nil)
@@ -1268,12 +1283,16 @@
                        (dolist (comp (word-info-components word-info))
                          (terpri s)
                          (inner comp (not (word-info-primary comp)) t)))
-                     (let ((seq (word-info-seq word-info)) desc)
-                       (if (and suffix (setf desc (get-suffix-description seq)))
-                           (format s "  [suffix]: ~a " desc)
-                           (progn (terpri s) (princ (if seq (get-senses-str seq) "???") s)))
+                     (let ((seq (word-info-seq word-info)) 
+                           (conjs (word-info-conjugations word-info))
+                           desc)
+                       (cond ((and suffix (setf desc (get-suffix-description seq)))
+                              (format s "  [suffix]: ~a " desc))
+                             ((or (not conjs) (eql conjs :root))
+                              (terpri s) (princ (if seq (get-senses-str seq) "???") s)))
                        (when seq
-                         (print-conj-info seq s))))))
+                         (print-conj-info seq :out s
+                                          :conjugations conjs))))))
         (if (word-info-alternative word-info)
             (loop for wi in (word-info-components word-info)
                  for i from 1
@@ -1290,12 +1309,16 @@
                        ("compound" (mapcar #'word-info-text (word-info-components word-info)))
                        ("components" (loop for wi in (word-info-components word-info)
                                         collect (inner wi (not (word-info-primary wi))))))
-                     (let ((seq (word-info-seq word-info)) desc)
+                     (let ((seq (word-info-seq word-info))
+                           (conjs (word-info-conjugations word-info))
+                           desc)
                        (cond ((and suffix (setf desc (get-suffix-description seq)))
                               (jsown:extend-js js ("suffix" desc)))
-                             (seq (jsown:extend-js js ("gloss" (get-senses-json seq)))))
+                             ((and seq (or (not conjs) (eql conjs :root)))
+                              (jsown:extend-js js ("gloss" (get-senses-json seq)))))
                        (when seq
-                         (jsown:extend-js js ("conj" (conj-info-json seq))))))
+                         (jsown:extend-js js 
+                           ("conj" (conj-info-json seq :conjugations (word-info-conjugations word-info)))))))
                  js)))
       (if (word-info-alternative word-info)
           (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
