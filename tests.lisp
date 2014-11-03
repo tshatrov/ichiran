@@ -96,6 +96,7 @@
                   "あなた" "の" "質問" "は" "答えにくい")
   (assert-segment "とかそういう" "とか" "そういう")
   (assert-segment "好評のうちに" "好評" "の" "うち" "に")
+  (assert-segment "映像もすごくよかったです" "映像" "も" "すごく" "よかったです")
   )
 
 (defun run-all-tests ()

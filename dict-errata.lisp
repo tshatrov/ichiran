@@ -202,7 +202,10 @@
   ;; (add-sense-prop 1360480 0 "misc" "uk")
   ;; そういう
   (add-sense-prop 1394680 0 "misc" "uk")
+  ;; すごく
+  (add-sense-prop 2272830 0 "misc" "uk")
 
+  ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
 
   ;; set/unset common flag for choice kana readings
