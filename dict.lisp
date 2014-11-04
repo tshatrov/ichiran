@@ -1053,7 +1053,7 @@
           (t :gap))))
 
 (defmethod word-info-conjugations ((obj cons))
-  (let ((val (jsown:val obj "type")))
+  (let ((val (jsown:val obj "conjugations")))
     (cond ((equal val "ROOT") :root)
           (t val))))
 
