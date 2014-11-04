@@ -155,11 +155,24 @@
   (dolist (seq (query (:select 'seq :distinct :from 'conjugation :where (:= 'from seq)) :column))
     (rearrange-readings seq table prefix)))
 
+(defmacro do-readings (table seq text (rvar) &body body)
+  "text can be nil for all readings from table"
+  `(dolist (,rvar (select-dao ,table (:and (:= 'seq ,seq) ,@(when text `((:= 'text ,text))))))
+     ,@body))
+
+(defun add-primary-nokanji (seq reading)
+  (set-primary-nokanji seq t)
+  (do-readings 'kana-text seq reading (kt)
+    (setf (slot-value kt 'nokanji) t)
+    (update-dao kt)))
+
 (defun add-errata ()
   (add-deha-ja-readings)
   (remove-hiragana-nokanji)
 
   (set-primary-nokanji 1538900 nil) ;; ただ
+
+  (add-primary-nokanji 1415510 "タカ")
 
   ;;; add sense for な 
   (add-sense 2029110 4 "(used with nouns) な-adjective")

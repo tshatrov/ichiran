@@ -2,7 +2,7 @@
 
 Ichiran is a collection of tools for working with text in Japanese language. It contains experimental segmenting and romanization algorithms and uses open source [JMdictDB](http://edrdg.org/~smg/) dictionary database to display meanings of words.
 
-The web interface is under development right now.
+The web interface is under development right now. You can try it at [ichi.moe](http://ichi.moe).
 
 ## Notes
 

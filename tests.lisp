@@ -97,7 +97,14 @@
   (assert-segment "とかそういう" "とか" "そういう")
   (assert-segment "好評のうちに" "好評" "の" "うち" "に")
   (assert-segment "映像もすごくよかったです" "映像" "も" "すごく" "よかったです")
+  ;;(assert-segment "見てくれたかな" "見てくれた" "かな")
   )
+
+(define-test json-consistency-test
+  (loop for word in '("の" "赤かったろう" "書いてきてる")
+       for word-info = (car (simple-segment word))
+       for word-info-json = (word-info-json word-info)
+       do (assert-equal (word-info-gloss-json word-info) (word-info-gloss-json word-info-json))))
 
 (defun run-all-tests ()
   (init-suffixes t)
