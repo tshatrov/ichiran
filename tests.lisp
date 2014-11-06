@@ -97,6 +97,11 @@
   (assert-segment "とかそういう" "とか" "そういう")
   (assert-segment "好評のうちに" "好評" "の" "うち" "に")
   (assert-segment "映像もすごくよかったです" "映像" "も" "すごく" "よかったです")
+  (assert-segment "情けねえ" "情けねえ")
+  (assert-segment "春ですねえ" "春" "です" "ねえ")
+  (assert-segment "春ですねぇ" "春" "です" "ねぇ")
+  (assert-segment "きつねじゃなかった" "きつね" "じゃなかった")
+  (assert-segment "ワシじゃなくて和紙じゃよ" "ワシ" "じゃなくて" "和紙" "じゃ" "よ")
   ;;(assert-segment "見てくれたかな" "見てくれた" "かな")
   )
 

@@ -184,6 +184,9 @@
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
 
+  (add-reading 2029080 "ねぇ")
+  (add-reading 2089020 "じゃ" :common 0)
+
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
   ;; 仕手 (して) 
@@ -269,6 +272,7 @@
   "Particles that are final, but also have other uses")
 
 (defparameter *final-prt* '(2017770 ;; かい
+                            2029080 ;; ね
                             )
   "Particles that only have meaning when they're final")
 

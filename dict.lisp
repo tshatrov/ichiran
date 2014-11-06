@@ -57,6 +57,10 @@
   ((conjugations :accessor word-conjugations :initform nil)
    ))
 
+(defmethod print-object ((obj simple-text) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a ~a" (seq obj) (text obj))))
+
 (defclass kanji-text (simple-text)
   ((id :reader id :col-type serial)
    (seq :reader seq :col-type integer :initarg :seq)
@@ -76,10 +80,6 @@
   (!index 'text)
   (!index 'common)
   (!foreign 'entry 'seq :on-delete :cascade))
-
-(defmethod print-object ((obj kanji-text) stream)
-  (print-unreadable-object (obj stream :type t :identity nil)
-    (format stream "~a ~a" (seq obj) (text obj))))
 
 (defmethod get-kana ((obj kanji-text))
   (loop with regex = (ppcre:create-scanner 
@@ -116,10 +116,6 @@
   (!index 'text)
   (!index 'common)
   (!foreign 'entry 'seq :on-delete :cascade))
-
-(defmethod print-object ((obj kana-text) stream)
-  (print-unreadable-object (obj stream :type t :identity nil)
-    (format stream "~a ~a" (seq obj) (text obj))))
 
 (defmethod get-kana ((obj kana-text))
   (text obj))
@@ -655,6 +651,34 @@
                         'id) :column)))))
     (values readings (mapcar #'ichiran:romanize-word readings))))
 
+;; Proxy text (kanji-text or kana-text with changed spelling)
+
+(defclass proxy-text (simple-text)
+  ((text :reader text :initarg :text)
+   (kana :reader get-kana :initarg :kana)
+   (source :reader source :initarg :source)))
+
+(defmethod word-conjugations ((obj proxy-text))
+  (word-conjugations (source obj)))
+
+(defmethod (setf word-conjugations) (value (obj proxy-text))
+  (setf (word-conjugations (source obj)) value))
+
+(defmethod seq ((obj proxy-text))
+  (seq (source obj)))
+
+(defmethod common ((obj proxy-text))
+  (common (source obj)))
+
+(defmethod ord ((obj proxy-text))
+  (ord (source obj)))
+
+(defmethod nokanji ((obj proxy-text))
+  (nokanji (source obj)))
+
+(defmethod word-type ((obj proxy-text))
+  (word-type (source obj)))
+
 ;; Compound words (usually 2 words squished together, but not in concatenative way)
 
 (defclass compound-text ()
@@ -746,89 +770,94 @@
         (values score info))))
 
   (let* ((score 1)
-         (kanji-p (typep reading 'kanji-text))
+         (kanji-p (eql (word-type reading) :kanji))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
-         (len (mora-length text)))
-    (with-slots (seq ord) reading
-      (let* ((entry (get-dao 'entry seq))
-             (root-p (root-p entry))
-             (conj-data (word-conj-data reading))
-             (conj-of (mapcar #'conj-data-from conj-data))
-             (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
-             (conj-types (unless root-p (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)))
-             (conj-types-p (or root-p (set-difference conj-types *weak-conj-types*)))
-             (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
-             (prefer-kana
-              (select-dao 'sense-prop (:and (:in 'seq (:set (if root-p (list seq) seq-set)))
-                                            (:= 'tag "misc") (:= 'text "uk"))))
-             (posi (query (:select 'text :distinct :from 'sense-prop
-                                   :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
-             (common (common reading))
-             (common-p (not (eql common :null)))
-             (particle-p (member "prt" posi :test 'equal))
-             (pronoun-p (member "pn" posi :test 'equal))
-             (no-common-bonus (or particle-p (equal posi '("int"))))
-             (cop-da-p (member "cop-da" posi :test 'equal))
-             (long-p (> len
-                        (if (or (and kanji-p (not prefer-kana)
-                                     (or root-p (and use-length (member 13 conj-types))))
-                                (and common-p (< 0 common 10)))
-                            2 3)))
-             (primary-p (or (and prefer-kana conj-types-p
-                                 (not kanji-p)
-                                 (or (not (primary-nokanji entry))
-                                     (nokanji reading)))
-                            (and (= ord 0)
-                                 (or kanji-p conj-types-p)
-                                 (or (and kanji-p (not prefer-kana))
-                                     (and common-p pronoun-p)
-                                     (= (n-kanji entry) 0))
-                                 ))))
-        (when (or (intersection seq-set *skip-words*)
-                  (and particle-p (not final) (intersection seq-set *final-prt*))
-                  (and (not root-p) (skip-by-conj-data conj-data)))
-          (return-from calc-score 0))
-        (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
-          (let* ((table (if kanji-p 'kanji-text 'kana-text))
-                 (conj-of-common (query (:select 'id :from table
-                                                 :where (:and (:in 'seq (:set conj-of))
-                                                              (:not-null 'common)))
-                                       :column)))
-            (when conj-of-common
-              (setf common 0 common-p t))))
-        (when primary-p
-          (incf score (cond (long-p 10)
-                            (common-p 5)
-                            ((or prefer-kana (= (n-kanji entry) 0)) 3)
-                            (t 2))))
-        (when (and particle-p (or final (not (member seq *semi-final-prt*))))
-          (incf score 2)
-          (when (and common-p)
-            (incf score 3))
-          (when (and final primary-p)
-            (incf score 5)))
-        (when (and common-p (not no-common-bonus)) 
-          (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
-                 (incf score (if (or (= common 0) (not primary-p)) 10 (max (- 20 common) 10))))
-                (kanji-p (incf score 8))
-                ((or (> len 2) (< 0 common 10)) (incf score 3))
-                (t (incf score 2))))
-        (when (or long-p kanji-p)
-          (setf score (max 5 score))
-          (when (and long-p kanji-p)
-            (incf score 2)))
-        (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
-                                (if (> n-kanji 1) (* (1- n-kanji) 10 (if use-length (1+ (- use-length len)) 1)) 0)
-                                (if use-length
-                                    (+ (length-multiplier-coeff (- use-length len) :tail)
-                                       (* score-mod (- use-length len)))
-                                    0))))
+         (len (mora-length text))
+         (seq (seq reading))
+         (ord (ord reading))
+         (entry (get-dao 'entry seq))
+         (root-p (root-p entry))
+         (conj-data (word-conj-data reading))
+         (conj-of (mapcar #'conj-data-from conj-data))
+         (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
+         (conj-types (unless root-p (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)))
+         (conj-types-p (or root-p (set-difference conj-types *weak-conj-types*)))
+         (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
+         (prefer-kana
+          (select-dao 'sense-prop (:and (:in 'seq (:set (if root-p (list seq) seq-set)))
+                                        (:= 'tag "misc") (:= 'text "uk"))))
+         (posi (query (:select 'text :distinct :from 'sense-prop
+                               :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
+         (common (common reading))
+         (common-p (not (eql common :null)))
+         (particle-p (member "prt" posi :test 'equal))
+         (pronoun-p (member "pn" posi :test 'equal))
+         (no-common-bonus (or particle-p (equal posi '("int"))))
+         (cop-da-p (member "cop-da" posi :test 'equal))
+         (long-p (> len
+                    (if (or (and kanji-p (not prefer-kana)
+                                 (or root-p (and use-length (member 13 conj-types))))
+                            (and common-p (< 0 common 10)))
+                        2 3)))
+         (primary-p (or (and prefer-kana conj-types-p
+                             (not kanji-p)
+                             (or (not (primary-nokanji entry))
+                                 (nokanji reading)))
+                        (and (= ord 0)
+                             (or kanji-p conj-types-p)
+                             (or (and kanji-p (not prefer-kana))
+                                 (and common-p pronoun-p)
+                                 (= (n-kanji entry) 0))
+                             ))))
+    (when (or (intersection seq-set *skip-words*)
+              (and particle-p (not final) (intersection seq-set *final-prt*))
+              (and (not root-p) (skip-by-conj-data conj-data)))
+      (return-from calc-score 0))
+    (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
+      (let* ((table (if kanji-p 'kanji-text 'kana-text))
+             (conj-of-common (query (:select 'id :from table
+                                             :where (:and (:in 'seq (:set conj-of))
+                                                          (:not-null 'common)))
+                                    :column)))
+        (when conj-of-common
+          (setf common 0 common-p t))))
+    (when primary-p
+      (incf score (cond (long-p 10)
+                        (common-p 5)
+                        ((or prefer-kana (= (n-kanji entry) 0)) 3)
+                        (t 2))))
+    (when (and particle-p (or final (not (member seq *semi-final-prt*))))
+      (incf score 2)
+      (when (and common-p)
+        (incf score 3))
+      (when final
+        (cond (primary-p (incf score 5))
+              ((intersection seq-set *final-prt*) (incf score 2)))))
+    (when (and common-p (not no-common-bonus)) 
+      (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
+             (incf score 
+                   (cond ((= common 0) 10)
+                         ((not primary-p) (max (- 15 common) 10))
+                         (t (max (- 20 common) 10)))))
+            (kanji-p (incf score 8))
+            ((or (> len 2) (< 0 common 10)) (incf score 3))
+            (t (incf score 2))))
+    (when (or long-p kanji-p)
+      (setf score (max 5 score))
+      (when (and long-p kanji-p)
+        (incf score 2)))
+    (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
+                            (if (> n-kanji 1) (* (1- n-kanji) 10 (if use-length (1+ (- use-length len)) 1)) 0)
+                            (if use-length
+                                (+ (length-multiplier-coeff (- use-length len) :tail)
+                                   (* score-mod (- use-length len)))
+                                0))))
 
-        (values score (list :posi posi :seq-set (cons seq conj-of)
-                            :conj conj-data
-                            :kpcl (list kanji-p primary-p common-p long-p)))))))
+    (values score (list :posi posi :seq-set (cons seq conj-of)
+                        :conj conj-data
+                        :kpcl (list kanji-p primary-p common-p long-p)))))
 
 (defun gen-score (segment &optional final)
   (setf (values (segment-score segment) (segment-info segment))
@@ -902,14 +931,14 @@
 
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
+        and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
-       and slice = (make-slice)
        for start from 0 below (length str)
        unless (member start sticky)
        nconcing 
        (loop for end from (1+ start) upto (length str)
             unless (member end sticky)
-            nconcing 
+            nconcing
             (let ((segments (mapcan 
                              (lambda (word)
                                (let ((segment (gen-score (make-segment :start start :end end :word word)

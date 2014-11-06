@@ -98,7 +98,9 @@
                        (gethash (seq kf) *suffix-class*) (or class key)))
                (load-conjs (key seq &optional class)
                  (loop for kf in (get-kana-forms seq)
-                    do (load-kf key kf :class class))))
+                    do (load-kf key kf :class class)))
+               (load-abbr (key text)
+                 (setf (gethash text *suffix-cache*) (list key nil))))
 
         (load-conjs :chau 2013800)
         (load-conjs :tai 2017560)
@@ -146,6 +148,9 @@
         (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
 
         (load-conjs :sugiru 1195970) ;; すぎる
+
+        ;;(load-abbr :nee "ねぇ")
+        (load-abbr :nee "ねえ")
         ))))
 
 (defun init-suffixes (&optional blocking)
@@ -229,14 +234,46 @@
     (when root
       (find-word-with-pos root "adj-i"))))
 
-(defun get-suffix-map (str &optional sticky)
+
+(defmacro def-abbr-suffix (name keyword stem
+                           (root-var &optional suf-var kana-var)
+                           &body get-primary-words)
+  (alexandria:with-gensyms (suf primary-words)
+    (unless suf-var (setf suf-var (gensym "SV")))
+    (unless kana-var (setf kana-var (gensym "KV")))
+    `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
+       (declare (ignore ,suf))
+       (let* ((*suffix-map-temp* nil)
+              (,kana-var nil)
+              (,primary-words (progn ,@get-primary-words)))
+         (mapcar (lambda (pw)
+                   (let ((text (concatenate 'string ,root-var ,suf-var))
+                         (kana (let ((k (get-kana pw)))
+                                 (concatenate 'string
+                                              (or ,kana-var
+                                                  (subseq k 0 (- (length k) ,stem)))
+                                              ,suf-var))))
+                     (etypecase pw
+                       (simple-text
+                        (make-instance 'proxy-text
+                                       :source pw
+                                       :text text
+                                       :kana kana))
+                       (compound-text
+                        (with-slots ((stext text) (skana kana)) pw
+                          (setf stext text skana kana))
+                        pw))))
+                 ,primary-words)))))
+
+(def-abbr-suffix abbr-nee :nee 2 (root)
+  (find-word-full (concatenate 'string root "ない")))
+
+(defun get-suffix-map (str)
   (init-suffixes)
   (let ((result (make-hash-table)))
     (loop for start from 0 below (length str)
-         unless (member start sticky)
          do (loop for end from (1+ start) upto (length str)
-                 unless (member end sticky)
-                 do (let* ((substr (subseq str start end))
+                 do (let* ((substr (subseq-slice nil str start end))
                            (val (gethash substr *suffix-cache*)))
                       (when val
                         (push (cons substr val) (gethash end result nil))))))
@@ -245,7 +282,7 @@
 (defun get-suffixes (word)
   (init-suffixes)
   (loop for start from (1- (length word)) downto 1
-       for substr = (subseq word start)
+       for substr = (subseq-slice nil word start)
        for val = (gethash substr *suffix-cache*)
        when val
        collect (cons substr val)))
@@ -254,12 +291,13 @@
   (loop with suffixes = (if *suffix-map-temp* 
                             (gethash *suffix-next-end* *suffix-map-temp*)
                             (get-suffixes word))
+       and slice = (make-slice)
      for (suffix keyword kf) in suffixes
      for suffix-fn = (cdr (assoc keyword *suffix-list*))
      for offset = (- (length word) (length suffix))
-     when (and suffix-fn (> offset 0 ))
+     when (and suffix-fn (> offset 0))
      nconc (let ((*suffix-next-end* (and *suffix-next-end* (- *suffix-next-end* (length suffix)))))
-             (funcall suffix-fn (subseq word 0 offset) suffix kf))))
+             (funcall suffix-fn (subseq-slice slice word 0 offset) suffix kf))))
 
 
 ;;; SYNERGIES (gives a bonus to two consequent words in a path)
