@@ -261,6 +261,7 @@
 (defparameter *skip-words* '(2458040  ;; てもいい
                              2013800  ;; ちゃう
                              2029040  ;; ば
+                             2428180  ;; い
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
