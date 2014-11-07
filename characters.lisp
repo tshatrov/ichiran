@@ -69,10 +69,14 @@
     "『" " «"  "』" "» "
     "〜" " - " "：" ": " "！" "! " "？" "? " "；" "; "))
 
-(defparameter *full-width-chars* "０１２３４５６７８９ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＃＄％＆（）＊＋／〈＝〉？＠［］＾＿‘｛｜｝～")
+(defparameter *abnormal-chars*
+  (concatenate 'string
+               "０１２３４５６７８９ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＃＄％＆（）＊＋／〈＝〉？＠［］＾＿‘｛｜｝～"
+               "･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"))
 
-(defparameter *half-width-chars* "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&()*+/<=>?@[]^_`{|}~")
-
+(defparameter *normal-chars*
+  (concatenate 'string "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&()*+/<=>?@[]^_`{|}~"
+               "・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜"))
 
 (defparameter *katakana-regex* "[ァ-ヺヽヾー]")
 
@@ -117,11 +121,16 @@
                                (cdr (assoc match alist :test #'equal)))
                              :simple-calls t)))
 
+(defun to-normal-char (char)
+  (let ((pos (position char *abnormal-chars*)))
+    (when pos
+      (char *normal-chars* pos))))
+
 (defun normalize (str)
   (loop for i from 0 below (length str)
        for char = (char str i)
-       for pos = (position char *full-width-chars*)
-       if pos do (setf (char str i) (char *half-width-chars* pos)))
+       for normal-char = (to-normal-char char)
+       if normal-char do (setf (char str i) normal-char))
   (setf str (simplify-ngrams str *punctuation-marks*)))
   
 (defun split-by-regex (regex str)
@@ -145,7 +154,8 @@
   "convert katakana to hiragana"
   (map 'string
        (lambda (char)
-         (let ((class (gethash char *char-class-hash*)))
+         (let* ((char (or (to-normal-char char) char))
+                (class (gethash char *char-class-hash*)))
            (if class
                (char (getf *all-characters* class) 0)
                char)))
