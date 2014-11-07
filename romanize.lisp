@@ -171,7 +171,9 @@
 (defgeneric r-special (method word)
   (:documentation "Romanize words that are exceptions, return nil otherwise")
   (:method-combination or)
-  (:method or (method word) nil))
+  (:method or (method word) 
+           (cond ((equal word "っ") "!")
+                 ((equal word "ー") "~"))))
 
 (defmethod r-special or ((method generic-hepburn) word)
   (cond ((equal word "は") "wa")
@@ -232,7 +234,10 @@
                            (score (cdr pair)))
                        (list
                         (mapcar (lambda (word)
-                                  (list (romanize-word-info word :method method) word))
+                                  (let* ((romanized (romanize-word-info word :method method))
+                                         (sticky (or (= (length romanized) 0)
+                                                     (not (alphanumericp (char romanized 0))))))
+                                    (list romanized word (not sticky))))
                                 word-list)
                         score)))
                    (dict-segment split-text :limit limit))

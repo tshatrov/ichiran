@@ -774,7 +774,7 @@
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
-         (len (mora-length text))
+         (len (max 1 (mora-length text)))
          (seq (seq reading))
          (ord (ord reading))
          (entry (get-dao 'entry seq))
@@ -793,6 +793,7 @@
          (common (common reading))
          (common-p (not (eql common :null)))
          (particle-p (member "prt" posi :test 'equal))
+         (semi-final-particle-p (member seq *semi-final-prt*))
          (pronoun-p (member "pn" posi :test 'equal))
          (no-common-bonus (or particle-p (equal posi '("int"))))
          (cop-da-p (member "cop-da" posi :test 'equal))
@@ -812,7 +813,7 @@
                                  (= (n-kanji entry) 0))
                              ))))
     (when (or (intersection seq-set *skip-words*)
-              (and particle-p (not final) (intersection seq-set *final-prt*))
+              (and particle-p (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
       (return-from calc-score 0))
     (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
@@ -828,13 +829,13 @@
                         (common-p 5)
                         ((or prefer-kana (= (n-kanji entry) 0)) 3)
                         (t 2))))
-    (when (and particle-p (or final (not (member seq *semi-final-prt*))))
+    (when (and particle-p (or final (not semi-final-particle-p)))
       (incf score 2)
       (when (and common-p)
         (incf score 3))
       (when final
         (cond (primary-p (incf score 5))
-              ((intersection seq-set *final-prt*) (incf score 2)))))
+              (semi-final-particle-p (incf score 2)))))
     (when (and common-p (not no-common-bonus)) 
       (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
              (incf score 
@@ -867,11 +868,14 @@
 (defun find-sticky-positions (str)
   "words cannot start or end after sokuon and before yoon characters"
   (loop with modifiers = (append *modifier-characters* *iteration-characters*)
-     for pos from 0 below (length str)
+       and str-len = (length str)
+     for pos from 0 below str-len
      for char = (char str pos)
      for char-class = (gethash char *char-class-hash* char)
      if (eql char-class :sokuon) collect (1+ pos)
-     else if (member char-class modifiers) collect pos))
+     else if (and (member char-class modifiers)
+                  (not (and (= pos (1- str-len)) (eql char-class :long-vowel))))
+                  collect pos))
 
 (defun make-slice ()
   (make-array 0 :element-type 'character

@@ -266,16 +266,17 @@
   "seq of words that aren't really words, like suffixes etc."
   )
 
-(defparameter *semi-final-prt* '(2029120 ;; さ
-                                 2086640 ;; し
-                                 2029110 ;; な
-                                 )
-  "Particles that are final, but also have other uses")
-
 (defparameter *final-prt* '(2017770 ;; かい
-                            2029080 ;; ね
                             )
   "Particles that only have meaning when they're final")
+
+(defparameter *semi-final-prt* (append *final-prt* 
+                                       '(2029120 ;; さ
+                                         2086640 ;; し
+                                         2029110 ;; な
+                                         2029080 ;; ね
+                                         ))
+  "Particles that are final, but also have other uses")
 
 ;; Additional conjugations
 
