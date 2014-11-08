@@ -78,6 +78,7 @@
     (:sugiru "to be too (much) ...")
     (:nikui "difficult to...")
     (:kara "because/why")
+    (:sa "-ness (degree or condition of adjective)")
     ))
 
 (defun get-suffix-description (seq)
@@ -149,6 +150,8 @@
 
         (load-conjs :sugiru 1195970) ;; すぎる
 
+        (load-kf :sa (get-kana-form 2029120 "さ"))
+
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nee "ねえ")
         ))))
@@ -161,6 +164,7 @@
   (init-suffixes-running-p))
 
 (defparameter *suffix-list* nil)
+(defparameter *suffix-unique-only* nil)
 
 (defmacro defsuffix (name key (root-var suf-var suf-obj-var) &body body)
   `(progn
@@ -234,6 +238,10 @@
     (when root
       (find-word-with-pos root "adj-i"))))
 
+(def-simple-suffix suffix-sa :sa (:connector "" :score 1) (root)
+  (find-word-with-conj-type root +conj-adjective-stem+))
+
+(pushnew :sa *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var kana-var)
@@ -287,7 +295,7 @@
        when val
        collect (cons substr val)))
 
-(defun find-word-suffix (word)
+(defun find-word-suffix (word &key unique)
   (loop with suffixes = (if *suffix-map-temp* 
                             (gethash *suffix-next-end* *suffix-map-temp*)
                             (get-suffixes word))
@@ -295,7 +303,8 @@
      for (suffix keyword kf) in suffixes
      for suffix-fn = (cdr (assoc keyword *suffix-list*))
      for offset = (- (length word) (length suffix))
-     when (and suffix-fn (> offset 0))
+     when (and suffix-fn (> offset 0)
+               (or unique (not (member keyword *suffix-unique-only*))))
      nconc (let ((*suffix-next-end* (and *suffix-next-end* (- *suffix-next-end* (length suffix)))))
              (funcall suffix-fn (subseq-slice slice word 0 offset) suffix kf))))
 

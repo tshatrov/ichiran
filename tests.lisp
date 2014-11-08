@@ -43,7 +43,7 @@
   (assert-segment "その山を越えたとき" "その" "山" "を" "越えた" "とき")
   (assert-segment "遊びたいのに" "遊びたい" "のに")
   (assert-segment "しながき" "しながき")
-  (assert-segment "楽しさ求めて" "楽し" "さ" "求めて")
+  (assert-segment "楽しさ求めて" "楽しさ" "求めて")
   (assert-segment "日常のなかにも" "日常" "の" "なか" "に" "も")
   (assert-segment "ほんとは好きなんだと" "ほんと" "は" "好き" "な" "ん" "だと")
   (assert-segment "内緒なの" "内緒" "なの")
@@ -103,6 +103,7 @@
   (assert-segment "きつねじゃなかった" "きつね" "じゃなかった")
   (assert-segment "ワシじゃなくて和紙じゃよ" "ワシ" "じゃなくて" "和紙" "じゃ" "よ")
   (assert-segment "ほうがいいよ" "ほうがいい" "よ")
+  (assert-segment "痛さはどれくらいですか" "痛さ" "は" "どれ" "くらいです" "か")
   ;;(assert-segment "見てくれたかな" "見てくれた" "かな")
   )
 

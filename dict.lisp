@@ -928,8 +928,9 @@
 (defvar *suffix-next-end* nil)
 
 (defun find-word-full (word)
-  (nconc (find-word word)
-         (find-word-suffix word)))
+  (let ((simple-words (find-word word)))
+    (nconc simple-words
+           (find-word-suffix word :unique (not simple-words)))))
 
 (defparameter *score-cutoff* 5) ;; this must filter out ONLY bad kana spellings, and NOT filter out any kanji spellings
 
