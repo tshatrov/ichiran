@@ -34,7 +34,11 @@
            :*hepburn-traditional* :*hepburn-modified*
            :*default-romanization-method*))
 
+(uiop:define-package #:ichiran/all
+    (:use #:ichiran/characters #:ichiran/dict #:ichiran)
+    (:reexport :ichiran :ichiran/dict :ichiran/characters))
+
 (defpackage #:ichiran/test
-  (:use #:cl #:ichiran/characters #:ichiran/dict #:ichiran #:lisp-unit)
+  (:use #:cl #:ichiran/all #:lisp-unit)
   (:export :run-all-tests))
   

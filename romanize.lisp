@@ -223,7 +223,7 @@
            (list split-text)) into parts
      finally (return (values (join-parts parts) (nreverse definitions)))))
 
-(defun romanize* (input &key (method *default-romanization-method*) (limit 5))
+(defun romanize* (input &key (method *default-romanization-method*) (limit 5) (wordprop-fn (constantly nil)))
   "Romanizes text with very detailed metadata"
   (setf input (normalize input))
   (loop for (split-type . split-text) in (basic-split input)
@@ -235,9 +235,8 @@
                        (list
                         (mapcar (lambda (word)
                                   (let* ((romanized (romanize-word-info word :method method))
-                                         (sticky (or (= (length romanized) 0)
-                                                     (not (alphanumericp (char romanized 0))))))
-                                    (list romanized word (not sticky))))
+                                         (prop (funcall wordprop-fn romanized word)))
+                                    (list romanized word prop)))
                                 word-list)
                         score)))
                    (dict-segment split-text :limit limit))
