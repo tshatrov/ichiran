@@ -197,14 +197,14 @@
                                 :score-mod ,score))
                  ,primary-words)))))
   
-(def-simple-suffix suffix-chau :chau (:stem 1 :score 10) (root suf)
+(def-simple-suffix suffix-chau :chau (:stem 1 :score 5) (root suf)
   (let ((te (case (char suf 0)
               (#\HIRAGANA_LETTER_ZI "で")
               (#\HIRAGANA_LETTER_TI "て"))))
     (when te
       (find-word-with-conj-type (concatenate 'string root te) 3))))
 
-(def-simple-suffix suffix-tai :tai (:connector "" :score 10) (root)
+(def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-ren :ren (:connector "" :score 5) (root)
