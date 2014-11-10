@@ -204,7 +204,9 @@
   "Romanize word-info instance"
   (let* ((orig-text (word-info-text word-info)))
     (map-word-info-kana
-     (lambda (wk) (romanize-word wk :method method :original-spelling orig-text))
+     (if (eql method :kana)
+         #'identity
+         (lambda (wk) (romanize-word wk :method method :original-spelling orig-text)))
      word-info)))
 
 (defun romanize (input &key (method *default-romanization-method*) (with-info nil))
@@ -225,7 +227,8 @@
 
 (defun romanize* (input &key (method *default-romanization-method*) (limit 5) (wordprop-fn (constantly nil)))
   "Romanizes text with very detailed metadata"
-  (setf input (normalize input))
+  (unless (eql method :kana)
+    (setf input (normalize input)))
   (loop for (split-type . split-text) in (basic-split input)
      collect
        (if (eql split-type :word)
