@@ -104,7 +104,7 @@
   (assert-segment "ワシじゃなくて和紙じゃよ" "ワシ" "じゃなくて" "和紙" "じゃ" "よ")
   (assert-segment "ほうがいいよ" "ほうがいい" "よ")
   (assert-segment "痛さはどれくらいですか" "痛さ" "は" "どれ" "くらいです" "か")
-  ;;(assert-segment "見てくれたかな" "見てくれた" "かな")
+  (assert-segment "見てくれたかな" "見てくれた" "かな")
   )
 
 (define-test json-consistency-test

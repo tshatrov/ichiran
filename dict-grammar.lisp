@@ -121,7 +121,7 @@
 
         (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
 
-        (load-conjs :te 1269130 :kureru) ;; くれる
+        (load-conjs :te+ 1269130 :kureru) ;; くれる
 
         (loop for kf in (get-kana-forms 1578850) ;;  いく / く
            for tkf = (text kf)
@@ -212,6 +212,10 @@
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
+  (and (find (char root (1- (length root))) "てで")
+       (find-word-with-conj-type root 3)))
+
+(def-simple-suffix suffix-te+ :te+ (:connector "" :score 5) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 

@@ -171,6 +171,7 @@
   (remove-hiragana-nokanji)
 
   (set-primary-nokanji 1538900 nil) ;; ただ
+  (set-primary-nokanji 1580640 nil) ;; 人
 
   (add-primary-nokanji 1415510 "タカ")
 
@@ -215,6 +216,8 @@
   (delete-sense-prop 2729170 "misc" "uk")
   ;; そば
   (delete-sense-prop 1238460 "misc" "uk")
+  ;; 人
+  (delete-sense-prop 1580640 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -264,6 +267,7 @@
                              2013800  ;; ちゃう
                              2029040  ;; ば
                              2428180  ;; い
+                             2654250 ;; た
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
