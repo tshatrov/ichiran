@@ -234,9 +234,9 @@
               ("type" (get-conj-description (conj-type obj)))))
         (neg (conj-neg obj))
         (fml (conj-fml obj)))
-    (unless (eql neg :null)
+    (unless (or (not neg) (eql neg :null))
       (jsown:extend-js js ("neg" neg)))
-    (unless (eql fml :null)
+    (unless (or (not fml) (eql fml :null))
       (jsown:extend-js js ("fml" fml)))
     js))
 
