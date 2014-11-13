@@ -509,7 +509,7 @@
   (filter-short-kana 1)
   :description "short"
   :serial nil
-  :score -10)
+  :score -9)
 
 (defun get-penalties (seg-left seg-right)
   (loop for fn in *penalty-list*

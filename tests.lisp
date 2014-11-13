@@ -106,6 +106,7 @@
   (assert-segment "痛さはどれくらいですか" "痛さ" "は" "どれ" "くらいです" "か")
   (assert-segment "見てくれたかな" "見てくれた" "かな")
   (assert-segment "とても良かった" "とても" "良かった")
+  (assert-segment "戻りたいかと言われる" "戻りたい" "か" "と" "言われる") ;;should be と言われる at some point
   )
 
 (define-test json-consistency-test
