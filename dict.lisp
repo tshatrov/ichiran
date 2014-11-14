@@ -858,6 +858,7 @@
 
     (values score (list :posi posi :seq-set (cons seq conj-of)
                         :conj conj-data
+                        :common (and common-p common)
                         :kpcl (list kanji-p primary-p common-p long-p)))))
 
 (defun gen-score (segment &optional final)
@@ -904,9 +905,16 @@
 
 (defparameter *identical-word-score-cutoff* 1/2)
 
+(defun compare-common (c1 c2)
+  (cond ((not c2) c1)
+        ((= c2 0) (and c1 (> c1 0)))
+        ((and c1 (> c1 0)) (< c1 c2))))
+
 (defun cull-segments (segments)
   (when segments
-    (let* ((segments (stable-sort segments #'> :key #'segment-score))
+    (let* ((segments (stable-sort segments #'compare-common
+                                  :key (lambda (s) (getf (segment-info s) :common))))
+           (segments (stable-sort segments #'> :key #'segment-score))
            (max-score (segment-score (car segments)))
            (cutoff (* max-score *identical-word-score-cutoff*)))
       (loop for seg in segments
