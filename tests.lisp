@@ -112,6 +112,7 @@
   (assert-segment "だけが墓参りしてた" "だけ" "が" "墓参りしてた")
   (assert-segment "はいいんだけどな" "は" "いい" "ん" "だけど" "な")
   (assert-segment "なりつつあるんだが" "なりつつある" "ん" "だが")
+  (assert-segment "反論は認めません" "反論" "は" "認めません")
   )
 
 (define-test json-consistency-test

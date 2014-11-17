@@ -225,6 +225,8 @@
   (add-sense-prop 1394680 0 "misc" "uk")
   ;; すごく
   (add-sense-prop 2272830 0 "misc" "uk")
+  ;; ごめんなさい
+  (add-sense-prop 1270680 0 "misc" "uk")
 
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
@@ -310,7 +312,13 @@
                       (make-conjugation-rule pos +conj-adjective-stem+ nil nil 1
                                              1 "" "" ""))))
     (dolist (rule rules)
-      (push rule (gethash pos hash nil)))))
+      (push rule (gethash pos hash nil))))
+  ;; fix non-past negative formal for v1 v1-s
+  (let ((posi (mapcar 'get-pos-index '("v1" "v1-s"))))
+    (loop for pos in posi
+         do (loop for rule in (gethash pos hash)
+                 when (and (= (cr-conj rule) 1) (cr-fml rule) (cr-neg rule))
+                 do (setf (cr-okuri rule) "ません")))))
 
 (defparameter *weak-conj-types* (list +conj-adjective-stem+))
 
