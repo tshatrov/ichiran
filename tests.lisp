@@ -109,6 +109,8 @@
   (assert-segment "戻りたいかと言われる" "戻りたい" "か" "と" "言われる") ;;should be と言われる at some point
   (assert-segment "こういうのでいいんだよ" "こういう" "の" "でいい" "ん" "だ" "よ")
   (assert-segment "そんなのでいいと思ってるの" "そんな" "の" "でいい" "と" "思ってる" "の")
+  (assert-segment "だけが墓参りしてた" "だけ" "が" "墓参りしてた")
+  (assert-segment "はいいんだけどな" "は" "いい" "ん" "だけど" "な")
   )
 
 (define-test json-consistency-test

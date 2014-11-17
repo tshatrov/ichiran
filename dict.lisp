@@ -831,21 +831,24 @@
                         (t 2))))
     (when (and particle-p (or final (not semi-final-particle-p)))
       (incf score 2)
-      (when (and common-p)
-        (incf score 3))
+      (when common-p
+        (incf score (+ 2 len)))
       (when final
         (cond (primary-p (incf score 5))
               (semi-final-particle-p (incf score 2)))))
     (when (and common-p (not no-common-bonus)) 
-      (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 1))))
+      (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 2))))
              (incf score 
                    (cond ((= common 0) 10)
                          ((not primary-p) (max (- 15 common) 10))
                          (t (max (- 20 common) 10)))))
             (kanji-p (incf score 8))
+            (primary-p (incf score 4))
             ((or (> len 2) (< 0 common 10)) (incf score 3))
             (t (incf score 2))))
-    (when (or long-p kanji-p)
+    (when long-p
+      (setf score (max len score)))
+    (when kanji-p
       (setf score (max 5 score))
       (when (and long-p kanji-p)
         (incf score 2)))
