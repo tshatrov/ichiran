@@ -79,6 +79,8 @@
     (:nikui "difficult to...")
     (:kara "because/why")
     (:sa "-ness (degree or condition of adjective)")
+    (:tsutsu "while ... / in the process of ...")
+    (:tsutsuaru "to be doing ... / to be in the process of doing ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -151,6 +153,9 @@
         (load-conjs :sugiru 1195970) ;; すぎる
 
         (load-kf :sa (get-kana-form 2029120 "さ"))
+
+        (load-kf :ren (get-kana-form 1008120 "つつ") :class :tsutsu)
+        (load-conjs :ren 2027910 :tsutsuaru)
 
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nee "ねえ")

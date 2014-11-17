@@ -249,6 +249,13 @@
   (set-common 'kana-text 1156100 "いいん" 0)
   (set-common 'kana-text 1472520 "はいいん" :null)
 
+  ;; remove sense for なり and make it not root
+  (delete-senses 2611370 (constantly t))
+  (let ((entry (get-dao 'entry 2611370)))
+    (setf (slot-value entry 'root-p) nil)
+    (update-dao entry))
+  (delete-reading 2611370 "為り")
+
   ;; 包む is read as tsutsumu
   (rearrange-readings-conj 1584060 'kana-text "つつ")
   (set-common 'kana-text 1584060 "つつむ" 6)
