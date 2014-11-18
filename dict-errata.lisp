@@ -188,6 +188,9 @@
   (add-reading 2029080 "ねぇ")
   (add-reading 2089020 "じゃ" :common 0)
 
+  (add-reading 2145800 "イラ")
+  (delete-reading 2145800 "いら")
+
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
   ;; 仕手 (して) 
@@ -218,6 +221,8 @@
   (delete-sense-prop 1238460 "misc" "uk")
   ;; 人
   (delete-sense-prop 1580640 "misc" "uk")
+  ;; かし
+  (delete-sense-prop 1569440 "misc" "uk") 
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -250,6 +255,7 @@
   (set-common 'kana-text 1470740 "のうち" 0)
   (set-common 'kana-text 1156100 "いいん" 0)
   (set-common 'kana-text 1472520 "はいいん" :null)
+  (set-common 'kana-text 1445000 "としん" 0)
 
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
