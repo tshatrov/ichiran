@@ -113,6 +113,9 @@
   (assert-segment "はいいんだけどな" "は" "いい" "ん" "だけど" "な")
   (assert-segment "なりつつあるんだが" "なりつつある" "ん" "だが")
   (assert-segment "反論は認めません" "反論" "は" "認めません")
+  (assert-segment "見たような気がする" "見た" "ような" "気がする")
+  (assert-segment "元気になる" "元気" "に" "なる")
+  (assert-segment "半端なかった" "半端なかった")
   )
 
 (define-test json-consistency-test

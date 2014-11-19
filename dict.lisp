@@ -758,14 +758,18 @@
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
+(defun kanji-break-penalty (score)
+  (ceiling score 2))
+
 ;; *skip-words* *final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
 
-(defun calc-score (reading &key final use-length (score-mod 0))
+(defun calc-score (reading &key final use-length (score-mod 0) kanji-break)
   (when (typep reading 'compound-text)
     (multiple-value-bind (score info) (calc-score (primary reading)
                                                   :use-length (mora-length (text reading))
                                                   :score-mod (score-mod reading))
       (setf (getf info :conj) (word-conj-data reading))
+      (when kanji-break (setf score (kanji-break-penalty score)))
       (return-from calc-score
         (values score info))))
 
@@ -858,15 +862,16 @@
                                 (+ (length-multiplier-coeff (- use-length len) :tail)
                                    (* score-mod (- use-length len)))
                                 0))))
-
+    (when kanji-break (setf score (kanji-break-penalty score)))
     (values score (list :posi posi :seq-set (cons seq conj-of)
                         :conj conj-data
                         :common (and common-p common)
+                        :kanji-break kanji-break
                         :kpcl (list kanji-p primary-p common-p long-p)))))
 
-(defun gen-score (segment &optional final)
+(defun gen-score (segment &key final kanji-break)
   (setf (values (segment-score segment) (segment-info segment))
-        (calc-score (segment-word segment) :final final))
+        (calc-score (segment-word segment) :final final :kanji-break kanji-break))
   segment)
 
 (defun find-sticky-positions (str)
@@ -903,7 +908,7 @@
             nconcing (mapcar 
                       (lambda (word)
                         (gen-score (make-segment :start start :end end :word word)
-                                   (= end (length str))))
+                                   :final (= end (length str))))
                       (find-word (subseq-slice slice str start end))))))
 
 (defparameter *identical-word-score-cutoff* 1/2)
@@ -947,23 +952,30 @@
 
 (defun join-substring-words (str)
   (loop with sticky = (find-sticky-positions str)
+        and kanji-break
         and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
+       for skb = (member start kanji-break)
        unless (member start sticky)
        nconcing 
        (loop for end from (1+ start) upto (length str)
+            for ekb = (member end kanji-break)
             unless (member end sticky)
             nconcing
-            (let ((segments (mapcan 
-                             (lambda (word)
-                               (let ((segment (gen-score (make-segment :start start :end end :word word)
-                                                         (= end (length str)))))
-                                 (when (>= (segment-score segment) *score-cutoff*) (list segment))))
-                             (let ((*suffix-map-temp* suffix-map)
-                                   (*suffix-next-end* end))
-                               (find-word-full (subseq-slice slice str start end))))))
+            (let* ((part (subseq-slice slice str start end))
+                   (kb (or skb ekb))
+                   (segments (mapcan
+                              (lambda (word)
+                                (let ((segment (gen-score (make-segment :start start :end end :word word)
+                                                          :final (= end (length str))
+                                                          :kanji-break kb)))
+                                  (when (>= (segment-score segment) *score-cutoff*) (list segment))))
+                              (let ((*suffix-map-temp* suffix-map)
+                                    (*suffix-next-end* end))
+                                (find-word-full part)))))
               (when segments
+                (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break))
                 (list (make-segment-list :segments (cull-segments segments)
                                          :start start :end end)))))))
 

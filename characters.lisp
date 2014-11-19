@@ -112,6 +112,12 @@
     (ppcre:do-matches (s e regex word cnt)
       (incf cnt))))
 
+(defun sequential-kanji-positions (word &optional (offset 0))
+  (let (positions)
+    (ppcre:do-matches (s e "(?=[々一-龯][々一-龯])" word)
+      (push (+ s 1 offset) positions))
+    (nreverse positions)))
+
 (defun simplify-ngrams (str map)
   (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
          (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))

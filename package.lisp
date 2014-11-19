@@ -7,7 +7,7 @@
            :*katakana-regex* :*hiragana-regex* :*kanji-regex* :test-word
            :hash-from-list :voice-char :simplify-ngrams :normalize
            :split-by-regex :basic-split :mora-length :count-char-class
-           :as-hiragana
+           :as-hiragana :sequential-kanji-positions
            ))
 
 (defpackage #:ichiran/tokenize
