@@ -862,6 +862,16 @@
                                 (+ (length-multiplier-coeff (- use-length len) :tail)
                                    (* score-mod (- use-length len)))
                                 0))))
+
+    (multiple-value-bind (split score-mod) (get-split reading)
+      (when split
+        (setf score
+              (+ score-mod
+                 (loop with len = (length split)
+                    for part in split
+                    for cnt from 1
+                    summing (calc-score part :final (and final (= cnt len))))))))
+
     (when kanji-break (setf score (kanji-break-penalty score)))
     (values score (list :posi posi :seq-set (cons seq conj-of)
                         :conj conj-data

@@ -523,4 +523,41 @@
        do (return (list seg-right penalty seg-left))
      finally (return (list seg-right seg-left))))
 
+;; SPLITS (words that should be scored as two other words)
 
+(defparameter *split-map* (make-hash-table)) ;; seq -> split function
+
+(defmacro defsplit (name seq (reading-var) &body body)
+  `(progn
+     (defun ,name (,reading-var) ;; reading -> (values parts score-bonus)
+       ,@body)
+     (setf (gethash ,seq *split-map*) ',name)))
+
+(defmacro def-simple-split (name seq score (&optional length-var text-var) &body parts-def)
+  "each part is (seq length-form)"
+  (alexandria:with-gensyms (reading-var offset parts)
+    (unless length-var (setf length-var (gensym "LV")))
+    (unless text-var (setf text-var (gensym "TV")))
+    `(defsplit ,name ,seq (,reading-var)
+       (let* ((,text-var (text ,reading-var))
+              (,length-var (length ,text-var))
+              (,offset 0)
+              (,parts nil))
+         ,@(loop for (part-seq part-length-form) in parts-def
+              collect
+                `(let ((part-length ,part-length-form))
+                   (push (car (find-word-seq (subseq ,text-var ,offset 
+                                                     (and part-length (+ ,offset part-length)))
+                                             ,part-seq))
+                         ,parts)
+                   (incf ,offset part-length)))
+         (values (nreverse ,parts) ,score)))))
+
+(def-simple-split split-hitoride 1163700 15 (len)
+  (1576150 (- len 1))
+  (2028980 1))
+
+(defun get-split (reading)
+  (let ((split-fn (gethash (seq reading) *split-map*)))
+    (when split-fn
+      (funcall split-fn reading))))
