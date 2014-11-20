@@ -5,7 +5,7 @@
 (defparameter *iteration-characters* '(:iter "ゝヽ" :iter-v "ゞヾ"))
 
 (defparameter *modifier-characters* '(:+a "ぁァ" :+i "ぃィ" :+u "ぅゥ" :+e "ぇェ" :+o "ぉォ"
-                                      :+ya "ゃャ" :+yu "ゅュ" :+yo "ょョ"
+                                      :+ya "ゃャ" :+yu "ゅュ" :+yo "ょョ" :+wa "ゎヮ"
                                       :long-vowel "ー"))
 
 (defparameter *kana-characters*
