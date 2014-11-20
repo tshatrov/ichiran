@@ -191,6 +191,8 @@
   (add-reading 2145800 "イラ")
   (delete-reading 2145800 "いら")
 
+  (delete-reading 2067160 "たも")
+
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
   ;; 仕手 (して) 
@@ -289,6 +291,7 @@
                              2428180  ;; い
                              2654250 ;; た
                              2084010 ;; になる
+                             2561100 ;; うまいな 
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
