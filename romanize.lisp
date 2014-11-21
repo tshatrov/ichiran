@@ -96,6 +96,13 @@
 (defclass generic-hepburn (generic-romanization)
   ((kana-table :initform (alexandria:copy-hash-table *hepburn-kana-table*))))
 
+(defmethod r-apply ((modifier symbol) (method generic-hepburn) cc-tree)
+  (let ((yoon (gethash modifier (kana-table method))))
+    (case (car cc-tree)
+      (:u (format nil "w~a" yoon)) 
+      ((:a :i :e :o) (format nil "~a~a" (gethash (car cc-tree) (kana-table method)) yoon))
+      (t (call-next-method)))))
+
 (defmethod r-apply ((modifier (eql :sokuon)) (method generic-hepburn) cc-tree)
   (if (eql (leftmost-atom cc-tree) :chi)
       (concatenate 'string "t" (romanize-core method cc-tree))
