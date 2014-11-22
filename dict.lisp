@@ -863,7 +863,7 @@
                                    (* score-mod (- use-length len)))
                                 0))))
 
-    (multiple-value-bind (split score-mod) (get-split reading)
+    (multiple-value-bind (split score-mod) (get-split reading conj-of)
       (when split
         (setf score
               (+ score-mod

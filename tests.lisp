@@ -78,7 +78,7 @@
   (assert-segment "学生なんだ" "学生" "な" "ん" "だ")
   (assert-segment "なんだから" "な" "ん" "だから")
   (assert-segment "名付けたい" "名付けたい")
-  (assert-segment "切なくなってしまう" "切なく" "なって" "しまう")
+  (assert-segment "切なくなってしまう" "切なく" "なってしまう")
   (assert-segment "らいかな" "らい" "かな")
   (assert-segment "誰かいなくなった" "誰か" "いなくなった")
   (assert-segment "思い出すな" "思い出す" "な")
@@ -123,6 +123,9 @@
   (assert-segment "ことができず" "ことができず")
   (assert-segment "一生一度だけの忘られぬ約束" "一生一度" "だけ" "の" "忘られぬ" "約束")
   (assert-segment "やらずにこの路線でよかったのに" "やらず" "に" "この" "路線" "で" "よかった" "のに")
+  (assert-segment "歌ってしまいそう" "歌ってしまい" "そう")
+  (assert-segment "しまいそう" "しまい" "そう")
+  (assert-segment "まいそう祭り" "まいそう" "祭り")
   )
 
 (define-test json-consistency-test

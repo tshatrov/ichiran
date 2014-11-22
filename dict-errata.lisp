@@ -260,6 +260,7 @@
   (set-common 'kana-text 1445000 "としん" 0)
   (set-common 'kana-text 1408100 "たよう" 0)
   (set-common 'kana-text 2409180 "ような" 0)
+  (set-common 'kana-text 1524550 "まいそう" :null)
 
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

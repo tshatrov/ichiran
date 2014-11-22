@@ -51,6 +51,16 @@
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
     (select-dao table (:and (:= 'text word) (:in 'seq (:set seqs))))))
 
+(defun find-word-conj-of (word &rest seqs)
+  (union
+   (apply #'find-word-seq word seqs)
+   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
+     (query-dao table (:select 'kt.* :from (:as table 'kt) (:as 'conjugation 'conj)
+                               :where (:and (:= 'kt.seq 'conj.seq)
+                                            (:in 'conj.from (:set seqs))
+                                            (:= 'kt.text word)))))
+   :key #'id))
+                               
 (defun find-word-with-pos (word &rest posi)
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
     (query-dao table (:select 'kt.* :distinct :from (:as table 'kt) 
@@ -124,6 +134,8 @@
 
         (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
 
+        (load-conjs :te 1305380 :chau) ;; しまう
+        
         (load-conjs :te+ 1269130 :kureru) ;; くれる
 
         (loop for kf in (get-kana-forms 1578850) ;;  いく / く
@@ -440,14 +452,6 @@
   :score 5
   :connector " ")
 
-;; should be a suffix
-(def-generic-synergy synergy-te-verbs (l r)
-  (filter-is-conjugation 3)
-  (filter-in-seq-set 1305380) ;; [しまう]
-  :description "-te+something"
-  :score 10
-  :connector "")
-
 (def-generic-synergy synergy-no-adjectives (l r)
   (filter-is-pos ("adj-no") (segment k p c l) (or k l (and p c)))
   (filter-in-seq-set 1469800) ;; の
@@ -548,12 +552,15 @@
               (,length-var (length ,text-var))
               (,offset 0)
               (,parts nil))
-         ,@(loop for (part-seq part-length-form) in parts-def
+         ,@(loop for (part-seq part-length-form conj-p) in parts-def
               collect
                 `(let ((part-length ,part-length-form))
-                   (push (car (find-word-seq (subseq ,text-var ,offset 
-                                                     (and part-length (+ ,offset part-length)))
-                                             ,part-seq))
+                   (push (car (,(if conj-p
+                                    'find-word-conj-of
+                                    'find-word-seq)
+                                (subseq ,text-var ,offset 
+                                        (and part-length (+ ,offset part-length)))
+                                ,part-seq))
                          ,parts)
                    (incf ,offset part-length)))
          (values (nreverse ,parts) ,score)))))
@@ -562,7 +569,18 @@
   (1576150 (- len 1))
   (2028980 1))
 
-(defun get-split (reading)
+(def-simple-split split-nakunaru 1529550 30 (len)
+  (2888587 2)
+  (1375610 (- len 2) t))
+
+(def-simple-split split-nakunaru2 1518540 10 (len)
+  (3211073 2)
+  (1375610 (- len 2) t))
+
+(defun get-split (reading &optional conj-of)
   (let ((split-fn (gethash (seq reading) *split-map*)))
-    (when split-fn
-      (funcall split-fn reading))))
+    (if split-fn
+        (funcall split-fn reading)
+        (loop for seq in conj-of
+           for split-fn = (gethash seq *split-map*)
+           when split-fn do (return (funcall split-fn reading))))))
