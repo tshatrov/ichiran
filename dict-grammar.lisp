@@ -161,7 +161,9 @@
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
 
         ;;(load-abbr :nee "ねぇ")
-        (load-abbr :nee "ねえ")
+        (load-abbr :nai "ねえ")
+        (load-abbr :nai "ず")
+        (load-abbr :nai "ぬ")
         ))))
 
 (defun init-suffixes (&optional blocking)
@@ -285,7 +287,7 @@
                         pw))))
                  ,primary-words)))))
 
-(def-abbr-suffix abbr-nee :nee 2 (root)
+(def-abbr-suffix abbr-nee :nai 2 (root)
   (find-word-full (concatenate 'string root "ない")))
 
 (defun get-suffix-map (str)

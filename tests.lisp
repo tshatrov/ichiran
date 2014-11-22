@@ -120,6 +120,9 @@
   (assert-segment "行事がある" "行事" "が" "ある")
   (assert-segment "当てられたものになる" "当てられた" "ものになる")
   (assert-segment "獲得しうる" "獲得しうる")
+  (assert-segment "ことができず" "ことができず")
+  (assert-segment "一生一度だけの忘られぬ約束" "一生一度" "だけ" "の" "忘られぬ" "約束")
+  (assert-segment "やらずにこの路線でよかったのに" "やらず" "に" "この" "路線" "で" "よかった" "のに")
   )
 
 (define-test json-consistency-test
