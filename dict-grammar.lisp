@@ -554,13 +554,16 @@
               (,parts nil))
          ,@(loop for (part-seq part-length-form conj-p) in parts-def
               collect
-                `(let ((part-length ,part-length-form))
+                `(let ((pseq ,(if (listp part-seq)
+                                  `(seq (car (find-word-conj-of ,@part-seq)))
+                                  part-seq))
+                       (part-length ,part-length-form))
                    (push (car (,(if conj-p
                                     'find-word-conj-of
                                     'find-word-seq)
                                 (subseq ,text-var ,offset 
                                         (and part-length (+ ,offset part-length)))
-                                ,part-seq))
+                                pseq))
                          ,parts)
                    (incf ,offset part-length)))
          (values (nreverse ,parts) ,score)))))
@@ -570,11 +573,11 @@
   (2028980 1))
 
 (def-simple-split split-nakunaru 1529550 30 (len)
-  (2888587 2)
+  (("無く" 1529520) 2)
   (1375610 (- len 2) t))
 
 (def-simple-split split-nakunaru2 1518540 10 (len)
-  (3211073 2)
+  (("亡く" 1518450) 2)
   (1375610 (- len 2) t))
 
 (defun get-split (reading &optional conj-of)
