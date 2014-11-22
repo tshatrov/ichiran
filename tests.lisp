@@ -119,6 +119,7 @@
   (assert-segment "一人ですね" "一人" "です" "ね")
   (assert-segment "行事がある" "行事" "が" "ある")
   (assert-segment "当てられたものになる" "当てられた" "ものになる")
+  (assert-segment "獲得しうる" "獲得しうる")
   )
 
 (define-test json-consistency-test

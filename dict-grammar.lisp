@@ -81,6 +81,7 @@
     (:sa "-ness (degree or condition of adjective)")
     (:tsutsu "while ... / in the process of ...")
     (:tsutsuaru "to be doing ... / to be in the process of doing ...")
+    (:uru "can ... / to be able to ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -156,6 +157,8 @@
 
         (load-kf :ren (get-kana-form 1008120 "つつ") :class :tsutsu)
         (load-conjs :ren 2027910 :tsutsuaru)
+
+        (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
 
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nee "ねえ")
