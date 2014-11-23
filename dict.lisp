@@ -864,14 +864,21 @@
                                    (* score-mod (- use-length len)))
                                 0))))
 
-    (multiple-value-bind (split score-mod) (get-split reading conj-of)
+    (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
       (when split
         (setf score
-              (+ score-mod
-                 (loop with len = (length split)
+              (+ score-mod-split
+                 (loop with nparts = (length split)
                     for part in split
                     for cnt from 1
-                    summing (calc-score part :final (and final (= cnt len))))))))
+                    for last = (= cnt nparts)
+                    summing (calc-score part
+                                        :final (and final last)
+                                        :use-length (when (and last use-length)
+                                                      (+ (mora-length (text part))
+                                                         (- use-length len)))
+                                        :score-mod (if last score-mod 0)
+                                        ))))))
 
     (when kanji-break (setf score (kanji-break-penalty score)))
     (values score (list :posi posi :seq-set (cons seq conj-of)
