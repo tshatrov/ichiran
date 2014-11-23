@@ -790,7 +790,7 @@
          (conj-types-p (or root-p (set-difference conj-types *weak-conj-types*)))
          (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
          (prefer-kana
-          (select-dao 'sense-prop (:and (:in 'seq (:set (if root-p (list seq) seq-set)))
+          (select-dao 'sense-prop (:and (:in 'seq (:set (if (and root-p (not use-length)) (list seq) seq-set)))
                                         (:= 'tag "misc") (:= 'text "uk"))))
          (posi (query (:select 'text :distinct :from 'sense-prop
                                :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
