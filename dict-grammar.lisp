@@ -572,6 +572,10 @@
   (1576150 (- len 1))
   (2028980 1))
 
+(def-simple-split split-nande 1611020 10 (len)
+  (1577100 (- len 1))
+  (2028980 1))
+
 (def-simple-split split-nakunaru 1529550 30 (len)
   (("無く" 1529520) 2)
   (1375610 (- len 2) t))
