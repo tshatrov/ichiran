@@ -748,7 +748,7 @@
         (t (* length (expt len-lim (1- power))))))
 
 (defparameter *length-coeff-sequences*
-  '((:strong 1 8 24 48)
+  '((:strong 1 8 24 40 60)
     (:weak 1 4 9 16 25 36)
     (:tail 4 9 16 24)))
 
@@ -773,7 +773,7 @@
       (return-from calc-score
         (values score info))))
 
-  (let* ((score 1)
+  (let* ((score 1) prop-score
          (kanji-p (eql (word-type reading) :kanji))
          (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
          (text (text reading))
@@ -856,6 +856,7 @@
       (setf score (max 5 score))
       (when (and long-p kanji-p)
         (incf score 2)))
+    (setf prop-score score)
     (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
                             (if (> n-kanji 1) (* (1- n-kanji) 10 (if use-length (1+ (- use-length len)) 1)) 0)
                             (if use-length
@@ -876,7 +877,7 @@
     (values score (list :posi posi :seq-set (cons seq conj-of)
                         :conj conj-data
                         :common (and common-p common)
-                        :kanji-break kanji-break
+                        :score-info (list prop-score kanji-break)
                         :kpcl (list kanji-p primary-p common-p long-p)))))
 
 (defun gen-score (segment &key final kanji-break)
