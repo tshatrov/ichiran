@@ -41,10 +41,10 @@
        do (setf (word-conjugations word) conj-ids)
        and collect word))
 
-(defun find-word-with-conj-type (word conj-type)
-  (find-word-with-conj-prop word 
+(defun find-word-with-conj-type (word &rest conj-types)
+  (find-word-with-conj-prop word
       (lambda (conj-data)
-        (remove-if-not (lambda (cdata) (= (conj-type (conj-data-prop cdata)) conj-type))
+        (remove-if-not (lambda (cdata) (member (conj-type (conj-data-prop cdata)) conj-types))
                        conj-data))))
 
 (defun find-word-seq (word &rest seqs)
@@ -92,6 +92,7 @@
     (:tsutsu "while ... / in the process of ...")
     (:tsutsuaru "to be doing ... / to be in the process of doing ...")
     (:uru "can ... / to be able to ...")
+    (:sou "looking like ... / seeming ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -250,9 +251,9 @@
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
 
-(def-simple-suffix suffix-sou :sou (:stem 1 :connector "" :score 3) (root)
+(def-simple-suffix suffix-sou :sou (:connector "" :score 3) (root)
   (unless (member root '("な" "よ") :test 'equal)
-    (find-word-with-conj-type (concatenate 'string root "く") +conj-adverbial+)))
+    (find-word-with-conj-type root 13 +conj-adjective-stem+)))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
   (find-word-with-conj-type root 2))
