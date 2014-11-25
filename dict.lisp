@@ -1213,8 +1213,42 @@
        finally
          (when (< idx (length str))
            (push (make-substr-gap idx (length str)) result))
-         (return (nreverse result)))))
-  
+         (return (process-word-info (nreverse result))))))
+
+(defun word-info-rec-find (wi-list test-fn)
+  (loop for wi in wi-list
+     for components = (word-info-components wi)
+     if (funcall test-fn wi) nconc (list wi)
+     nconc (word-info-rec-find components test-fn)))
+       
+(defun process-word-info (wi-list)
+  "Process readings such as nani/nan (hardcoded so far)"
+  (loop for (wi wi-next) on wi-list
+     when wi-next
+     do (dolist (w (word-info-rec-find (list wi) (lambda (w) (eql (word-info-seq w) 1577100))))
+          (let ((kn (word-info-kana wi-next)))
+            (unless (listp kn) (setf kn (list kn)))
+            (loop with nani = nil and nan = nil
+               for kana in kn
+               for first-char = (when (> (length kana) 0) (char kana 0))
+               for fc-class = (gethash first-char *char-class-hash* first-char)
+               when first-char
+               if (member fc-class '(:ba :bi :bu :be :bo
+                                     :pa :pi :pu :pe :po
+                                     :da :dji :dzu :de :do
+                                     :za :ji :zu :ze :zo
+                                     :ta :chi :tsu :te :to
+                                     :na :nu :ne :no
+                                     :ra :ri :ru :re :ro))
+                 do (setf nan t)
+               else
+               do (setf nani t)
+               finally (let ((nani-kana (cond ((and nan nani) "なに") ;; (list "なに" "なん"))
+                                              (nan "なん")
+                                              (nani "なに"))))
+                         (when nani-kana (setf (word-info-kana w) nani-kana)))))))
+  wi-list)
+
 (defun dict-segment (str &key (limit 5))
   (with-connection *connection*
     (loop for (path . score) in (find-best-path (join-substring-words str) (length str) :limit limit)
