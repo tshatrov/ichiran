@@ -193,6 +193,8 @@
 
   (delete-reading 2067160 "たも")
 
+  (delete-reading 2423450 "サシ")
+  
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
   ;; 仕手 (して) 
@@ -225,7 +227,9 @@
   (delete-sense-prop 1580640 "misc" "uk")
   ;; かし
   (delete-sense-prop 1569440 "misc" "uk") 
-
+  ;; さし
+  (delete-sense-prop 2423450 "misc" "uk")
+  
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
   ;; そういう
@@ -298,6 +302,7 @@
   )
 
 (defparameter *final-prt* '(2017770 ;; かい
+                            2029100 ;; わ
                             )
   "Particles that only have meaning when they're final")
 
