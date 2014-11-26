@@ -577,6 +577,10 @@
   (1577100 (- len 1))
   (2028980 1))
 
+(def-simple-split split-korede 1004800 10 (len)
+  (1628530 (- len 1))
+  (2028980 1))
+
 (def-simple-split split-nakunaru 1529550 30 (len)
   (("無く" 1529520) 2)
   (1375610 (- len 2) t))
@@ -584,6 +588,7 @@
 (def-simple-split split-nakunaru2 1518540 10 (len)
   (("亡く" 1518450) 2)
   (1375610 (- len 2) t))
+
 
 (defun get-split (reading &optional conj-of)
   (let ((split-fn (gethash (seq reading) *split-map*)))
