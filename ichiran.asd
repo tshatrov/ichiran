@@ -25,6 +25,7 @@
                (:file "dict-errata")
                (:file "dict")
                (:file "dict-grammar")
+               (:file "dict-split")
                (:file "ichiran")
                (:file "tests"))
   :perform (test-op 
