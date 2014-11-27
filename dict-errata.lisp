@@ -270,6 +270,8 @@
   (set-common 'kana-text 1322180 "いる" :null)
   (set-common 'kanji-text 1606560 "分かる" 11)
   (set-common 'kana-text 1606560 "わかる" 11)
+  (set-common 'kanji-text 1547720 "来る" 11)
+  (set-common 'kana-text 1547720 "くる" 11)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

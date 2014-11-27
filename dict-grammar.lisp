@@ -274,6 +274,7 @@
    (find-word-with-pos root "adj-na")))
 
 (pushnew :sa *suffix-unique-only*)
+(pushnew :mo *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var kana-var)
@@ -334,9 +335,10 @@
        and slice = (make-slice)
      for (suffix keyword kf) in suffixes
      for suffix-fn = (cdr (assoc keyword *suffix-list*))
+     for suffix-class = (when kf (gethash (seq kf) *suffix-class*))
      for offset = (- (length word) (length suffix))
      when (and suffix-fn (> offset 0)
-               (or unique (not (member keyword *suffix-unique-only*))))
+               (or unique (not (member suffix-class *suffix-unique-only*))))
      nconc (let ((*suffix-next-end* (and *suffix-next-end* (- *suffix-next-end* (length suffix)))))
              (funcall suffix-fn (subseq-slice slice word 0 offset) suffix kf))))
 
