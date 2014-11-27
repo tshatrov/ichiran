@@ -795,6 +795,7 @@
          (posi (query (:select 'text :distinct :from 'sense-prop
                                :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
          (common (common reading))
+         (common-of common)
          (common-p (not (eql common :null)))
          (particle-p (member "prt" posi :test 'equal))
          (semi-final-particle-p (member seq *semi-final-prt*))
@@ -822,12 +823,12 @@
       (return-from calc-score 0))
     (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
       (let* ((table (if kanji-p 'kanji-text 'kana-text))
-             (conj-of-common (query (:select 'id :from table
+             (conj-of-common (query (:select 'common :from table
                                              :where (:and (:in 'seq (:set conj-of))
                                                           (:not-null 'common)))
                                     :column)))
         (when conj-of-common
-          (setf common 0 common-p t))))
+          (setf common 0 common-p t common-of (car (sort conj-of-common #'compare-common))))))
     (when primary-p
       (incf score (cond (long-p 10)
                         (common-p 5)
@@ -883,7 +884,7 @@
     (when kanji-break (setf score (kanji-break-penalty score)))
     (values score (list :posi posi :seq-set (cons seq conj-of)
                         :conj conj-data
-                        :common (and common-p common)
+                        :common (and common-p common-of)
                         :score-info (list prop-score kanji-break)
                         :kpcl (list kanji-p primary-p common-p long-p)))))
 
