@@ -137,6 +137,8 @@
   (assert-segment "はいなくなります" "は" "いなく" "なります")
   (assert-segment "忘れなく" "忘れなく")
   (assert-segment "じゃないですか" "じゃないです" "か")
+  (assert-segment "純粋さ健気さ" "純粋さ" "健気さ")
+  (assert-segment "着てたからね" "着てた" "から" "ね")
   )
 
 (define-test json-consistency-test

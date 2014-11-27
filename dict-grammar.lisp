@@ -269,7 +269,9 @@
       (find-word-with-pos root "adj-i"))))
 
 (def-simple-suffix suffix-sa :sa (:connector "" :score 1) (root)
-  (find-word-with-conj-type root +conj-adjective-stem+))
+  (nconc
+   (find-word-with-conj-type root +conj-adjective-stem+)
+   (find-word-with-pos root "adj-na")))
 
 (pushnew :sa *suffix-unique-only*)
 
