@@ -265,7 +265,10 @@
   (set-common 'kana-text 1408100 "たよう" 0)
   (set-common 'kana-text 2409180 "ような" 0)
   (set-common 'kana-text 1524550 "まいそう" :null)
-
+  (set-common 'kana-text 1925750 "そうする" :null)
+  (set-common 'kana-text 1587780 "いる" :null)
+  (set-common 'kana-text 1322180 "いる" :null)
+  
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
   (let ((entry (get-dao 'entry 2611370)))
@@ -296,7 +299,8 @@
                              2428180  ;; い
                              2654250 ;; た
                              2084010 ;; になる
-                             2561100 ;; うまいな 
+                             2561100 ;; うまいな
+                             2210270 ;; ませんか
                              )
   "seq of words that aren't really words, like suffixes etc."
   )

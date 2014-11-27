@@ -810,7 +810,7 @@
                              (not kanji-p)
                              (or (not (primary-nokanji entry))
                                  (nokanji reading)))
-                        (and (= ord 0)
+                        (and (or (= ord 0) cop-da-p)
                              (or kanji-p conj-types-p)
                              (or (and kanji-p (not prefer-kana))
                                  (and common-p pronoun-p)
