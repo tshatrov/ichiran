@@ -818,7 +818,7 @@
                                  (= (n-kanji entry) 0))
                              ))))
     (when (or (intersection seq-set *skip-words*)
-              (and particle-p (not final) (member seq *final-prt*))
+              (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
       (return-from calc-score 0))
     (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))

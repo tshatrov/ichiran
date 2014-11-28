@@ -229,6 +229,8 @@
   (delete-sense-prop 1569440 "misc" "uk") 
   ;; さし
   (delete-sense-prop 2423450 "misc" "uk")
+  ;; 行く
+  (delete-sense-prop 1578850 "misc" "uk")
   
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -311,8 +313,9 @@
 
 (defparameter *final-prt* '(2017770 ;; かい
                             2029100 ;; わ
+                            1008450 ;; では
                             )
-  "Particles that only have meaning when they're final")
+  "Words that only have meaning when they're final")
 
 (defparameter *semi-final-prt* (append *final-prt* 
                                        '(2029120 ;; さ
