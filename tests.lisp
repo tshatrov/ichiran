@@ -139,6 +139,7 @@
   (assert-segment "じゃないですか" "じゃないです" "か")
   (assert-segment "純粋さ健気さ" "純粋さ" "健気さ")
   (assert-segment "着てたからね" "着てた" "から" "ね")
+  (assert-segment "仕出かすからだと思います" "仕出かす" "から" "だと" "思います")
   )
 
 (define-test json-consistency-test
