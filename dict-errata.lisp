@@ -277,6 +277,7 @@
   (set-common 'kana-text 2134680 "それは" 0)
   (set-common 'kana-text 2134680 "そりゃ" 0)
   (set-common 'kana-text 1409140 "からだ" 0)
+  (set-common 'kana-text 1552120 "ながす" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
