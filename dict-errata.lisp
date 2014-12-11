@@ -278,6 +278,13 @@
   (set-common 'kana-text 2134680 "そりゃ" 0)
   (set-common 'kana-text 1409140 "からだ" 0)
   (set-common 'kana-text 1552120 "ながす" :null)
+  (set-common 'kana-text 1516930 "ほう" 1)
+  (set-common 'kana-text 1518220 "ほうが" :null)
+  (set-common 'kana-text 1603340 "ほうが" :null)
+  (set-common 'kana-text 1158400 "いどう" :null)
+  (set-common 'kana-text 1157970 "いどう" :null)
+  (set-common 'kana-text 1599900 "になう" :null)
+  (set-common 'kana-text 1465590 "はいる" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

@@ -141,6 +141,11 @@
   (assert-segment "着てたからね" "着てた" "から" "ね")
   (assert-segment "仕出かすからだと思います" "仕出かす" "から" "だと" "思います")
   (assert-segment "みんながした" "みんな" "が" "した")
+  (assert-segment "ほうが速いと" "ほう" "が" "速い" "と")
+  (assert-segment "注意してください" "注意して" "ください")
+  (assert-segment "昨日といいどうしてこう" "昨日" "と" "いい" "どうして" "こう")
+  (assert-segment "いっぱいきそう" "いっぱい" "きそう")
+  (assert-segment "仲良しになったら" "仲良し" "に" "なったら")
   )
 
 (define-test json-consistency-test

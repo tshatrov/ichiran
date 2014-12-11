@@ -175,7 +175,7 @@
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
 
         (load-kf :ren (car (find-word-conj-of "なく" 1529520)) :class :nai)
-        
+
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
