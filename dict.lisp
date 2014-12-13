@@ -820,7 +820,7 @@
               (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
       (return-from calc-score 0))
-    (unless (or common-p secondary-conj-p #-(and)(not conj-types-p))
+    (unless common-p
       (let* ((table (if kanji-p 'kanji-text 'kana-text))
              (conj-of-common (query (:select 'common :from table
                                              :where (:and (:in 'seq (:set conj-of))
@@ -840,16 +840,19 @@
       (when final
         (cond (primary-p (incf score 5))
               (semi-final-particle-p (incf score 2)))))
-    (when (and common-p (not no-common-bonus)) 
-      (cond ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 2))))
-             (incf score 
-                   (cond ((= common 0) 10)
-                         ((not primary-p) (max (- 15 common) 10))
-                         (t (max (- 20 common) 10)))))
-            (kanji-p (incf score 8))
-            (primary-p (incf score 4))
-            ((or (> len 2) (< 0 common 10)) (incf score 3))
-            (t (incf score 2))))
+    (when (and common-p (not no-common-bonus))
+      (let ((common-bonus
+             (cond
+               (secondary-conj-p 2)
+               ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 2))))
+                (cond ((= common 0) 10)
+                      ((not primary-p) (max (- 15 common) 10))
+                      (t (max (- 20 common) 10))))
+               (kanji-p 8)
+               (primary-p 4)
+               ((or (> len 2) (< 0 common 10)) 3)
+               (t 2))))
+        (incf score common-bonus)))
     (when long-p
       (setf score (max len score)))
     (when kanji-p

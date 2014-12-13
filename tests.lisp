@@ -147,6 +147,7 @@
   (assert-segment "いっぱいきそう" "いっぱい" "きそう")
   (assert-segment "仲良しになったら" "仲良し" "に" "なったら")
   (assert-segment "全くといっていい" "全く" "と" "いって" "いい")
+  (assert-segment "もいらしてました" "も" "いら" "してました")
   )
 
 (define-test json-consistency-test

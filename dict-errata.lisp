@@ -270,6 +270,7 @@
   (set-common 'kana-text 1925750 "そうする" :null)
   (set-common 'kana-text 1587780 "いる" :null)
   (set-common 'kana-text 1322180 "いる" :null)
+  (set-common 'kana-text 1391500 "いる" :null)
   (set-common 'kanji-text 1606560 "分かる" 11)
   (set-common 'kana-text 1606560 "わかる" 11)
   (set-common 'kanji-text 1547720 "来る" 11)
