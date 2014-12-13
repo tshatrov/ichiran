@@ -32,6 +32,7 @@
            :simplified-hepburn :simplifications
            :*hepburn-basic* :*hepburn-simple* :*hepburn-passport*
            :*hepburn-traditional* :*hepburn-modified*
+           :kunrei-siki :*kunrei-siki*
            :*default-romanization-method*))
 
 (uiop:define-package #:ichiran/all

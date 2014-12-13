@@ -9,8 +9,7 @@
 
 (defvar *connection* '("jmdict" "postgres" "" "localhost"))
 
-(eval-when (:load-toplevel)
-  (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil))
+(load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
 
 (defgeneric get-kana (obj)
   (:documentation "most popular kana representation"))

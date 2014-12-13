@@ -67,9 +67,14 @@
 (defmethod r-apply ((modifier symbol) (method generic-romanization) cc-tree)
   (let ((yoon (gethash modifier (kana-table method))))
     (if yoon
-        (let ((inner (romanize-core method cc-tree)))
-          (format nil "~a~a" (subseq inner 0 (max 0 (1- (length inner)))) yoon))
+        (case (car cc-tree)
+          (:u (format nil "w~a" yoon)) 
+          ((:a :i :e :o) (format nil "~a~a" (gethash (car cc-tree) (kana-table method)) yoon))
+          (t (let ((inner (romanize-core method cc-tree)))
+               (format nil "~a~a" (subseq inner 0 (max 0 (1- (length inner)))) yoon))))
         (call-next-method))))
+
+;; Hepburn
 
 (hash-from-list *hepburn-kana-table*
                 '(:a "a"      :i "i"      :u "u"      :e "e"      :o "o"
@@ -95,13 +100,6 @@
 
 (defclass generic-hepburn (generic-romanization)
   ((kana-table :initform (alexandria:copy-hash-table *hepburn-kana-table*))))
-
-(defmethod r-apply ((modifier symbol) (method generic-hepburn) cc-tree)
-  (let ((yoon (gethash modifier (kana-table method))))
-    (case (car cc-tree)
-      (:u (format nil "w~a" yoon)) 
-      ((:a :i :e :o) (format nil "~a~a" (gethash (car cc-tree) (kana-table method)) yoon))
-      (t (call-next-method)))))
 
 (defmethod r-apply ((modifier (eql :sokuon)) (method generic-hepburn) cc-tree)
   (if (eql (leftmost-atom cc-tree) :chi)
@@ -141,7 +139,6 @@
 (defmethod r-simplify ((method simplified-hepburn) str)
   (simplify-ngrams (call-next-method) (simplifications method)))
 
-
 (defparameter *hepburn-basic* (make-instance 'generic-hepburn))
 
 (defparameter *hepburn-simple* (make-instance 'simplified-hepburn
@@ -167,6 +164,39 @@
   (setf (gethash :wo (slot-value obj 'kana-table)) "o"))
 
 (defparameter *hepburn-modified* (make-instance 'modified-hepburn))
+
+;; Kunrei-siki
+
+(hash-from-list *kunrei-siki-kana-table*
+                '(:a "a"      :i "i"      :u "u"      :e "e"      :o "o"
+                  :ka "ka"    :ki "ki"    :ku "ku"    :ke "ke"    :ko "ko"
+                  :sa "sa"    :shi "si"   :su "su"    :se "se"    :so "so"
+                  :ta "ta"    :chi "ti"   :tsu "tu"   :te "te"    :to "to"
+                  :na "na"    :ni "ni"    :nu "nu"    :ne "ne"    :no "no"
+                  :ha "ha"    :hi "hi"    :fu "hu"    :he "he"    :ho "ho"
+                  :ma "ma"    :mi "mi"    :mu "mu"    :me "me"    :mo "mo"
+                  :ya "ya"                :yu "yu"                :yo "yo"
+                  :ra "ra"    :ri "ri"    :ru "ru"    :re "re"    :ro "ro"
+                  :wa "wa"    :wi "i"                 :we "e"     :wo "o"
+                  :n "n'"
+                  :ga "ga"    :gi "gi"    :gu "gu"    :ge "ge"    :go "go"
+                  :za "za"    :ji "zi"    :zu "zu"    :ze "ze"    :zo "zo"
+                  :da "da"    :dji "zi"   :dzu "zu"   :de "de"    :do "do"
+                  :ba "ba"    :bi "bi"    :bu "bu"    :be "be"    :bo "bo"
+                  :pa "pa"    :pi "pi"    :pu "pu"    :pe "pe"    :po "po"
+                  :+a "a"     :+i "i"     :+u "u"     :+e "e"     :+o "o"
+                  :+ya "ya"               :+yu "yu"               :+yo "yo"
+                  :vu "vu"    :+wa "wa"
+                  ))
+
+(defclass kunrei-siki (generic-romanization)
+  ((kana-table :initform (alexandria:copy-hash-table *kunrei-siki-kana-table*))))
+
+(defmethod r-simplify ((method kunrei-siki) str)
+  (let ((str (ppcre:regex-replace-all "n'([^aiueoy]|$)" str "n\\1")))
+    (simplify-ngrams str '("oo" "ô" "ou" "ô" "uu" "û"))))
+
+(defparameter *kunrei-siki* (make-instance 'kunrei-siki))
 
 (defvar *default-romanization-method* *hepburn-traditional*)
 
