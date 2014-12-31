@@ -294,6 +294,8 @@
   (set-common 'kana-text 1446980 "いたむ" :null)
   (set-common 'kana-text 1432710 "いたむ" :null)
   (set-common 'kana-text 1632670 "かむ" :null)
+  (set-common 'kana-text 1224090 "きが" 40)
+  (set-common 'kana-text 1534470 "もうこ" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
