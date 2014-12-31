@@ -149,6 +149,9 @@
   (assert-segment "全くといっていい" "全く" "と" "いって" "いい")
   (assert-segment "もいらしてました" "も" "いら" "してました")
   (assert-segment "発狂しそうなんだ" "発狂しそう" "な" "ん" "だ")
+  (assert-segment "していたんだ" "していた" "ん" "だ")
+  (assert-segment "引き上げられた" "引き上げられた")
+  (assert-segment "をつかむため" "を" "つかむ" "ため")
   ;;(assert-segment "がいないとこの" "が" "いない" "と" "この")
   )
 

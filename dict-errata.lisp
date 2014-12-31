@@ -291,6 +291,9 @@
   (set-common 'kanji-text 2019640 "杯" 20)
   (set-common 'kana-text 1416220 "たち" 10)
   (set-common 'kana-text 1402900 "そうなん" :null)
+  (set-common 'kana-text 1446980 "いたむ" :null)
+  (set-common 'kana-text 1432710 "いたむ" :null)
+  (set-common 'kana-text 1632670 "かむ" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
