@@ -94,6 +94,7 @@
     (:uru "can ... / to be able to ...")
     (:sou "looking like ... / seeming ...")
     (:nai "negative suffix")
+    (:ra "pluralizing suffix (not polite)")
     ))
 
 (defun get-suffix-description (seq)
@@ -175,6 +176,8 @@
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
 
         (load-kf :ren (car (find-word-conj-of "なく" 1529520)) :class :nai)
+
+        (load-kf :ra (get-kana-form 2067770 "ら"))
 
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
@@ -272,6 +275,9 @@
   (nconc
    (find-word-with-conj-type root +conj-adjective-stem+)
    (find-word-with-pos root "adj-na")))
+
+(def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
+  (find-word-seq root 1002290))
 
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)

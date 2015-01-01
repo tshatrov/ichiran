@@ -155,6 +155,7 @@
   (assert-segment "ときが自分" "とき" "が" "自分")
   (assert-segment "もうこころ" "もう" "こころ")
   (assert-segment "届けしたら" "届け" "したら")
+  (assert-segment "おまえら低いんだよ" "おまえら" "低い" "ん" "だ" "よ")
   ;;(assert-segment "がいないとこの" "が" "いない" "と" "この")
   )
 
