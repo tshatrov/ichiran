@@ -139,3 +139,11 @@
   (("亡く" 1518450) 2)
   (1375610 (- len 2) t))
 
+;; tegakakaru split (kana form might conflict with other uses of kakaru verb)
+
+(def-simple-split split-tegakakaru 2089710 10 (len) ;; 手が掛かる
+  (1327190 1) ;; 手
+  (2028930 1) ;; が
+  (1207590 (- len 2) t))
+  
+  

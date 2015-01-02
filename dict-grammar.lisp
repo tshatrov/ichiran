@@ -125,7 +125,7 @@
 
         (loop for kf in (get-kana-forms 1577980) ;; いる (る)
            for tkf = (text kf)
-           for val = (list :te kf)
+           for val = (list :te+ kf)
            do (setf (gethash tkf *suffix-cache*) val
                     (gethash (seq kf) *suffix-class*) :iru)
              (when (> (length tkf) 1)
@@ -244,7 +244,7 @@
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
-(def-simple-suffix suffix-te+ :te+ (:connector "" :score 5) (root)
+(def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
@@ -271,7 +271,7 @@
     (when root
       (find-word-with-pos root "adj-i"))))
 
-(def-simple-suffix suffix-sa :sa (:connector "" :score 1) (root)
+(def-simple-suffix suffix-sa :sa (:connector "" :score 2) (root)
   (nconc
    (find-word-with-conj-type root +conj-adjective-stem+)
    (find-word-with-pos root "adj-na")))

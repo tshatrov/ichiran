@@ -231,6 +231,8 @@
   (delete-sense-prop 2423450 "misc" "uk")
   ;; 行く
   (delete-sense-prop 1578850 "misc" "uk")
+  ;; 罹る
+  (delete-sense-prop 1609500 "misc" "uk")
   
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
