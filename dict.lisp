@@ -657,6 +657,11 @@
    (kana :reader get-kana :initarg :kana)
    (source :reader source :initarg :source)))
 
+(defgeneric true-text (obj)
+  (:documentation "Returns original text for reading")
+  (:method (obj) (text obj))
+  (:method ((obj proxy-text)) (true-text (source obj))))
+
 (defmethod word-conjugations ((obj proxy-text))
   (word-conjugations (source obj)))
 

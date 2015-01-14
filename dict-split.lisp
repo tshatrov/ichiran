@@ -16,7 +16,7 @@
     (unless length-var (setf length-var (gensym "LV")))
     (unless text-var (setf text-var (gensym "TV")))
     `(defsplit ,name ,seq (,reading-var)
-       (let* ((,text-var (text ,reading-var))
+       (let* ((,text-var (true-text ,reading-var))
               (,length-var (length ,text-var))
               (,offset 0)
               (,parts nil))
