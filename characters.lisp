@@ -176,3 +176,10 @@
                (char (getf *all-characters* class) 0)
                char)))
        str))
+  
+  
+(defun kanji-prefix (word)
+  (or
+   (let ((regex (format nil "^.*~a" *kanji-regex*)))
+     (ppcre:scan-to-strings regex word))
+   ""))

@@ -782,6 +782,7 @@
          (katakana-p (and (not kanji-p) (> (count-char-class (text reading) :katakana-uniq) 0)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
+         (kanji-prefix (kanji-prefix text))
          (len (max 1 (mora-length text)))
          (seq (seq reading))
          (ord (ord reading))
@@ -829,6 +830,7 @@
       (let* ((table (if kanji-p 'kanji-text 'kana-text))
              (conj-of-common (query (:select 'common :from table
                                              :where (:and (:in 'seq (:set conj-of))
+                                                          (:like 'text (:|| kanji-prefix "%"))
                                                           (:not-null 'common)))
                                     :column)))
         (when conj-of-common
