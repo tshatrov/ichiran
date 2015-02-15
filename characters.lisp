@@ -57,6 +57,13 @@
                   :ha :ba :hi :bi :fu :bu :he :be :ho :bo
                   :u :vu))
 
+(hash-from-list *undakuten-hash*
+                '(:ga :ka :gi :ki :gu :ku :ge :ke :go :ko
+                  :za :sa :ji :shi :zu :su :ze :se :zo :so
+                  :da :ta :dji :chi :dzu :tsu :de :te :do :to
+                  :ba :ha :bi :hi :bu :fu :be :he :bo :ho
+                  :vu :u))
+
 (defun voice-char (cc)
   "Returns a voiced form of character class, or the same character class"
   (gethash cc *dakuten-hash* cc))

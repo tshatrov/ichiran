@@ -10,6 +10,17 @@
        ,@body)
      (setf (gethash ,seq *split-map*) ',name)))
 
+(defun unrendaku (txt)
+  (if (zerop (length txt)) txt
+      (let* ((first-char (char txt 0))
+             (cc (gethash first-char *char-class-hash*))
+             (unvoiced (gethash cc *undakuten-hash*)))
+        (unless unvoiced (return-from unrendaku txt))
+        (let* ((pos (position first-char (getf *kana-characters* cc)))
+               (new-char (char (getf *kana-characters* unvoiced) pos)))
+          (setf (char txt 0) new-char)
+          txt))))
+
 (defmacro def-simple-split (name seq score (&optional length-var text-var) &body parts-def)
   "each part is (seq length-form)"
   (alexandria:with-gensyms (reading-var offset parts)
@@ -20,17 +31,24 @@
               (,length-var (length ,text-var))
               (,offset 0)
               (,parts nil))
-         ,@(loop for (part-seq part-length-form conj-p) in parts-def
+         (declare (ignorable ,text-var ,length-var))
+         ,@(loop for (part-seq part-length-form conj-p rendaku-p) in parts-def
               collect
                 `(let ((pseq ,(if (listp part-seq)
-                                  `(seq (car (find-word-conj-of ,@part-seq)))
-                                  part-seq))
+                                  (if (and part-seq (stringp (car part-seq)))
+                                      `(list (seq (car (find-word-conj-of ,@part-seq))))
+                                      `',part-seq)
+                                  `',(list part-seq)))
                        (part-length ,part-length-form))
-                   (push (car (,(if conj-p
-                                    'find-word-conj-of
-                                    'find-word-seq)
-                                (subseq ,text-var ,offset 
-                                        (and part-length (+ ,offset part-length)))
+                   (push (car (apply
+                               ,(if conj-p
+                                   ''find-word-conj-of
+                                   ''find-word-seq)
+                                (let ((part-txt (subseq ,text-var ,offset 
+                                                       (and part-length (+ ,offset part-length)))))
+                                  ,(if rendaku-p
+                                      '(unrendaku part-txt)
+                                      'part-txt))
                                 pseq))
                          ,parts)
                    (incf ,offset part-length)))
@@ -146,4 +164,9 @@
   (2028930 1) ;; が
   (1207590 (- len 2) t))
   
+;; kawaribae split
+
+(def-simple-split split-kawaribae 1411570 10 (len txt) ;; 代わり映え
+  ((1590770 1510720) (1+ (position #\り txt)))
+  (1600610 2 nil t))
   
