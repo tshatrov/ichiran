@@ -907,7 +907,10 @@
      for pos from 0 below str-len
      for char = (char str pos)
      for char-class = (gethash char *char-class-hash* char)
-     if (eql char-class :sokuon) collect (1+ pos)
+     if (and (eql char-class :sokuon) 
+             (not (= pos (1- str-len)))
+             (let ((char (char str (1+ pos))))
+               (member (gethash char *char-class-hash* char) *kana-characters*))) collect (1+ pos)
      else if (and (member char-class modifiers)
                   (not (and (= pos (1- str-len)) (eql char-class :long-vowel))))
                   collect pos))

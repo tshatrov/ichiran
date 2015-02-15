@@ -45,7 +45,9 @@
   (:documentation "Apply modifier to something")
   (:method ((modifier (eql :sokuon)) method cc-tree)
     (let ((inner (romanize-core method cc-tree)))
-      (if (zerop (length inner)) inner
+      (if (or (zerop (length inner))
+              (not (cl-unicode:has-property (char inner 0) "Block:Basic Latin")))
+          inner
           (format nil "~a~a" (char inner 0) inner))))
   (:method ((modifier (eql :long-vowel)) method cc-tree)
     (romanize-core method cc-tree))
