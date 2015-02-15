@@ -281,6 +281,7 @@
 
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
+(pushnew :nikui *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var kana-var)

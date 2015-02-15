@@ -242,6 +242,8 @@
   (add-sense-prop 2272830 0 "misc" "uk")
   ;; ごめんなさい
   (add-sense-prop 1270680 0 "misc" "uk")
+  ;; ありがたい
+  (add-sense-prop 1541560 0 "misc" "uk")
 
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
