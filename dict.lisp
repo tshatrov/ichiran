@@ -779,7 +779,7 @@
 
   (let* ((score 1) prop-score
          (kanji-p (eql (word-type reading) :kanji))
-         (katakana-p (and (not kanji-p) (test-word (text reading) :katakana)))
+         (katakana-p (and (not kanji-p) (> (count-char-class (text reading) :katakana-uniq) 0)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
          (len (max 1 (mora-length text)))

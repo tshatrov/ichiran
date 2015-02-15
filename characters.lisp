@@ -79,6 +79,7 @@
                "・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜"))
 
 (defparameter *katakana-regex* "[ァ-ヺヽヾー]")
+(defparameter *katakana-uniq-regex* "[ァ-ヺヽヾ]")
 
 (defparameter *hiragana-regex* "[ぁ-ゔゝゞー]")
 
@@ -88,13 +89,15 @@
 
 (defparameter *char-class-regex-mapping* 
   `((:katakana ,*katakana-regex*)
+    (:katakana-uniq ,*katakana-uniq-regex*)
     (:hiragana ,*hiragana-regex*)
     (:kanji ,*kanji-regex*)
     (:kana ,(format nil "(~a|~a)" *katakana-regex* *hiragana-regex*))
     (:traditional ,(format nil "(~a|~a)" *hiragana-regex* *kanji-regex*))
     (:nonword ,*nonword-regex*)))
 
-(deftype char-class () '(member :katakana :hiragana :kanji :kana :traditional :nonword))
+(deftype char-class () '(member :katakana :katakana-uniq
+                         :hiragana :kanji :kana :traditional :nonword))
 
 (defparameter *char-scanners*
   (mapcar (lambda (pair) (cons (car pair) (ppcre:create-scanner (format nil "^~a+$" (cadr pair)))))

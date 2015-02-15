@@ -158,6 +158,8 @@
   (assert-segment "おまえら低いんだよ" "おまえら" "低い" "ん" "だ" "よ")
   (assert-segment "すべてがかかっていると思いながら" "すべて" "が" "かかっている" "と" "思い" "ながら")
   ;;(assert-segment "がいないとこの" "が" "いない" "と" "この")
+  (assert-segment "エロいと思っちゃう" "エロい" "と" "思っちゃう")
+
   )
 
 (define-test json-consistency-test
