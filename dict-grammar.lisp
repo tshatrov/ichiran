@@ -277,7 +277,7 @@
    (find-word-with-pos root "adj-na")))
 
 (def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
-  (find-word-seq root 1002290))
+  (find-word-seq root 1002290 1457730))
 
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
