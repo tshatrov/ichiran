@@ -10,17 +10,6 @@
        ,@body)
      (setf (gethash ,seq *split-map*) ',name)))
 
-(defun unrendaku (txt)
-  (if (zerop (length txt)) txt
-      (let* ((first-char (char txt 0))
-             (cc (gethash first-char *char-class-hash*))
-             (unvoiced (gethash cc *undakuten-hash*)))
-        (unless unvoiced (return-from unrendaku txt))
-        (let* ((pos (position first-char (getf *kana-characters* cc)))
-               (new-char (char (getf *kana-characters* unvoiced) pos)))
-          (setf (char txt 0) new-char)
-          txt))))
-
 (defmacro def-simple-split (name seq score (&optional length-var text-var) &body parts-def)
   "each part is (seq length-form)"
   (alexandria:with-gensyms (reading-var offset parts)

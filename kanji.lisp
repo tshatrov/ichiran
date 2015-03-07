@@ -40,6 +40,10 @@
   (:metaclass dao-class)
   (:keys id))
 
+(defmethod print-object ((obj reading) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a ~a ~a" (kanji-id obj) (reading-type obj) (text obj))))
+
 (deftable reading
   (!dao-def)
   (!index 'kanji-id)
@@ -53,6 +57,10 @@
    (text :reader text :col-type string :initarg :text))
   (:metaclass dao-class)
   (:keys id))
+
+(defmethod print-object ((obj meaning) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a ~a" (kanji-id obj) (text obj))))
 
 (deftable meaning
   (!dao-def)
@@ -103,9 +111,9 @@
         (let ((type (dom:get-attribute node "r_type"))
               (text (node-text node)))
           (when (member type '("ja_on" "ja_kun") :test 'equal)
-            (make-dao 'reading :type type :text text :kanji-id kanji-id))))
+            (make-dao 'reading :type type :text (as-hiragana text) :kanji-id kanji-id))))
       (dom:do-node-list (node node-nanori)
-        (make-dao 'reading :type "ja_na" :text (node-text node) :kanji-id kanji-id))
+        (make-dao 'reading :type "ja_na" :text (as-hiragana (node-text node)) :kanji-id kanji-id))
       (dom:do-node-list (node node-meaning)
         (let ((lang (dom:get-attribute node "m_lang"))
               (text (node-text node)))
@@ -121,6 +129,83 @@
            while (klacks:find-element source "character")
            do (let ((content (klacks:serialize-element source (cxml:make-string-sink))))
                 (load-kanji content))
-           if (zerop (mod cnt 100)) do (format t "~a entries loaded~%" cnt)
+           if (zerop (mod cnt 500)) do (format t "~a entries loaded~%" cnt)
            finally (query "ANALYZE") (format t "~a entries total~%" cnt)))))
 
+
+(defun get-readings (char &key names)
+  (let ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
+        (typeset (if names '("ja_on" "ja_kun" "ja_na") '("ja_on" "ja_kun"))))
+    (query (:select 'r.text 'r.type :from (:as 'kanji 'k)
+                    :inner-join (:as 'reading 'r) :on (:= 'r.kanji-id 'k.id)
+                    :where (:and (:= 'k.text str)
+                                 (:in 'r.type (:set typeset)))))))
+
+(defun get-normal-readings (char &key rendaku)
+  (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
+         (readings (query (:select 'r.text 'r.type :from (:as 'kanji 'k)
+                                   :inner-join (:as 'reading 'r) :on (:= 'r.kanji-id 'k.id)
+                                   :where (:and (:= 'k.text str)
+                                                (:in 'r.type (:set "ja_on" "ja_kun"))))))
+         (readings* (loop for (text type) in readings
+                       for dot = (position #\. text)
+                       for reading = (if dot (subseq text 0 dot) text)
+                       collect (list reading type)
+                       if rendaku
+                         collect (list (rendaku reading :fresh t) type :rendaku))))
+    (remove-duplicates readings* :test 'equal :key 'car :from-end t)))
+
+(defun make-rmap-regex (rmap)
+  `(:sequence
+    :start-anchor
+    ,@(loop for r in rmap
+           if (listp r)
+           collect `(:register (:alternation ,@(mapcar 'car r)))
+           else collect r)
+    :end-anchor))
+
+(defun match-readings* (rmap reading)
+  (let* ((regex (make-rmap-regex rmap)))
+    (multiple-value-bind (scan groups) (ppcre:scan-to-strings regex reading)
+      (if scan
+          (loop with gr = (coerce groups 'list)
+             for r in rmap
+             if (listp r)
+               collect (assoc (car gr) r :test 'equal)
+               and do (setf gr (cdr gr))
+             else
+               collect r)))))
+
+(defun match-readings (str reading)
+  (let* ((rmap
+          (loop with prev-kanji
+            for start from 0 below (length str)
+            for end = (1+ start)
+            for char = (char str start)
+            if (ppcre:scan *kanji-regex* str :start start :end end)
+            collect (cond ((eql char #\々)
+                           (prog1 (when prev-kanji (get-normal-readings prev-kanji :rendaku t))
+                             (setf prev-kanji nil)))
+                          ((eql char #\ヶ)
+                           (setf prev-kanji nil)
+                           '(("か" "ja_on") ("が" "abbr")))
+                          ((eql char #\〆)
+                           (setf prev-kanji #\締)
+                           (get-normal-readings #\締 :rendaku (> start 0)))
+                          (t (setf prev-kanji char)
+                             (get-normal-readings char :rendaku (> start 0))))
+             else collect char))
+         (match (match-readings* rmap reading)))
+    (when match
+      (loop with charbag and result
+         for m in match
+         for c across str
+         if (listp m)
+           when charbag do (push (coerce (nreverse charbag) 'string) result) end
+           and do (push (cons (make-string 1 :initial-element c) m) result)
+         else
+           do (push c charbag)
+         finally
+           (when charbag (push (coerce (nreverse charbag) 'string) result))
+           (return (nreverse result))))))
+               

@@ -90,9 +90,9 @@
 
 (defparameter *hiragana-regex* "[ぁ-ゔゝゞー]")
 
-(defparameter *kanji-regex* "[々一-龯]")
+(defparameter *kanji-regex* "[々ヶ〆一-龯]")
 
-(defparameter *nonword-regex* "[^々一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
+(defparameter *nonword-regex* "[^々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
 
 (defparameter *char-class-regex-mapping* 
   `((:katakana ,*katakana-regex*)
@@ -183,3 +183,27 @@
    (let ((regex (format nil "^.*~a" *kanji-regex*)))
      (ppcre:scan-to-strings regex word))
    ""))
+
+(defun unrendaku (txt &key fresh)
+  (if fresh (setf txt (copy-seq txt)))
+  (if (zerop (length txt)) txt
+      (let* ((first-char (char txt 0))
+             (cc (gethash first-char *char-class-hash*))
+             (unvoiced (gethash cc *undakuten-hash*)))
+        (unless unvoiced (return-from unrendaku txt))
+        (let* ((pos (position first-char (getf *kana-characters* cc)))
+               (new-char (char (getf *kana-characters* unvoiced) pos)))
+          (setf (char txt 0) new-char)
+          txt))))
+
+(defun rendaku (txt &key fresh)
+  (if fresh (setf txt (copy-seq txt)))
+  (if (zerop (length txt)) txt
+      (let* ((first-char (char txt 0))
+             (cc (gethash first-char *char-class-hash*))
+             (voiced (gethash cc *dakuten-hash*)))
+        (unless voiced (return-from rendaku txt))
+        (let* ((pos (position first-char (getf *kana-characters* cc)))
+               (new-char (char (getf *kana-characters* voiced) pos)))
+          (setf (char txt 0) new-char)
+          txt))))

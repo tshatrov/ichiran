@@ -9,7 +9,9 @@
            :split-by-regex :basic-split :mora-length :count-char-class
            :as-hiragana :sequential-kanji-positions
            :*undakuten-hash* :*dakuten-hash*
-           :kanji-prefix))
+           :kanji-prefix
+           :unrendaku
+           :rendaku))
 
 (defpackage #:ichiran/tokenize
   (:use #:cl)
