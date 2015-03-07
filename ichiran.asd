@@ -26,6 +26,7 @@
                (:file "dict")
                (:file "dict-grammar")
                (:file "dict-split")
+               (:file "kanji")
                (:file "ichiran")
                (:file "tests"))
   :perform (test-op 

@@ -24,7 +24,7 @@
            :word-info-start :word-info-end :word-info-json
            :word-info-gloss-json
            :init-suffixes :init-suffixes-running-p
-           ))
+           :node-text))
 
 (defpackage #:ichiran
   (:use #:cl #:ichiran/characters #:ichiran/dict)
@@ -35,6 +35,10 @@
            :*hepburn-traditional* :*hepburn-modified*
            :kunrei-siki :*kunrei-siki*
            :*default-romanization-method*))
+
+(defpackage #:ichiran/kanji
+  (:use #:cl #:postmodern #:ichiran #:ichiran/characters #:ichiran/dict)
+  (:export))
 
 (uiop:define-package #:ichiran/all
     (:use #:ichiran/characters #:ichiran/dict #:ichiran)
