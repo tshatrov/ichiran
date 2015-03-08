@@ -26,7 +26,8 @@
            :word-info-start :word-info-end :word-info-json
            :word-info-gloss-json
            :init-suffixes :init-suffixes-running-p
-           :node-text))
+           :node-text
+           :get-kanji-words))
 
 (defpackage #:ichiran
   (:use #:cl #:ichiran/characters #:ichiran/dict)

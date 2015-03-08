@@ -15,13 +15,18 @@
    (grade :reader grade :col-type (or db-null integer) :initarg :grade)
    (strokes :reader strokes :col-type integer :initarg :strokes)
    (freq :reader freq :col-type (or db-null integer) :initarg :freq)
+
+   (stat-common :documentation "Number of common words with this kanji"
+             :accessor stat-common :col-type integer :initform 0)
+   (stat-irregular :documentation "Out of those, how many have irregular readings"
+                   :accessor stat-irregular :col-type integer :initform 0)
    )
   (:metaclass dao-class)
   (:keys id))
 
 (defmethod print-object ((obj kanji) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
-    (format stream "~a" (text obj))))
+    (format stream "~a ~a" (id obj) (text obj))))
 
 (deftable kanji
   (!dao-def)
@@ -30,13 +35,18 @@
   (!index 'radical-n)
   (!index 'grade)
   (!index 'strokes)
-  (!index 'freq))   
+  (!index 'freq)
+  (!index 'stat-common)
+  (!index 'stat-irregular))
 
 (defclass reading ()
   ((id :reader id :col-type serial)
    (kanji-id :reader kanji-id :col-type integer :initarg :kanji-id)
    (type :reader reading-type :col-type string :initarg :type)
-   (text :reader text :col-type string :initarg :text))
+   (text :reader text :col-type string :initarg :text)
+   
+   (stat-common :documentation "Number of common words that use this reading"
+                :accessor stat-common :col-type integer :initform 0))
   (:metaclass dao-class)
   (:keys id))
 
@@ -49,6 +59,7 @@
   (!index 'kanji-id)
   (!index 'type)
   (!index 'text)
+  (!index 'stat-common)
   (!foreign 'kanji 'kanji-id 'id :on-delete :cascade))
 
 (defclass meaning ()
@@ -132,21 +143,28 @@
            if (zerop (mod cnt 500)) do (format t "~a entries loaded~%" cnt)
            finally (query "ANALYZE") (format t "~a entries total~%" cnt)))))
 
+(defparameter *reading-cache* (make-hash-table :test 'equal))
 
+(defun get-readings-cache (str typeset)
+  (with-connection *connection*
+    (let* ((key (cons str typeset))
+           (val (gethash key *reading-cache* :none)))
+      (if (eql val :none)
+          (let ((result (query (:select 'r.text 'r.type :from (:as 'kanji 'k)
+                                        :inner-join (:as 'reading 'r) :on (:= 'r.kanji-id 'k.id)
+                                        :where (:and (:= 'k.text str)
+                                                     (:in 'r.type (:set typeset)))))))
+            (setf (gethash key *reading-cache*) result))
+          val))))
+  
 (defun get-readings (char &key names)
   (let ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
         (typeset (if names '("ja_on" "ja_kun" "ja_na") '("ja_on" "ja_kun"))))
-    (query (:select 'r.text 'r.type :from (:as 'kanji 'k)
-                    :inner-join (:as 'reading 'r) :on (:= 'r.kanji-id 'k.id)
-                    :where (:and (:= 'k.text str)
-                                 (:in 'r.type (:set typeset)))))))
+    (get-readings-cache str typeset)))
 
 (defun get-normal-readings (char &key rendaku)
   (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
-         (readings (query (:select 'r.text 'r.type :from (:as 'kanji 'k)
-                                   :inner-join (:as 'reading 'r) :on (:= 'r.kanji-id 'k.id)
-                                   :where (:and (:= 'k.text str)
-                                                (:in 'r.type (:set "ja_on" "ja_kun"))))))
+         (readings (get-readings-cache str '("ja_on" "ja_kun")))
          (readings* (loop for (text type) in readings
                        for dot = (position #\. text)
                        for reading = (if dot (subseq text 0 dot) text)
@@ -155,48 +173,86 @@
                          collect (list (rendaku reading :fresh t) type :rendaku))))
     (remove-duplicates readings* :test 'equal :key 'car :from-end t)))
 
-(defun make-rmap-regex (rmap)
-  `(:sequence
-    :start-anchor
-    ,@(loop for r in rmap
-           if (listp r)
-           collect `(:register (:alternation ,@(mapcar 'car r)))
-           else collect r)
-    :end-anchor))
+;; (defun make-rmap-regex (rmap)
+;;   `(:sequence
+;;     :start-anchor
+;;     ,@(loop for r in rmap
+;;            if (listp r)
+;;            if (> (length r) 1)
+;;              collect `(:register (:alternation ,@(mapcar 'car r)))
+;;            else
+;;              collect `(:register ,(caar r))
+;;            else collect r)
+;;     :end-anchor))
 
-(defun match-readings* (rmap reading)
-  (let* ((regex (make-rmap-regex rmap)))
-    (multiple-value-bind (scan groups) (ppcre:scan-to-strings regex reading)
-      (if scan
-          (loop with gr = (coerce groups 'list)
-             for r in rmap
-             if (listp r)
-               collect (assoc (car gr) r :test 'equal)
-               and do (setf gr (cdr gr))
-             else
-               collect r)))))
+;; (defun match-readings* (rmap reading)
+;;   (let* ((regex (make-rmap-regex rmap)))
+;;     (multiple-value-bind (scan groups) (ppcre:scan-to-strings regex reading)
+;;       (if scan
+;;           (loop with gr = (coerce groups 'list)
+;;              for r in rmap
+;;              if (listp r)
+;;                collect (assoc (car gr) r :test 'equal)
+;;                and do (setf gr (cdr gr))
+;;              else
+;;                collect r)))))
+
+(defun match-readings* (rmap reading &key (start 0))
+  (unless rmap
+    (return-from match-readings*
+      (if (>= start (length reading))
+          (values nil 0)
+          :none)))
+  (when (>= start (length reading))
+    (return-from match-readings* :none))
+
+  (let ((item (car rmap))
+        matches)
+    (cond ((listp item)
+           (loop for end from (1+ start) to (length reading)
+                for (match score) = (multiple-value-list (match-readings* (cdr rmap) reading :start end))
+                unless (eql match :none)
+                do (unless (loop for r in item
+                              unless (mismatch reading (car r) :start1 start :end1 end)
+                              do (push (cons (cons r match) score) matches) (return t))
+                     (push (cons (cons (list (subseq reading start end) "irr") match) (- score (- end start))) matches)))
+           (if matches
+               (loop with max-score and best-match
+                    for (match . score) in (nreverse matches)
+                    if (or (not max-score) (> score max-score))
+                    do (setf max-score score best-match match)
+                    finally (return (values best-match score)))
+               :none))
+          (t (if (eql item (char reading start))
+                 (multiple-value-bind (match score) (match-readings* (cdr rmap) reading :start (1+ start))
+                     (if (eql match :none) :none
+                         (values (cons item match) score)))
+                 :none)))))
+   
+
+(defun make-rmap (str)
+  (loop with prev-kanji
+     for start from 0 below (length str)
+     for end = (1+ start)
+     for char = (char str start)
+     if (ppcre:scan *kanji-regex* str :start start :end end)
+     collect (cond ((eql char #\々)
+                    (prog1 (when prev-kanji (get-normal-readings prev-kanji :rendaku t))
+                      (setf prev-kanji nil)))
+                   ((eql char #\ヶ)
+                    (setf prev-kanji nil)
+                    '(("か" "ja_on") ("が" "abbr")))
+                   ((eql char #\〆)
+                    (setf prev-kanji #\締)
+                    (get-normal-readings #\締 :rendaku (> start 0)))
+                   (t (setf prev-kanji char)
+                      (get-normal-readings char :rendaku (> start 0))))
+     else collect char))
 
 (defun match-readings (str reading)
-  (let* ((rmap
-          (loop with prev-kanji
-            for start from 0 below (length str)
-            for end = (1+ start)
-            for char = (char str start)
-            if (ppcre:scan *kanji-regex* str :start start :end end)
-            collect (cond ((eql char #\々)
-                           (prog1 (when prev-kanji (get-normal-readings prev-kanji :rendaku t))
-                             (setf prev-kanji nil)))
-                          ((eql char #\ヶ)
-                           (setf prev-kanji nil)
-                           '(("か" "ja_on") ("が" "abbr")))
-                          ((eql char #\〆)
-                           (setf prev-kanji #\締)
-                           (get-normal-readings #\締 :rendaku (> start 0)))
-                          (t (setf prev-kanji char)
-                             (get-normal-readings char :rendaku (> start 0))))
-             else collect char))
+  (let* ((rmap (make-rmap str))
          (match (match-readings* rmap reading)))
-    (when match
+    (unless (eql match :none)
       (loop with charbag and result
          for m in match
          for c across str
@@ -209,3 +265,38 @@
            (when charbag (push (coerce (nreverse charbag) 'string) result))
            (return (nreverse result))))))
                
+(defun kanji-word-stats (char)
+  (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
+         (words (get-kanji-words str))
+         (r-stat (make-hash-table :test 'equal))
+         (irregular 0))
+    (loop for (seq k r common) in words
+         for reading = (assoc str (remove-if-not 'listp (match-readings k r)) :test 'equal)
+         if reading do 
+         (destructuring-bind (rtext rtype &optional rendaku) (cdr reading)
+           (if (equal rtype "irr")
+               (incf irregular)
+               (let ((key (list (if rendaku (unrendaku rtext :fresh t) rtext) rtype)))
+                 (incf (gethash key r-stat 0)))))
+         else do (incf irregular))
+    (values (alexandria:hash-table-alist r-stat) irregular (length words))))
+         
+(defun load-kanji-stats ()
+  (with-connection *connection*
+    (query (:update 'kanji :set 'stat-common 0 'stat-irregular 0))
+    (query (:update 'reading :set 'stat-common 0))
+    (loop for kanji in (select-dao 'kanji (:<= 'grade 8))
+         for cnt from 1
+         for (reading-stats irregular total) = (multiple-value-list (kanji-word-stats (text kanji)))
+         for readings = (select-dao 'reading (:= 'kanji-id (id kanji)))
+         do (setf (stat-common kanji) total
+                  (stat-irregular kanji) irregular)
+         (update-dao kanji)
+         (loop for ((rtext rtype) . rcount) in reading-stats
+              for reading = (find-if (lambda (r) (and (equal (text r) rtext) (equal (reading-type r) rtype))) readings)
+              if reading do (setf (stat-common reading) rcount) (update-dao reading))
+         if (zerop (mod cnt 100)) do (format t "~a kanji processed~%" cnt)
+         finally (query "ANALYZE") (format t "~a kanji total~%" cnt))))
+    
+         
+    

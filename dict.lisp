@@ -1445,3 +1445,16 @@
       (if (word-info-alternative word-info)
           (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
           (inner word-info)))))
+
+(defun get-kanji-words (char)
+  (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char)))
+    (query (:select 'e.seq 'k.text 'r.text 'k.common
+             :from (:as 'entry 'e) (:as 'kanji-text 'k) (:as 'kana-text 'r)
+             :where (:and (:= 'e.seq 'k.seq)
+                          (:= 'e.seq 'r.seq)
+                          (:= 'r.ord 0)
+                          (:not-null 'k.common)
+                          'e.root-p
+                          (:like 'k.text (:|| "%" str "%")))))))
+                          
+         
