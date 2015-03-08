@@ -41,7 +41,12 @@
 
 (defpackage #:ichiran/kanji
   (:use #:cl #:postmodern #:ichiran #:ichiran/characters #:ichiran/dict)
-  (:export))
+  (:export
+   #:kanji-info-json
+   #:match-readings
+   #:kanji-word-stats
+   #:get-readings
+   #:get-normal-readings))
 
 (uiop:define-package #:ichiran/all
     (:use #:ichiran/characters #:ichiran/dict #:ichiran)

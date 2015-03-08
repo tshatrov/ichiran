@@ -44,6 +44,8 @@
    (kanji-id :reader kanji-id :col-type integer :initarg :kanji-id)
    (type :reader reading-type :col-type string :initarg :type)
    (text :reader text :col-type string :initarg :text)
+   (suffixp :reader suffixp :col-type boolean :initarg :suffixp :initform nil)
+   (prefixp :reader prefixp :col-type boolean :initarg :prefixp :initform nil)
    
    (stat-common :documentation "Number of common words that use this reading"
                 :accessor stat-common :col-type integer :initform 0))
@@ -61,6 +63,22 @@
   (!index 'text)
   (!index 'stat-common)
   (!foreign 'kanji 'kanji-id 'id :on-delete :cascade))
+
+(defclass ofurigana ()
+  ((id :reader id :col-type serial)
+   (reading-id :reader reading-id :col-type integer :initarg :reading-id)
+   (text :reader text :col-type string :initarg :text))
+  (:metaclass dao-class)
+  (:keys id))
+
+(defmethod print-object ((obj ofurigana) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a ~a" (reading-id obj) (text obj))))
+
+(deftable ofurigana
+  (!dao-def)
+  (!index 'reading-id)
+  (!foreign 'reading 'reading-id 'id :on-delete :cascade))
 
 (defclass meaning ()
   ((id :reader id :col-type serial)
@@ -81,7 +99,7 @@
 
 (defun init-tables ()
   (with-connection *connection*
-    (let ((tables '(kanji reading meaning)))
+    (let ((tables '(kanji reading ofurigana meaning)))
       (loop for table in (reverse tables)
          do (query (:drop-table :if-exists table)))
       (loop for table in tables
@@ -94,6 +112,45 @@
             (funcall wrapper text)
             text))
       default))
+
+(defun load-readings (nodes kanji-id)
+  (let ((readings (make-hash-table :test 'equal)))
+    (dom:do-node-list (node nodes)
+      (let ((type (dom:get-attribute node "r_type"))
+            (text (node-text node)))
+        (when (member type '("ja_on" "ja_kun") :test 'equal)
+          (let ((text (as-hiragana text))
+                reading prefixp suffixp ofuri)
+            (when (char= (char text 0) #\-)
+              (setf prefixp t text (subseq text 1)))
+            (when (char= (char text (1- (length text))) #\-)
+              (setf suffixp t text (subseq text 0 (1- (length text)))))
+            (let ((dot (position #\. text)))
+              (if dot
+                  (setf reading (subseq text 0 dot)
+                        ofuri (subseq text (1+ dot)))
+                  (setf reading text)))
+            (let ((old-reading (gethash reading readings)))
+              (cond (old-reading
+                     (unless (equal (getf old-reading :type) type)
+                       (setf (getf old-reading :type) "ja_onkun"))
+                     (when ofuri
+                       (push ofuri (getf old-reading :ofuri)))
+                     (when suffixp (setf (getf old-reading :suffixp) t))
+                     (when prefixp (setf (getf old-reading :prefixp) t)))
+                    (t
+                     (setf (gethash reading readings)
+                           `(:ofuri ,(if ofuri (list ofuri) nil) :type ,type :suffixp ,suffixp :prefixp ,prefixp)))))))))
+    (maphash
+     (lambda (text rinfo)
+       (let ((ofuri (getf rinfo :ofuri)))
+         (remf rinfo :ofuri)
+         (let ((robj (apply #'make-dao 'reading :text text :kanji-id kanji-id rinfo)))
+           (loop with rid = (id robj) 
+              for of in ofuri
+              do (make-dao 'ofurigana :text of :reading-id rid)))))
+     readings)))
+  
 
 (defun load-kanji (content)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
@@ -118,11 +175,7 @@
     (unless radical-n (setf radical-n radical-c))
     (let ((kanji-id (id (make-dao 'kanji :text literal :radical-c radical-c :radical-n radical-n
                                   :grade grade :strokes strokes :freq freq))))
-      (dom:do-node-list (node node-reading)
-        (let ((type (dom:get-attribute node "r_type"))
-              (text (node-text node)))
-          (when (member type '("ja_on" "ja_kun") :test 'equal)
-            (make-dao 'reading :type type :text (as-hiragana text) :kanji-id kanji-id))))
+      (load-readings node-reading kanji-id)
       (dom:do-node-list (node node-nanori)
         (make-dao 'reading :type "ja_na" :text (as-hiragana (node-text node)) :kanji-id kanji-id))
       (dom:do-node-list (node node-meaning)
@@ -153,49 +206,23 @@
           (let ((result (query (:select 'r.text 'r.type :from (:as 'kanji 'k)
                                         :inner-join (:as 'reading 'r) :on (:= 'r.kanji-id 'k.id)
                                         :where (:and (:= 'k.text str)
-                                                     (:in 'r.type (:set typeset)))))))
+                                                     (:not (:in 'r.type (:set typeset))))))))
             (setf (gethash key *reading-cache*) result))
           val))))
   
 (defun get-readings (char &key names)
   (let ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
-        (typeset (if names '("ja_on" "ja_kun" "ja_na") '("ja_on" "ja_kun"))))
+        (typeset (if names nil '("ja_na"))))
     (get-readings-cache str typeset)))
 
 (defun get-normal-readings (char &key rendaku)
   (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
-         (readings (get-readings-cache str '("ja_on" "ja_kun")))
-         (readings* (loop for (text type) in readings
-                       for dot = (position #\. text)
-                       for reading = (if dot (subseq text 0 dot) text)
+         (readings (get-readings-cache str '("ja_na")))
+         (readings* (loop for (reading type) in readings
                        collect (list reading type)
                        if rendaku
                          collect (list (rendaku reading :fresh t) type :rendaku))))
     (remove-duplicates readings* :test 'equal :key 'car :from-end t)))
-
-;; (defun make-rmap-regex (rmap)
-;;   `(:sequence
-;;     :start-anchor
-;;     ,@(loop for r in rmap
-;;            if (listp r)
-;;            if (> (length r) 1)
-;;              collect `(:register (:alternation ,@(mapcar 'car r)))
-;;            else
-;;              collect `(:register ,(caar r))
-;;            else collect r)
-;;     :end-anchor))
-
-;; (defun match-readings* (rmap reading)
-;;   (let* ((regex (make-rmap-regex rmap)))
-;;     (multiple-value-bind (scan groups) (ppcre:scan-to-strings regex reading)
-;;       (if scan
-;;           (loop with gr = (coerce groups 'list)
-;;              for r in rmap
-;;              if (listp r)
-;;                collect (assoc (car gr) r :test 'equal)
-;;                and do (setf gr (cdr gr))
-;;              else
-;;                collect r)))))
 
 (defun match-readings* (rmap reading &key (start 0))
   (unless rmap
@@ -297,6 +324,45 @@
               if reading do (setf (stat-common reading) rcount) (update-dao reading))
          if (zerop (mod cnt 100)) do (format t "~a kanji processed~%" cnt)
          finally (query "ANALYZE") (format t "~a kanji total~%" cnt))))
-    
+
+(defun calculate-perc (sample total)
+  (if (= total 0)
+      "--.--%"
+      (format nil "~,2,,,'0F%" (* 100 (/ sample total)))))
+
+(defun reading-info-json (reading total)
+  (jsown:new-js
+    ("text" (text reading))
+    ("type" (reading-type reading))
+    ("ofuri" (query (:order-by (:select 'text :from 'ofurigana :where (:= 'reading-id (id reading))) 'id)))
+    ("sample" (stat-common reading))
+    ("perc" (calculate-perc (stat-common reading) total))))
+
+(defun kanji-info-json (char)
+  (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
+         (kanji (car (select-dao 'kanji (:= 'text str))))
+         (total (stat-common kanji)))
+    (when kanji
+      (let ((js (jsown:new-js
+                  ("text" str)
+                  ("rc" (radical-c kanji))
+                  ("rn" (radical-n kanji))
+                  ("strokes" (strokes kanji))
+                  ("total" (stat-common kanji))
+                  ("irr" (stat-irregular kanji))
+                  ("irr_perc" (calculate-perc (stat-irregular kanji) total))
+                  ("readings" (mapcar (lambda (r) (reading-info-json r total))
+                                      (select-dao 'reading
+                                                  (:and (:= 'kanji-id (id kanji))
+                                                        (:not (:= 'type "ja_na")))
+                                                  (:desc 'type) (:desc 'stat-common))))
+                  ("meanings" (mapcar 'text (select-dao 'meaning (:= 'kanji-id (id kanji)) 'id)))
+                  )))
+        (when (freq kanji)
+          (jsown:extend-js js ("freq" (freq kanji))))
+        (when (grade kanji)
+          (jsown:extend-js js ("grade" (grade kanji))))
+        js))))
+
+                  
          
-    
