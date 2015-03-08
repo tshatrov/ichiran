@@ -122,9 +122,9 @@
           (let ((text (as-hiragana text))
                 reading prefixp suffixp ofuri)
             (when (char= (char text 0) #\-)
-              (setf prefixp t text (subseq text 1)))
+              (setf suffixp t text (subseq text 1)))
             (when (char= (char text (1- (length text))) #\-)
-              (setf suffixp t text (subseq text 0 (1- (length text)))))
+              (setf prefixp t text (subseq text 0 (1- (length text)))))
             (let ((dot (position #\. text)))
               (if dot
                   (setf reading (subseq text 0 dot)
@@ -331,12 +331,18 @@
       (format nil "~,2,,,'0F%" (* 100 (/ sample total)))))
 
 (defun reading-info-json (reading total)
-  (jsown:new-js
-    ("text" (text reading))
-    ("type" (reading-type reading))
-    ("ofuri" (query (:order-by (:select 'text :from 'ofurigana :where (:= 'reading-id (id reading))) 'id)))
-    ("sample" (stat-common reading))
-    ("perc" (calculate-perc (stat-common reading) total))))
+  (let ((js (jsown:new-js
+              ("text" (text reading))
+              ("rtext" (romanize-word (text reading) :method *hepburn-basic* :original-spelling ""))
+              ("type" (reading-type reading))
+              ("ofuri" (query (:order-by (:select 'text :from 'ofurigana :where (:= 'reading-id (id reading))) 'id) :column))
+              ("sample" (stat-common reading))
+              ("perc" (calculate-perc (stat-common reading) total)))))
+    (when (prefixp reading)
+      (jsown:extend-js js ("prefixp" t)))
+    (when (suffixp reading)
+      (jsown:extend-js js ("suffixp" t)))
+    js))
 
 (defun kanji-info-json (char)
   (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))

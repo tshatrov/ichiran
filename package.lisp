@@ -11,7 +11,8 @@
            :*undakuten-hash* :*dakuten-hash*
            :kanji-prefix
            :unrendaku
-           :rendaku))
+           :rendaku
+           :collect-char-class))
 
 (defpackage #:ichiran/tokenize
   (:use #:cl)
@@ -49,8 +50,8 @@
    #:get-normal-readings))
 
 (uiop:define-package #:ichiran/all
-    (:use #:ichiran/characters #:ichiran/dict #:ichiran)
-    (:reexport :ichiran :ichiran/dict :ichiran/characters))
+    (:use #:ichiran/characters #:ichiran/dict #:ichiran #:ichiran/kanji)
+    (:reexport :ichiran :ichiran/dict :ichiran/characters :ichiran/kanji))
 
 (defpackage #:ichiran/test
   (:use #:cl #:ichiran/all #:lisp-unit)

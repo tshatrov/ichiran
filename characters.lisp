@@ -122,6 +122,13 @@
     (ppcre:do-matches (s e regex word cnt)
       (incf cnt))))
 
+(defun collect-char-class (word char-class)
+  (declare (type char-class char-class))
+  (let ((regex (cadr (assoc char-class *char-class-regex-mapping*)))
+        result)
+    (ppcre:do-matches-as-strings (s regex word (nreverse result))
+      (push s result))))
+
 (defun sequential-kanji-positions (word &optional (offset 0))
   (let (positions)
     (ppcre:do-matches (s e "(?=[々一-龯][々一-龯])" word)
