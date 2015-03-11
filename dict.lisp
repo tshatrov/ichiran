@@ -1458,40 +1458,41 @@
           (inner word-info)))))
 
 (defun get-kanji-words (char)
-  (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char)))
-    (query (:select 'e.seq 'k.text 'r.text 'k.common
-             :from (:as 'entry 'e) (:as 'kanji-text 'k) (:as 'kana-text 'r)
-             :where (:and (:= 'e.seq 'k.seq)
-                          (:= 'e.seq 'r.seq)
-                          (:= 'r.ord 0)
-                          (:not-null 'k.common)
-                          'e.root-p
-                          (:like 'k.text (:|| "%" str "%")))))))
-                          
+  (with-connection *connection*
+    (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char)))
+      (query (:select 'e.seq 'k.text 'r.text 'k.common
+                      :from (:as 'entry 'e) (:as 'kanji-text 'k) (:as 'kana-text 'r)
+                      :where (:and (:= 'e.seq 'k.seq)
+                                   (:= 'e.seq 'r.seq)
+                                   (:= 'r.ord 0)
+                                   (:not-null 'k.common)
+                                   'e.root-p
+                                   (:like 'k.text (:|| "%" str "%"))))))))
 
 (defun exists-reading (seq reading)
   (query (:select 'seq :from 'kana-text :where (:and (:= 'seq seq) (:= 'text reading)))))
          
 (defun find-word-info (text &key reading root-only &aux (end (length text)))
-  (let* ((*suffix-map-temp* (get-suffix-map text))
-         (*suffix-next-end* end)
-         (all-words (if root-only
-                        (find-word text :root-only t)
-                        (find-word-full text)))
-         (segments (loop for word in all-words
+  (with-connection *connection*
+    (let* ((*suffix-map-temp* (get-suffix-map text))
+           (*suffix-next-end* end)
+           (all-words (if root-only
+                          (find-word text :root-only t)
+                          (find-word-full text)))
+           (segments (loop for word in all-words
                         collect (gen-score (make-segment :start 0 :end end :word word))))
-         (segments (sort segments #'> :key #'segment-score))
-         (wis (mapcar #'word-info-from-segment segments)))
-    (when reading
-      (setf wis
-            (loop for wi in wis
+           (segments (sort segments #'> :key #'segment-score))
+           (wis (mapcar #'word-info-from-segment segments)))
+      (when reading
+        (setf wis
+              (loop for wi in wis
                  for seq = (word-info-seq wi)
                  if (equal (word-info-kana wi) reading)
                  collect wi
                  else if (and seq (exists-reading seq reading))
                  do (setf (word-info-kana wi) reading)
                  and collect wi)))
-    wis))
+      wis)))
 
 (defun find-word-info-json (text &key reading root-only)
   (mapcar (lambda (wi) (word-info-gloss-json wi :root-only root-only))
