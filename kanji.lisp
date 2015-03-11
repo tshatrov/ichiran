@@ -215,13 +215,23 @@
         (typeset (if names nil '("ja_na"))))
     (get-readings-cache str typeset)))
 
+(defun get-reading-alternatives (reading type &key rendaku)
+  (let* ((end (1- (length reading)))
+         (lst `(,(list reading type nil)
+                ,@(when (char= (char reading end) #\つ)
+                        (let ((geminated (copy-seq reading)))
+                          (setf (char geminated end) #\っ)
+                          (list (list geminated type nil :geminated)))))))
+    (if rendaku
+        (append lst (loop for (rd nil nil gem) in lst
+                         collect (list (rendaku rd :fresh t) type :rendaku gem)))
+        lst)))
+
 (defun get-normal-readings (char &key rendaku)
   (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
          (readings (get-readings-cache str '("ja_na")))
          (readings* (loop for (reading type) in readings
-                       collect (list reading type)
-                       if rendaku
-                         collect (list (rendaku reading :fresh t) type :rendaku))))
+                         nconc (get-reading-alternatives reading type :rendaku rendaku))))
     (remove-duplicates readings* :test 'equal :key 'car :from-end t)))
 
 (defun match-readings* (rmap reading &key (start 0))
@@ -284,7 +294,7 @@
          for m in match
          for c across str
          if (listp m)
-           when charbag do (push (coerce (nreverse charbag) 'string) result) end
+           when charbag do (push (coerce (nreverse charbag) 'string) result) (setf charbag nil) end
            and do (push (cons (make-string 1 :initial-element c) m) result)
          else
            do (push c charbag)
@@ -292,6 +302,14 @@
            (when charbag (push (coerce (nreverse charbag) 'string) result))
            (return (nreverse result))))))
                
+(defun get-original-reading (rtext &optional rendaku geminated)
+  (when rendaku
+    (setf rtext (unrendaku rtext :fresh t)))
+  (when geminated
+    (setf rtext (copy-seq rtext))
+    (setf (char rtext (1- (length rtext))) #\つ))
+  rtext)
+
 (defun kanji-word-stats (char)
   (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
          (words (get-kanji-words str))
@@ -300,10 +318,10 @@
     (loop for (seq k r common) in words
          for reading = (assoc str (remove-if-not 'listp (match-readings k r)) :test 'equal)
          if reading do 
-         (destructuring-bind (rtext rtype &optional rendaku) (cdr reading)
+         (destructuring-bind (rtext rtype &rest options) (cdr reading)
            (if (equal rtype "irr")
                (incf irregular)
-               (let ((key (list (if rendaku (unrendaku rtext :fresh t) rtext) rtype)))
+               (let ((key (list (apply #'get-original-reading rtext options) rtype)))
                  (incf (gethash key r-stat 0)))))
          else do (incf irregular))
     (values (alexandria:hash-table-alist r-stat) irregular (length words))))
@@ -331,44 +349,103 @@
       (format nil "~,2,,,'0F%" (* 100 (/ sample total)))))
 
 (defun reading-info-json (reading total)
-  (let ((js (jsown:new-js
-              ("text" (text reading))
-              ("rtext" (romanize-word (text reading) :method *hepburn-basic* :original-spelling ""))
-              ("type" (reading-type reading))
-              ("ofuri" (query (:order-by (:select 'text :from 'ofurigana :where (:= 'reading-id (id reading))) 'id) :column))
-              ("sample" (stat-common reading))
-              ("perc" (calculate-perc (stat-common reading) total)))))
-    (when (prefixp reading)
-      (jsown:extend-js js ("prefixp" t)))
-    (when (suffixp reading)
-      (jsown:extend-js js ("suffixp" t)))
-    js))
+  (with-connection *connection*
+    (let ((js (jsown:new-js
+                ("text" (text reading))
+                ("rtext" (romanize-word (text reading) :method *hepburn-basic* :original-spelling ""))
+                ("type" (reading-type reading))
+                ("ofuri" (query (:order-by (:select 'text :from 'ofurigana :where (:= 'reading-id (id reading))) 'id) :column))
+                ("sample" (stat-common reading))
+                ("perc" (calculate-perc (stat-common reading) total)))))
+      (when (prefixp reading)
+        (jsown:extend-js js ("prefixp" t)))
+      (when (suffixp reading)
+        (jsown:extend-js js ("suffixp" t)))
+      js)))
 
 (defun kanji-info-json (char)
-  (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
-         (kanji (car (select-dao 'kanji (:= 'text str))))
-         (total (stat-common kanji)))
-    (when kanji
-      (let ((js (jsown:new-js
-                  ("text" str)
-                  ("rc" (radical-c kanji))
-                  ("rn" (radical-n kanji))
-                  ("strokes" (strokes kanji))
-                  ("total" (stat-common kanji))
-                  ("irr" (stat-irregular kanji))
-                  ("irr_perc" (calculate-perc (stat-irregular kanji) total))
-                  ("readings" (mapcar (lambda (r) (reading-info-json r total))
-                                      (select-dao 'reading
-                                                  (:and (:= 'kanji-id (id kanji))
-                                                        (:not (:= 'type "ja_na")))
-                                                  (:desc 'type) (:desc 'stat-common))))
-                  ("meanings" (mapcar 'text (select-dao 'meaning (:= 'kanji-id (id kanji)) 'id)))
-                  )))
-        (when (freq kanji)
-          (jsown:extend-js js ("freq" (freq kanji))))
-        (when (grade kanji)
-          (jsown:extend-js js ("grade" (grade kanji))))
-        js))))
+  (with-connection *connection*
+    (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
+           (kanji (car (select-dao 'kanji (:= 'text str)))))
+      (when kanji
+        (let* ((total (stat-common kanji))
+               (js (jsown:new-js
+                     ("text" str)
+                     ("rc" (radical-c kanji))
+                     ("rn" (radical-n kanji))
+                     ("strokes" (strokes kanji))
+                     ("total" (stat-common kanji))
+                     ("irr" (stat-irregular kanji))
+                     ("irr_perc" (calculate-perc (stat-irregular kanji) total))
+                     ("readings" (mapcar (lambda (r) (reading-info-json r total))
+                                         (select-dao 'reading
+                                                     (:and (:= 'kanji-id (id kanji))
+                                                           (:not (:= 'type "ja_na")))
+                                                     (:desc 'type) (:desc 'stat-common))))
+                     ("meanings" (mapcar 'text (select-dao 'meaning (:= 'kanji-id (id kanji)) 'id)))
+                     )))
+          (when (freq kanji)
+            (jsown:extend-js js ("freq" (freq kanji))))
+          (when (grade kanji)
+            (jsown:extend-js js ("grade" (grade kanji))))
+          js)))))
 
-                  
+(defun get-reading-stats (kanji reading)
+  (with-connection *connection*
+    (let ((query (query (:select 'r.stat-common 'k.stat-common 'k.grade :from (:as 'kanji 'k) (:as 'reading 'r)
+                                 :where (:and (:= 'k.id 'r.kanji-id)
+                                              (:= 'k.text kanji)
+                                              (:= 'r.text reading))) :row)))
+      (when query
+        (destructuring-bind (sample total grade) query
+          (list sample total (calculate-perc sample total) grade))))))
+
+(defun kanji-reading-json (kanji reading type &optional rendaku geminated)
+  (let ((js (jsown:new-js ("kanji" kanji) ("reading" reading) ("type" type))))
+    (when (ppcre:scan *kanji-char-regex* kanji)
+      (jsown:extend-js js ("link" t)))
+    (when rendaku
+      (jsown:extend-js js ("rendaku" rendaku)))
+    (when geminated
+      (jsown:extend-js js ("geminated" geminated)))
+    (let ((stats (get-reading-stats kanji reading)))
+      (when stats
+        (jsown:extend-js js ("stats" t))
+        (destructuring-bind (sample total perc grade) stats
+          (jsown:extend-js js ("sample" sample) ("total" total) ("perc" perc))
+          (when (not (eql grade :null))
+            (jsown:extend-js js ("grade" grade)))
+          )))
+    js))
+
+(defun process-match-json (match)
+  (loop with irrbag and result
+     with empty-bag = (lambda (&aux (ib (nreverse irrbag)))
+                        (let ((js (jsown:new-js
+                                    ("kanji" (apply 'concatenate 'string (mapcar 'first ib)))
+                                    ("reading" (apply 'concatenate 'string (mapcar 'second ib)))
+                                    ("type" "irr"))))
+                          (when (ppcre:scan *kanji-char-regex* (jsown:val js "kanji"))
+                            (jsown:extend-js js ("link" t)))
+                          (push js result))
+                        (setf irrbag nil))
+     for item in match
+     if (listp item) do
+         (cond
+           ((equal (third item) "irr") (push item irrbag))
+           (t (when irrbag
+                (funcall empty-bag))
+              (push (apply 'kanji-reading-json item) result)))
+     else do
+       (when irrbag (funcall empty-bag))
+       (push (jsown:new-js ("text" item)) result)
+     finally (when irrbag (funcall empty-bag))
+       (return (nreverse result))))
+
+(defun match-readings-json (str reading)
+  (and (ppcre:scan *kanji-regex* str)
+       (let ((match (match-readings str reading)))
+         (when match
+           (process-match-json match)))))
+    
          

@@ -12,7 +12,8 @@
            :kanji-prefix
            :unrendaku
            :rendaku
-           :collect-char-class))
+           :collect-char-class
+           :*kanji-char-regex*))
 
 (defpackage #:ichiran/tokenize
   (:use #:cl)
@@ -28,7 +29,9 @@
            :word-info-gloss-json
            :init-suffixes :init-suffixes-running-p
            :node-text
-           :get-kanji-words))
+           :get-kanji-words
+           :find-word-info
+           :find-word-info-json))
 
 (defpackage #:ichiran
   (:use #:cl #:ichiran/characters #:ichiran/dict)
@@ -47,7 +50,8 @@
    #:match-readings
    #:kanji-word-stats
    #:get-readings
-   #:get-normal-readings))
+   #:get-normal-readings
+   #:match-readings-json))
 
 (uiop:define-package #:ichiran/all
     (:use #:ichiran/characters #:ichiran/dict #:ichiran #:ichiran/kanji)

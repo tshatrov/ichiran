@@ -633,10 +633,13 @@
 ;;; end conjugations
 
 
-(defun find-word (word)
-  (select-dao 
-   (if (test-word word :kana) 'kana-text 'kanji-text)
-   (:= 'text word)))
+(defun find-word (word &key root-only)
+  (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
+    (if root-only
+        (query-dao table (:select 'wt.* :from (:as table 'wt) :inner-join 'entry :on (:= 'wt.seq 'entry.seq)
+                                  :where (:and (:= 'text word)
+                                               'root-p)))
+        (select-dao table (:= 'text word)))))
 
 (defun word-readings (word)
   (let* ((kana-seq (query (:select 'seq :from 'kana-text :where (:= 'text word)) :column))
@@ -1422,10 +1425,15 @@
                  do (format s "<~a>. " i) (inner wi nil nil))
             (inner word-info))))))
 
-(defun word-info-gloss-json (word-info)
+(defun word-info-gloss-json (word-info &key root-only)
   (with-connection *connection*
     (labels ((inner (word-info &optional suffix)
-               (let ((js (jsown:new-js ("reading" (word-info-reading-str word-info)))))
+               (let ((js (jsown:new-js ("reading" (word-info-reading-str word-info))
+                                       ("text" (word-info-text word-info))
+                                       ("kana" (word-info-kana word-info))
+                                       )))
+                 (when (word-info-score word-info)
+                   (jsown:extend-js js ("score" (word-info-score word-info))))
                  (if (word-info-components word-info)
                      (jsown:extend-js js
                        ("compound" (mapcar #'word-info-text (word-info-components word-info)))
@@ -1434,7 +1442,10 @@
                      (let ((seq (word-info-seq word-info))
                            (conjs (word-info-conjugations word-info))
                            desc)
-                       (cond ((and suffix (setf desc (get-suffix-description seq)))
+                       (cond (root-only
+                              (return-from inner
+                                (jsown:extend-js js ("gloss" (get-senses-json seq)))))
+                             ((and suffix (setf desc (get-suffix-description seq)))
                               (jsown:extend-js js ("suffix" desc)))
                              ((and seq (or (not conjs) (eql conjs :root)))
                               (jsown:extend-js js ("gloss" (get-senses-json seq)))))
@@ -1457,4 +1468,31 @@
                           'e.root-p
                           (:like 'k.text (:|| "%" str "%")))))))
                           
+
+(defun exists-reading (seq reading)
+  (query (:select 'seq :from 'kana-text :where (:and (:= 'seq seq) (:= 'text reading)))))
          
+(defun find-word-info (text &key reading root-only &aux (end (length text)))
+  (let* ((*suffix-map-temp* (get-suffix-map text))
+         (*suffix-next-end* end)
+         (all-words (if root-only
+                        (find-word text :root-only t)
+                        (find-word-full text)))
+         (segments (loop for word in all-words
+                        collect (gen-score (make-segment :start 0 :end end :word word))))
+         (segments (sort segments #'> :key #'segment-score))
+         (wis (mapcar #'word-info-from-segment segments)))
+    (when reading
+      (setf wis
+            (loop for wi in wis
+                 for seq = (word-info-seq wi)
+                 if (equal (word-info-kana wi) reading)
+                 collect wi
+                 else if (and seq (exists-reading seq reading))
+                 do (setf (word-info-kana wi) reading)
+                 and collect wi)))
+    wis))
+
+(defun find-word-info-json (text &key reading root-only)
+  (mapcar (lambda (wi) (word-info-gloss-json wi :root-only root-only))
+          (find-word-info text :reading reading :root-only root-only)))
