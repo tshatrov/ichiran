@@ -408,7 +408,7 @@
       (jsown:extend-js js ("rendaku" rendaku)))
     (when geminated
       (jsown:extend-js js ("geminated" geminated)))
-    (let ((stats (get-reading-stats kanji reading)))
+    (let ((stats (get-reading-stats kanji (get-original-reading reading rendaku geminated))))
       (when stats
         (jsown:extend-js js ("stats" t))
         (destructuring-bind (sample total perc grade) stats
