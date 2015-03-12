@@ -258,7 +258,7 @@
                     for (match . score) in (nreverse matches)
                     if (or (not max-score) (> score max-score))
                     do (setf max-score score best-match match)
-                    finally (return (values best-match score)))
+                    finally (return (values best-match max-score)))
                :none))
           (t (if (eql item (char reading start))
                  (multiple-value-bind (match score) (match-readings* (cdr rmap) reading :start (1+ start))
