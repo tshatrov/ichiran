@@ -244,6 +244,8 @@
   (add-sense-prop 1270680 0 "misc" "uk")
   ;; ありがたい
   (add-sense-prop 1541560 0 "misc" "uk")
+  ;; わけない
+  (add-sense-prop 1739410 1 "misc" "uk")
 
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
@@ -300,6 +302,7 @@
   (set-common 'kana-text 1632670 "かむ" :null)
   (set-common 'kana-text 1224090 "きが" 40)
   (set-common 'kana-text 1534470 "もうこ" :null)
+  (set-common 'kana-text 1739410 "わけない" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
