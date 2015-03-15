@@ -183,6 +183,9 @@
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
         (load-abbr :nai "ぬ")
+
+        (load-abbr :nakereba "なきゃ")
+        (load-abbr :nakereba "なくちゃ")
         ))))
 
 (defun init-suffixes (&optional blocking)
@@ -315,6 +318,9 @@
 
 (def-abbr-suffix abbr-nee :nai 2 (root)
   (find-word-full (concatenate 'string root "ない")))
+
+(def-abbr-suffix abbr-nakereba :nakereba 4 (root)
+  (find-word-full (concatenate 'string root "なければ")))
 
 (defun get-suffix-map (str)
   (init-suffixes)
