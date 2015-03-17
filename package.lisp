@@ -31,7 +31,8 @@
            :node-text
            :get-kanji-words
            :find-word-info
-           :find-word-info-json))
+           :find-word-info-json
+           :simple-word-info))
 
 (defpackage #:ichiran
   (:use #:cl #:ichiran/characters #:ichiran/dict)
@@ -51,7 +52,8 @@
    #:kanji-word-stats
    #:get-readings
    #:get-normal-readings
-   #:match-readings-json))
+   #:match-readings-json
+   #:query-kanji-json))
 
 (uiop:define-package #:ichiran/all
     (:use #:ichiran/characters #:ichiran/dict #:ichiran #:ichiran/kanji)

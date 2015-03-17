@@ -6,6 +6,8 @@
 
 (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
 
+(defgeneric to-json (obj &key &allow-other-keys)
+  (:documentation "Convert object to json"))
 
 (defclass kanji ()
   ((id :reader id :col-type serial)
@@ -363,32 +365,35 @@
         (jsown:extend-js js ("suffixp" t)))
       js)))
 
+(defmethod to-json ((kanji kanji) &key)
+  (let* ((total (stat-common kanji))
+         (js (jsown:new-js
+               ("text" (text kanji))
+               ("rc" (radical-c kanji))
+               ("rn" (radical-n kanji))
+               ("strokes" (strokes kanji))
+               ("total" (stat-common kanji))
+               ("irr" (stat-irregular kanji))
+               ("irr_perc" (calculate-perc (stat-irregular kanji) total))
+               ("readings" (mapcar (lambda (r) (reading-info-json r total))
+                                   (select-dao 'reading
+                                               (:and (:= 'kanji-id (id kanji))
+                                                     (:not (:= 'type "ja_na")))
+                                               (:desc 'type) (:desc 'stat-common))))
+               ("meanings" (mapcar 'text (select-dao 'meaning (:= 'kanji-id (id kanji)) 'id)))
+               )))
+    (when (freq kanji)
+      (jsown:extend-js js ("freq" (freq kanji))))
+    (when (grade kanji)
+      (jsown:extend-js js ("grade" (grade kanji))))
+    js))
+
 (defun kanji-info-json (char)
   (with-connection *connection*
     (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
            (kanji (car (select-dao 'kanji (:= 'text str)))))
       (when kanji
-        (let* ((total (stat-common kanji))
-               (js (jsown:new-js
-                     ("text" str)
-                     ("rc" (radical-c kanji))
-                     ("rn" (radical-n kanji))
-                     ("strokes" (strokes kanji))
-                     ("total" (stat-common kanji))
-                     ("irr" (stat-irregular kanji))
-                     ("irr_perc" (calculate-perc (stat-irregular kanji) total))
-                     ("readings" (mapcar (lambda (r) (reading-info-json r total))
-                                         (select-dao 'reading
-                                                     (:and (:= 'kanji-id (id kanji))
-                                                           (:not (:= 'type "ja_na")))
-                                                     (:desc 'type) (:desc 'stat-common))))
-                     ("meanings" (mapcar 'text (select-dao 'meaning (:= 'kanji-id (id kanji)) 'id)))
-                     )))
-          (when (freq kanji)
-            (jsown:extend-js js ("freq" (freq kanji))))
-          (when (grade kanji)
-            (jsown:extend-js js ("grade" (grade kanji))))
-          js)))))
+        (to-json kanji)))))
 
 (defun get-reading-stats (kanji reading)
   (with-connection *connection*
@@ -449,3 +454,10 @@
            (process-match-json match)))))
     
          
+(defmacro query-kanji-json (var query &body extra-fields)
+  (alexandria:with-gensyms  (js)
+    `(with-connection *connection*
+       (mapcar (lambda (,var)
+               (let ((,js (to-json ,var)))
+                 (jsown:extend-js ,js ,@extra-fields)))
+             (query-dao 'kanji ,query)))))

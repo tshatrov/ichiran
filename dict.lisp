@@ -1128,6 +1128,13 @@
       ("start" start)
       ("end" end))))
 
+(defun simple-word-info (seq text reading type &key (as :object))
+  (let ((obj (make-instance 'word-info :type type :text text :seq seq :kana reading)))
+    (cond ((eql as :object)
+           obj)
+          ((eql as :json)
+           (word-info-json obj)))))
+
 ;; define appropriate defmethods so that word-info-str and
 ;; word-info-gloss-json work both on CLOS objects and jsown objects
 
