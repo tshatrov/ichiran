@@ -121,6 +121,7 @@
                                                                    (:not (:in 'id (:set conj-ids))))))))
              )
         (query (:delete-from 'conj-prop :where (:in 'conj-id (:set conj-ids))))
+        (query (:delete-from 'conj-source-reading :where (:in 'conj-id (:set conj-ids))))
         (query (:delete-from 'conjugation :where (:in 'id (:set conj-ids))))
         (when delete-entry
           (delete-dao entry))))))

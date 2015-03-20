@@ -14,6 +14,9 @@
 (defgeneric get-kana (obj)
   (:documentation "most popular kana representation"))
 
+(defgeneric get-kanji (obj)
+  (:documentation "most popular kanji representation"))
+
 (defgeneric get-text (obj)
   (:documentation "most popular text representation (kanji or kana)")
   (:method (obj) (text obj)))
@@ -47,6 +50,10 @@
   (text (car (select-dao (if (> (n-kanji obj) 0) 'kanji-text 'kana-text)
                          (:and (:= 'seq (seq obj)) (:= 'ord 0))))))
 
+(defmethod get-kanji ((obj entry))
+  (when (> (n-kanji obj) 0)
+    (text (car (select-dao 'kanji-text (:and (:= 'seq (seq obj)) (:= 'ord 0)))))))
+
 (defun recalc-entry-stats ()
   (query (:update 'entry :set
                   'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
@@ -66,8 +73,10 @@
    (text :reader text :col-type string :initarg :text)
    (ord :reader ord :col-type integer :initarg :ord)
    (common :reader common :col-type (or db-null integer) :initarg :common)
+   (common-tags :reader common-tags :col-type string :initform "" :initarg :common-tags)
    (conjugate-p :reader conjugate-p :col-type boolean :initform t :initarg :conjugate-p)
    (nokanji :reader nokanji :col-type boolean :initform nil :initarg :nokanji)
+   (best-kana :accessor best-kana :col-type (or db-null string) :initform nil :initarg :best-kana)
    )
   (:metaclass dao-class)
   (:keys id))
@@ -80,7 +89,17 @@
   (!index 'common)
   (!foreign 'entry 'seq :on-delete :cascade))
 
+(defmethod get-kanji ((obj kanji-text))
+  (text obj))
+
+(defmethod get-kana :around ((obj kanji-text))
+  (let ((bk (best-kana-conj obj)))
+    (if (eql bk :null)
+        (call-next-method)
+        bk)))
+
 (defmethod get-kana ((obj kanji-text))
+  "old get-kana, used when everything else fails"
   (loop with regex = (ppcre:create-scanner 
                       `(:sequence :start-anchor 
                                   ,@(loop for part in (ppcre:split *kanji-regex* (text obj))
@@ -102,8 +121,10 @@
    (text :reader text :col-type string :initarg :text)
    (ord :reader ord :col-type integer :initarg :ord)
    (common :reader common :col-type (or db-null integer) :initarg :common)
+   (common-tags :reader common-tags :col-type string :initform "" :initarg :common-tags)
    (conjugate-p :reader conjugate-p :col-type boolean :initform t :initarg :conjugate-p)
    (nokanji :reader nokanji :col-type boolean :initform nil :initarg :nokanji)
+   (best-kanji :accessor best-kanji :col-type (or db-null string) :initarg :best-kanji)
    )
   (:metaclass dao-class)
   (:keys id))
@@ -119,6 +140,10 @@
 (defmethod get-kana ((obj kana-text))
   (text obj))
 
+(defmethod get-kanji ((obj kana-text))
+  (let ((bk (best-kanji-conj obj)))
+    (unless (eql bk :null) bk)))
+
 (defmethod word-type ((obj kana-text)) :kana)
 
 (defclass sense ()
@@ -131,8 +156,7 @@
 (deftable sense
   (!dao-def)
   (!index 'seq)
-  (!index 'ord)
-  (!foreign 'entry 'seq))
+  (!foreign 'entry 'seq :on-delete :cascade))
 
 (defclass gloss ()
   ((id :reader id :col-type serial)
@@ -151,8 +175,7 @@
 (deftable gloss
   (!dao-def)
   (!index 'sense-id)
-  (!index 'ord)
-  (!foreign 'sense 'sense-id 'id))
+  (!foreign 'sense 'sense-id 'id :on-delete :cascade))
 
 (defclass sense-prop ()
   ((id :reader id :col-type serial)
@@ -172,13 +195,28 @@
 
 (deftable sense-prop
   (!dao-def)
-  (!index 'sense-id)
-  (!index 'tag)
-  (!index 'text)
-  (!index 'ord)
-  (!index 'seq)
-  (!foreign 'entry 'seq)
-  (!foreign 'sense 'sense-id 'id))
+  (!index 'sense-id 'tag)
+  (!index 'tag 'text)
+  (!index 'seq 'tag 'text)
+  (!foreign 'entry 'seq :on-delete :cascade)
+  (!foreign 'sense 'sense-id 'id :on-delete :cascade))
+
+(defclass restricted-readings ()
+  ((id :reader id :col-type serial)
+   (seq :reader seq :col-type integer :initarg :seq)
+   (reading :reader reading :col-type string :initarg :reading)
+   (text :reader text :col-type string :initarg :text))
+  (:metaclass dao-class)
+  (:keys id))
+
+(defmethod print-object ((obj sense-prop) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a -> ~a" (reading obj) (text obj))))
+
+(deftable restricted-readings
+  (!dao-def)
+  (!index 'seq 'reading)
+  (!foreign 'entry 'seq :on-delete :cascade))
 
 (defclass conjugation ()
   ((id :reader id :col-type serial)
@@ -194,8 +232,8 @@
   (!dao-def)
   (!index 'seq)
   (!index 'from)
-  (!foreign 'entry 'seq)
-  (!foreign 'entry 'from 'seq))
+  (!foreign 'entry 'seq :on-delete :cascade)
+  (!foreign 'entry 'from 'seq :on-delete :cascade))
 
 (defmethod print-object ((obj conjugation) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
@@ -217,7 +255,7 @@
 (deftable conj-prop
   (!dao-def)
   (!index 'conj-id)
-  (!foreign 'conjugation 'conj-id 'id))
+  (!foreign 'conjugation 'conj-id 'id :on-delete :cascade))
 
 (defun conj-info-short (obj)
   (format nil "[~a] ~a~[ Affirmative~; Negative~]~[ Plain~; Formal~]"
@@ -243,6 +281,24 @@
   (print-unreadable-object (obj stream :type t :identity nil)
     (princ (conj-info-short obj) stream)))
 
+(defclass conj-source-reading ()
+  ((id :reader id :col-type serial)
+   (conj-id :reader conj-id :col-type integer :initarg :conj-id)
+   (text :reader text :col-type string :initarg :text)
+   (source-text :reader source-text :col-type string :initarg :source-text)
+   )
+  (:metaclass dao-class)
+  (:keys id))
+
+(deftable conj-source-reading
+  (!dao-def)
+  (!index 'conj-id 'text)
+  (!foreign 'conjugation 'conj-id 'id :on-delete :cascade))
+
+(defmethod print-object ((obj conj-source-reading) stream)
+  (print-unreadable-object (obj stream :type t :identity nil)
+    (format stream "~a -> ~a" (source-text obj) (text obj))))
+
 (defstruct conj-data seq from via prop)
 
 (defun get-conj-data (seq &optional from/conj-ids)
@@ -262,7 +318,8 @@
 
 (defun init-tables ()
   (with-connection *connection*
-    (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop)))
+    (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop
+                    conj-source-reading restricted-readings)))
       (loop for table in (reverse tables)
          do (query (:drop-table :if-exists table)))
       (loop for table in tables
@@ -291,25 +348,30 @@
     (do-node-list-ord (ord node node-list)
       (let* ((reading-node (dom:item (dom:get-elements-by-tag-name node tag) 0))
              (reading-text (node-text reading-node))
-             (common :null)
-             skip (nokanji nil))
+             (common :null) (skip nil) (nokanji nil)
+             (pri-tags nil))
         (dom:do-node-list (node (dom:get-elements-by-tag-name node "re_inf"))
           (when (equal (node-text node) "ok")
             (setf skip t)))
-        (when (< 0 (dom:length (dom:get-elements-by-tag-name node "re_nokanji")))
-          (setf nokanji t))
         (unless skip
+          (when (< 0 (dom:length (dom:get-elements-by-tag-name node "re_nokanji")))
+            (setf nokanji t))
+          (dom:do-node-list (node (dom:get-elements-by-tag-name node "re_restr"))
+            (let ((restr (node-text node)))
+              (make-dao 'restricted-readings :seq seq :reading reading-text :text restr)))
           (dom:do-node-list (node (dom:get-elements-by-tag-name node pri))
             (let ((pri-tag (node-text node)))
+              (push pri-tag pri-tags)
               (if (eql common :null) (setf common 0))
               (when (alexandria:starts-with-subseq "nf" pri-tag)
                 (setf common (parse-integer pri-tag :start 2)))))
-          (push (list reading-text common nokanji) to-add))))
-    (loop for (reading-text common nokanji) in (nreverse to-add)
+          (push (list reading-text common nokanji (format nil "~{[~a]~}" (nreverse pri-tags)))
+                to-add))))
+    (loop for (reading-text common nokanji pri-tags) in (nreverse to-add)
        for ord from 0
        when nokanji do (setf primary-nokanji t)
-       do (make-dao table :seq seq :text reading-text :ord ord :common common
-                    :nokanji nokanji))
+       do (make-dao table :seq seq :text reading-text :ord ord :common common :nokanji nokanji 
+                    :common-tags pri-tags))
     (when primary-nokanji
       (query (:update 'entry :set 'primary-nokanji t :where (:= 'seq seq))))))
          
@@ -374,6 +436,7 @@
 
 (defun drop-extras ()
   (query (:delete-from 'conj-prop))
+  (query (:delete-from 'conj-source-reading))
   (query (:delete-from 'conjugation))
   (query (:delete-from 'entry :where (:not 'root-p)))
   )
@@ -513,7 +576,7 @@
                           (unless (gethash key conj-matrix)
                             (setf (gethash key conj-matrix)
                                   (make-array '(2 2) :initial-element nil)))
-                          (push (list conj-text kanji-flag ord (cr-onum rule))
+                          (push (list conj-text kanji-flag reading ord (cr-onum rule))
                                 (aref (gethash key conj-matrix)
                                    (if (cr-neg rule) 1 0)
                                    (if (cr-fml rule) 1 0))))))
@@ -538,7 +601,7 @@
                when readings
                do (when (insert-conjugation readings :seq next-seq :via via
                                             :from seq* :pos pos
-                                            :conj-id conj-id
+                                            :conj-type conj-id
                                             :neg (if ignore-neg :null neg)
                                             :fml (if ignore-fml :null fml))
                     (incf next-seq))))))
@@ -553,9 +616,10 @@
                    ((funcall predicate e2 e1) (return nil))))
            seq1 seq2))))
 
-(defun insert-conjugation (readings &key seq from pos conj-id neg fml via)
+(defun insert-conjugation (readings &key seq from pos conj-type neg fml via)
   "returns true if new entry is created, nil otherwise"
-  (loop for (reading kanji-flag) in (sort readings (lex-compare #'<) :key #'cddr)
+  (loop for (reading kanji-flag orig-reading) in (sort readings (lex-compare #'<) :key #'cdddr)
+     collect (list reading orig-reading) into source-readings
      if (= kanji-flag 1) collect reading into kanji-readings
      else collect reading into kana-readings
      finally
@@ -588,7 +652,7 @@
              (setf seq (car seq-candidates))
              (progn
                (make-dao 'entry :seq seq :content "")
-               (let ((conjugate-p (when (member conj-id *secondary-conjugation-types-from*) t)))
+               (let ((conjugate-p (when (member conj-type *secondary-conjugation-types-from*) t)))
                  (loop for kr in kanji-readings
                     for ord from 0
                     do (make-dao 'kanji-text :seq seq :text kr :ord ord :common :null :conjugate-p conjugate-p))
@@ -599,8 +663,15 @@
          (let* ((old-conj (if via
                               (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:= 'via via)))
                               (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:is-null 'via)))))
-                (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from :via (or via :null)))))
-           (make-dao 'conj-prop :conj-id (id conj) :conj-type conj-id :pos pos :neg neg :fml fml))
+                (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from :via (or via :null))))
+                (conj-id (id conj)))
+           (make-dao 'conj-prop :conj-id conj-id :conj-type conj-type :pos pos :neg neg :fml fml)
+           
+           (let* ((old-csr (when old-conj (query (:select 'text 'source-text :from 'conj-source-reading :where (:= 'conj-id conj-id)))))
+                  (source-readings (remove-duplicates (set-difference source-readings old-csr :test 'equal) :test 'equal)))
+             (loop for (text source-text) in source-readings
+                  do (make-dao 'conj-source-reading :conj-id conj-id :text text :source-text source-text))))
+
          (return (not seq-candidates)))))
 
 (defun load-conjugations ()
@@ -632,6 +703,143 @@
 
 ;;; end conjugations
 
+;;; precalculating kanji/kana links
+
+(defgeneric set-reading (obj)
+  (:documentation "find and set best associated reading (kana/kanji) for this object"))
+
+
+(defmethod set-reading ((obj kanji-text))
+  (let* ((seq (seq obj))
+         (cur-best (best-kana obj))
+         (restricted (query (:select 'reading 'text :from 'restricted-readings :where (:= 'seq seq)))))
+    (loop for reading in (select-dao 'kana-text (:= 'seq seq) 'ord)
+         for rtext = (text reading)
+         for restr = (loop for (rt kt) in restricted when (equal rtext rt) collect kt)
+         when (and (not (nokanji reading))
+                   (or (not restr)
+                       (member (text obj) restr :test 'equal)))
+         do (unless (equal cur-best (text reading))
+              (setf (best-kana obj) (text reading)) (update-dao obj))
+            (return))
+    (unless (equal cur-best :null)
+      (setf (best-kana obj) :null) (update-dao obj))
+    ))
+
+(defmethod set-reading ((obj kana-text))
+  (when (nokanji obj)
+    (return-from set-reading))
+  (let* ((seq (seq obj))
+         (cur-best (best-kanji obj))
+         (rtext (text obj))
+         (restricted (query (:select 'text :from 'restricted-readings
+                                     :where (:and (:= 'seq seq)
+                                                  (:= 'reading rtext)))
+                            :column))
+         (kanji-list (if restricted
+                         (select-dao 'kanji-text (:and (:= 'seq seq)
+                                                       (:in 'text (:set restricted)))
+                                     'ord)
+                         (select-dao 'kanji-text (:= 'seq seq) 'ord))))
+    (cond (kanji-list
+           (let ((ktext (text (car kanji-list))))
+             (unless (equal cur-best ktext)
+               (setf (best-kanji obj) ktext)
+               (update-dao obj))))
+          (t
+           (unless (equal cur-best :null)
+             (setf (best-kanji obj) :null)
+             (update-dao obj))))))
+
+;; (defgeneric set-reading-conj (obj)
+;;   (:documentation "find and set best associated reading (kana/kanji) for this non-root object"))
+
+(defun best-kana-conj (obj)
+  (cond ((not (eql (best-kana obj) :null)) (best-kana obj))
+        (t (let* ((parents (query (:select 'kt.id 'conj.id
+                                           :from (:as 'kanji-text 'kt)
+                                           (:as 'conj-source-reading 'csr)
+                                           (:as 'conjugation 'conj)
+                                           :where (:and
+                                                   (:= 'conj.seq (seq obj))
+                                                   (:= 'conj.id 'csr.conj-id)
+                                                   (:= 'csr.text (text obj))
+                                                   (:= 'kt.seq (:case ((:not-null 'conj.via) 'conj.via)
+                                                                 (:else 'conj.from)))
+                                                   (:= 'kt.text 'csr.source-text))))))
+             (print parents)
+             (loop for (pid cid) in parents
+                  for parent-bk = (best-kana-conj (get-dao 'kanji-text pid))
+                  unless (eql parent-bk :null)
+                  do (let ((readings (query (:select 'text :from 'conj-source-reading
+                                                     :where (:and (:= 'conj-id cid)
+                                                                  (:= 'source-text parent-bk)))
+                                            :column)))
+                       (when readings
+                         (return (car readings))))
+                  finally (return :null))))))
+
+
+(defun best-kanji-conj (obj)
+  (cond ((not (eql (best-kanji obj) :null)) (best-kanji obj))
+        ((or (nokanji obj) (= (n-kanji (get-dao 'entry (seq obj))) 0))
+         :null)
+        (t (let* ((parents (query (:select 'kt.id 'conj.id
+                                           :from (:as 'kana-text 'kt)
+                                           (:as 'conj-source-reading 'csr)
+                                           (:as 'conjugation 'conj)
+                                           :where (:and
+                                                   (:= 'conj.seq (seq obj))
+                                                   (:= 'conj.id 'csr.conj-id)
+                                                   (:= 'csr.text (text obj))
+                                                   (:= 'kt.seq (:case ((:not-null 'conj.via) 'conj.via)
+                                                                 (:else 'conj.from)))
+                                                   (:= 'kt.text 'csr.source-text))))))
+             (loop for (pid cid) in parents
+                  for parent-bk = (best-kanji-conj (get-dao 'kana-text pid))
+                  unless (eql parent-bk :null)
+                  do (let ((readings (query (:select 'text :from 'conj-source-reading
+                                                     :where (:and (:= 'conj-id cid)
+                                                                  (:= 'source-text parent-bk)))
+                                            :column)))
+                       (when readings
+                         (return (car readings))))
+                  finally (return :null))))))
+                    
+
+;; (defmethod set-reading-conj ((obj kanji-text))
+;;   (let ((cur-best (best-kana obj))
+;;         (bk (best-kana-conj obj)))
+;;     (unless (equal cur-best bk)
+;;       (setf (best-kana obj) bk)
+;;       (update-dao obj))))
+
+;; (defmethod set-reading-conj ((obj kana-text))
+;;   (let ((cur-best (best-kanji obj))
+;;         (bk (best-kanji-conj obj)))
+;;     (unless (equal cur-best bk)
+;;       (setf (best-kanji obj) bk)
+;;       (update-dao obj))))
+
+(defun load-best-readings (&key reset)
+  (with-connection *connection*
+    (when reset
+      (query (:update 'kanji-text :set 'best-kana :null))
+      (query (:update 'kana-text :set 'best-kanji :null)))
+    (loop for kanji in (query-dao 'kanji-text
+                                  (:select 'kt.* :from (:as 'kanji-text 'kt) 'entry
+                                           :where (:and (:= 'kt.seq 'entry.seq)
+                                                        (:is-null 'kt.best-kana)
+                                                        'root-p)))
+       do (set-reading kanji))
+    (loop for kana in (query-dao 'kana-text
+                                 (:select 'kt.* :from (:as 'kana-text 'kt) 'entry
+                                          :where (:and (:= 'kt.seq 'entry.seq)
+                                                       (:is-null 'kt.best-kanji)
+                                                       'root-p)))
+       do (set-reading kana))))
+
+;;;
 
 (defun find-word (word &key root-only)
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
@@ -686,7 +894,7 @@
 (defmethod word-type ((obj proxy-text))
   (word-type (source obj)))
 
-;; Compound words (usually 2 words squished together, but not in concatenative way)
+;; Compound words (2 or more words squished together)
 
 (defclass compound-text ()
   ((text :reader text :initarg :text)
@@ -1471,7 +1679,7 @@
                       :from (:as 'entry 'e) (:as 'kanji-text 'k) (:as 'kana-text 'r)
                       :where (:and (:= 'e.seq 'k.seq)
                                    (:= 'e.seq 'r.seq)
-                                   (:= 'r.ord 0)
+                                   (:= 'r.text 'k.best-kana)
                                    (:not-null 'k.common)
                                    'e.root-p
                                    (:like 'k.text (:|| "%" str "%"))))))))
