@@ -20,7 +20,7 @@
   (format t "Initializing ichiran/dict...~%")
   (load-jmdict)
   (format t "Calculating readings...~%")
-  (load-best-readings)
+  (load-best-readings :reset t)
   (format t "Initializing ichiran/kanji...~%")
   (load-kanjidic)
   (format t "Calculating kanji stats...~%")
