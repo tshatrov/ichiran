@@ -277,6 +277,14 @@
       (jsown:extend-js js ("fml" fml)))
     js))
 
+(defun delete-duplicate-props ()
+  (query "DELETE FROM conj_prop cp1 USING conj_prop cp2
+          WHERE cp1.id < cp2.id AND cp1.conj_id = cp2.conj_id
+            AND cp1.conj_type = cp2.conj_type
+            AND cp1.pos = cp2.pos
+            AND cp1.neg IS NOT DISTINCT FROM cp2.neg
+            AND cp1.fml IS NOT DISTINCT FROM cp2.fml"))
+
 (defmethod print-object ((obj conj-prop) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (princ (conj-info-short obj) stream)))
