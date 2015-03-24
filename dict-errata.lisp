@@ -234,7 +234,11 @@
   (delete-sense-prop 1578850 "misc" "uk")
   ;; 罹る
   (delete-sense-prop 1609500 "misc" "uk")
-  
+  ;; 出来る
+  (delete-sense-prop 1340450 "misc" "uk")
+  ;; 吐く
+  (delete-sense-prop 1444150 "misc" "uk")
+
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
   ;; そういう
@@ -304,6 +308,7 @@
   (set-common 'kana-text 1224090 "きが" 40)
   (set-common 'kana-text 1534470 "もうこ" :null)
   (set-common 'kana-text 1739410 "わけない" 0)
+  (set-common 'kanji-text 1416860 "誰も" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

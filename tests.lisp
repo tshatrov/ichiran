@@ -162,7 +162,10 @@
   (assert-segment "変わり映えしない" "変わり映えしない")
   (assert-segment "あなたがいなきゃこんな計画思いつかなかった"
                   "あなた" "が" "いなきゃ" "こんな" "計画" "思いつかなかった")
-
+  (assert-segment "見たかったです" "見たかったです")
+  (assert-segment "出来て楽しかったな" "出来て" "楽しかった" "な")
+  (assert-segment "つかってください" "つかって" "ください")
+  (assert-segment "誰もが思ってた" "誰も" "が" "思ってた")
   )
 
 (define-test json-consistency-test

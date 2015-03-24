@@ -209,7 +209,7 @@
   (:metaclass dao-class)
   (:keys id))
 
-(defmethod print-object ((obj sense-prop) stream)
+(defmethod print-object ((obj restricted-readings) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a -> ~a" (reading obj) (text obj))))
 
@@ -775,7 +775,6 @@
                                                    (:= 'kt.seq (:case ((:not-null 'conj.via) 'conj.via)
                                                                  (:else 'conj.from)))
                                                    (:= 'kt.text 'csr.source-text))))))
-             (print parents)
              (loop for (pid cid) in parents
                   for parent-bk = (best-kana-conj (get-dao 'kanji-text pid))
                   unless (eql parent-bk :null)
@@ -1039,8 +1038,12 @@
                              (or kanji-p conj-types-p)
                              (or (and kanji-p (not prefer-kana))
                                  (and common-p pronoun-p)
-                                 (= (n-kanji entry) 0))
-                             ))))
+                                 (= (n-kanji entry) 0)))
+                        (and prefer-kana kanji-p (= ord 0)
+                             (not (query (:select 'id :from 'sense
+                                                  :where (:and (:in 'id (:set (mapcar 'sense-id prefer-kana)))
+                                                               (:= 'ord 0))))))
+                        )))
     (when (or (intersection seq-set *skip-words*)
               (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
