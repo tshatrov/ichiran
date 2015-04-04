@@ -98,15 +98,18 @@
         (call-next-method)
         bk)))
 
+(defun kanji-regex (txt)
+  (ppcre:create-scanner
+   `(:sequence :start-anchor
+               ,@(loop for part in (ppcre:split *kanji-regex* txt)
+                    for first = t then nil
+                    unless first collect '(:GREEDY-REPETITION 0 NIL :EVERYTHING)
+                    collect part)
+               :end-anchor)))
+
 (defmethod get-kana ((obj kanji-text))
   "old get-kana, used when everything else fails"
-  (loop with regex = (ppcre:create-scanner 
-                      `(:sequence :start-anchor 
-                                  ,@(loop for part in (ppcre:split *kanji-regex* (text obj))
-                                       for first = t then nil
-                                       unless first collect '(:GREEDY-REPETITION 0 NIL :EVERYTHING)
-                                       collect part)
-                                  :end-anchor))
+  (loop with regex = (kanji-regex (text obj))
      and kts = (select-dao 'kana-text (:= 'seq (seq obj)) 'ord)
      for kt in kts
      for tkt = (text kt)
@@ -783,7 +786,13 @@
                                                                   (:= 'source-text parent-bk)))
                                             :column)))
                        (when readings
-                         (return (car readings))))
+                         (return
+                           (if (= (length readings) 1)
+                               (car readings)
+                               (loop with regex = (kanji-regex (text obj))
+                                  for rd in readings
+                                  if (ppcre:scan regex rd) do (return rd)
+                                  finally (return (car readings)))))))
                   finally (return :null))))))
 
 
