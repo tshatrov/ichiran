@@ -233,7 +233,10 @@
   (let* ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
          (readings (get-readings-cache str '("ja_na")))
          (readings* (loop for (reading type) in readings
-                         nconc (get-reading-alternatives reading type :rendaku rendaku))))
+                         for (main . rest) = (get-reading-alternatives reading type :rendaku rendaku)
+                         collect main into main-readings
+                         nconc rest into alt-readings
+                         finally (return (append main-readings alt-readings)))))
     (remove-duplicates readings* :test 'equal :key 'car :from-end t)))
 
 (defun match-readings* (rmap reading &key (start 0))
@@ -356,7 +359,7 @@
                 ("text" (text reading))
                 ("rtext" (romanize-word (text reading) :method *hepburn-basic* :original-spelling ""))
                 ("type" (reading-type reading))
-                ("ofuri" (query (:order-by (:select 'text :from 'ofurigana :where (:= 'reading-id (id reading))) 'id) :column))
+                ("ofuri" (query (:select 'text :distinct :from 'ofurigana :where (:= 'reading-id (id reading))) :column))
                 ("sample" (stat-common reading))
                 ("perc" (calculate-perc (stat-common reading) total)))))
       (when (prefixp reading)
