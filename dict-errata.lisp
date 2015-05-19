@@ -309,6 +309,7 @@
   (set-common 'kana-text 1534470 "もうこ" :null)
   (set-common 'kana-text 1739410 "わけない" 0)
   (set-common 'kanji-text 1416860 "誰も" 0)
+  (set-common 'kana-text 2093030 "そっか" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
