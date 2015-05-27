@@ -66,18 +66,18 @@
   (!index 'stat-common)
   (!foreign 'kanji 'kanji-id 'id :on-delete :cascade))
 
-(defclass ofurigana ()
+(defclass okurigana ()
   ((id :reader id :col-type serial)
    (reading-id :reader reading-id :col-type integer :initarg :reading-id)
    (text :reader text :col-type string :initarg :text))
   (:metaclass dao-class)
   (:keys id))
 
-(defmethod print-object ((obj ofurigana) stream)
+(defmethod print-object ((obj okurigana) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a ~a" (reading-id obj) (text obj))))
 
-(deftable ofurigana
+(deftable okurigana
   (!dao-def)
   (!index 'reading-id)
   (!foreign 'reading 'reading-id 'id :on-delete :cascade))
@@ -101,7 +101,7 @@
 
 (defun init-tables ()
   (with-connection *connection*
-    (let ((tables '(kanji reading ofurigana meaning)))
+    (let ((tables '(kanji reading okurigana meaning)))
       (loop for table in (reverse tables)
          do (query (:drop-table :if-exists table)))
       (loop for table in tables
@@ -122,7 +122,7 @@
             (text (node-text node)))
         (when (member type '("ja_on" "ja_kun") :test 'equal)
           (let ((text (as-hiragana text))
-                reading prefixp suffixp ofuri)
+                reading prefixp suffixp okuri)
             (when (char= (char text 0) #\-)
               (setf suffixp t text (subseq text 1)))
             (when (char= (char text (1- (length text))) #\-)
@@ -130,27 +130,27 @@
             (let ((dot (position #\. text)))
               (if dot
                   (setf reading (subseq text 0 dot)
-                        ofuri (subseq text (1+ dot)))
+                        okuri (subseq text (1+ dot)))
                   (setf reading text)))
             (let ((old-reading (gethash reading readings)))
               (cond (old-reading
                      (unless (equal (getf old-reading :type) type)
                        (setf (getf old-reading :type) "ja_onkun"))
-                     (when ofuri
-                       (push ofuri (getf old-reading :ofuri)))
+                     (when okuri
+                       (push okuri (getf old-reading :okuri)))
                      (when suffixp (setf (getf old-reading :suffixp) t))
                      (when prefixp (setf (getf old-reading :prefixp) t)))
                     (t
                      (setf (gethash reading readings)
-                           `(:ofuri ,(if ofuri (list ofuri) nil) :type ,type :suffixp ,suffixp :prefixp ,prefixp)))))))))
+                           `(:okuri ,(if okuri (list okuri) nil) :type ,type :suffixp ,suffixp :prefixp ,prefixp)))))))))
     (maphash
      (lambda (text rinfo)
-       (let ((ofuri (getf rinfo :ofuri)))
-         (remf rinfo :ofuri)
+       (let ((okuri (getf rinfo :okuri)))
+         (remf rinfo :okuri)
          (let ((robj (apply #'make-dao 'reading :text text :kanji-id kanji-id rinfo)))
            (loop with rid = (id robj) 
-              for of in ofuri
-              do (make-dao 'ofurigana :text of :reading-id rid)))))
+              for of in okuri
+              do (make-dao 'okurigana :text of :reading-id rid)))))
      readings)))
   
 
@@ -359,7 +359,7 @@
                 ("text" (text reading))
                 ("rtext" (romanize-word (text reading) :method *hepburn-basic* :original-spelling ""))
                 ("type" (reading-type reading))
-                ("ofuri" (query (:select 'text :distinct :from 'ofurigana :where (:= 'reading-id (id reading))) :column))
+                ("okuri" (query (:select 'text :distinct :from 'okurigana :where (:= 'reading-id (id reading))) :column))
                 ("sample" (stat-common reading))
                 ("perc" (calculate-perc (stat-common reading) total)))))
       (when (prefixp reading)
