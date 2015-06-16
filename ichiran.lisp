@@ -12,6 +12,7 @@
    #:load-kanji-stats
    #:add-errata
    #:recalc-entry-stats
+   #:custom-init
    ))
 
 (in-package :ichiran/maintenance)
@@ -26,3 +27,11 @@
   (format t "Calculating kanji stats...~%")
   (load-kanji-stats)
   )
+
+(defun custom-init (dict-connection &key jmdict-path jmdict-data kanjidic-path kanji-connection)
+  (let ((ichiran/dict::*connection* dict-connection)
+        (ichiran/kanji::*connection* (or kanji-connection dict-connection))
+        (ichiran/dict::*jmdict-path* (or jmdict-path ichiran/dict::*jmdict-path*))
+        (ichiran/dict::*jmdict-data* (or jmdict-data ichiran/dict::*jmdict-data*))
+        (ichiran/kanji::*kanjidic-path* (or kanjidic-path ichiran/kanji::*kanjidic-path*)))
+    (full-init)))
