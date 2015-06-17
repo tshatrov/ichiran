@@ -44,7 +44,7 @@
   (assert-segment "遊びたいのに" "遊びたい" "のに")
   (assert-segment "しながき" "しながき")
   (assert-segment "楽しさ求めて" "楽しさ" "求めて")
-  (assert-segment "日常のなかにも" "日常" "の" "なか" "に" "も")
+  (assert-segment "日常のなかにも" "日常" "の" "なかにも")
   (assert-segment "ほんとは好きなんだと" "ほんと" "は" "好き" "な" "ん" "だと")
   (assert-segment "内緒なの" "内緒" "なの")
   (assert-segment "魚が好きじゃない" "魚" "が" "好き" "じゃない")
@@ -103,7 +103,7 @@
   (assert-segment "きつねじゃなかった" "きつね" "じゃなかった")
   (assert-segment "ワシじゃなくて和紙じゃよ" "ワシ" "じゃなくて" "和紙" "じゃ" "よ")
   (assert-segment "ほうがいいよ" "ほうがいい" "よ")
-  (assert-segment "痛さはどれくらいですか" "痛さ" "は" "どれ" "くらいです" "か")
+  (assert-segment "痛さはどれくらいですか" "痛さ" "は" "どれくらい" "です" "か")
   (assert-segment "見てくれたかな" "見てくれた" "かな")
   (assert-segment "とても良かった" "とても" "良かった")
   (assert-segment "戻りたいかと言われる" "戻りたい" "か" "と" "言われる") ;;should be と言われる at some point

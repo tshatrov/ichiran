@@ -238,6 +238,8 @@
   (delete-sense-prop 1340450 "misc" "uk")
   ;; 吐く
   (delete-sense-prop 1444150 "misc" "uk")
+  ;; 要る
+  (delete-sense-prop 1546640 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")

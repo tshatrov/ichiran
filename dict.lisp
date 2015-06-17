@@ -1095,11 +1095,11 @@
       (setf score (max len score)))
     (when kanji-p
       (setf score (max 5 score))
-      (when (and long-p kanji-p)
+      (when (and long-p kanji-p (or (> n-kanji 1) (> len 4)))
         (incf score 2)))
     (setf prop-score score)
     (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
-                            (if (> n-kanji 1) (* (1- n-kanji) 10) 0)
+                            (if (> n-kanji 1) (* (1- n-kanji) 5) 0)
                             (if use-length
                                 (+ (length-multiplier-coeff (- use-length len) :tail)
                                    (* score-mod (- use-length len)))
