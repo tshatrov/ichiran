@@ -491,7 +491,7 @@
   #'filter-is-noun
   (filter-in-seq-set 1620400 2083570)
   :description "suffix-chu"
-  :score 5
+  :score 12
   :connector "-")
 
 (def-generic-synergy synergy-o-prefix (l r)
