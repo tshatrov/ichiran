@@ -179,6 +179,8 @@
 
         (load-kf :ra (get-kana-form 2067770 "ら"))
 
+        (load-conjs :rashii 1013240) ;; らしい
+
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
@@ -260,7 +262,7 @@
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
 
-(def-simple-suffix suffix-sou :sou (:connector "" :score 3) (root)
+(def-simple-suffix suffix-sou :sou (:connector "" :score 5) (root)
   (unless (member root '("な" "よ") :test 'equal)
     (find-word-with-conj-type root 13 +conj-adjective-stem+)))
 
@@ -281,6 +283,9 @@
 
 (def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
   (find-word-seq root 1002290 1457730))
+
+(def-simple-suffix suffix-rashii :rashii (:connector "" :score 3) (root)
+  (find-word-with-conj-type root 2))
 
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
@@ -492,6 +497,13 @@
   (filter-in-seq-set 1620400 2083570)
   :description "suffix-chu"
   :score 12
+  :connector "-")
+
+(def-generic-synergy synergy-suffix-tachi (l r)
+  #'filter-is-noun
+  (filter-in-seq-set 1416220)
+  :description "suffix-tachi"
+  :score 10
   :connector "-")
 
 (def-generic-synergy synergy-o-prefix (l r)

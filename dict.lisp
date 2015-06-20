@@ -1014,7 +1014,8 @@
          (seq (seq reading))
          (ord (ord reading))
          (entry (get-dao 'entry seq))
-         (root-p (root-p entry))
+         (conj-only (let ((wc (word-conjugations reading))) (and wc (not (eql wc :root)))))
+         (root-p (and (not conj-only) (root-p entry)))
          (conj-data (word-conj-data reading))
          (conj-of (mapcar #'conj-data-from conj-data))
          (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
@@ -1026,7 +1027,7 @@
                                         (:= 'tag "misc") (:= 'text "uk"))))
          (posi (query (:select 'text :distinct :from 'sense-prop
                                :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
-         (common (common reading))
+         (common (if conj-only :null (common reading)))
          (common-of common)
          (common-p (not (eql common :null)))
          (particle-p (member "prt" posi :test 'equal))

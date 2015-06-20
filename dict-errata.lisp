@@ -183,6 +183,9 @@
             "ございました")
   (add-conj 1612690 '(11 "exp" :null :null)
             "ございましたら")
+  (add-conj 1612690 '(1 "exp" t :null)
+            "ございません")
+
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
 
@@ -195,6 +198,7 @@
   (delete-reading 2067160 "たも")
 
   (delete-reading 2423450 "サシ")
+  (delete-reading 2574600 "どうなん")
   
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
@@ -240,6 +244,12 @@
   (delete-sense-prop 1444150 "misc" "uk")
   ;; 要る
   (delete-sense-prop 1546640 "misc" "uk")
+  ;; ことなく
+  (delete-sense-prop 1314490 "misc" "uk")
+  ;; やす
+  (delete-sense-prop 2643710 "misc" "uk")
+  ;;  はねる
+  (delete-sense-prop 1611260 "misc" "uk")
 
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -313,6 +323,7 @@
   (set-common 'kanji-text 1416860 "誰も" 0)
   (set-common 'kana-text 2093030 "そっか" 0)
   (set-common 'kanji-text 1001840 "お兄ちゃん" 0)
+  (set-common 'kanji-text 1341350 "旬" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
