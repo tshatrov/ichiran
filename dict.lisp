@@ -59,6 +59,9 @@
                   'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
                   'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq)))))
 
+(defun entry-digest (entry)
+  (list (seq entry) (get-text entry) (get-kana entry)))
+
 (defclass simple-text () 
   ((conjugations :accessor word-conjugations :initform nil)
    ))
@@ -553,6 +556,12 @@
           (:select 'text :from 'kanji-text :where (:= 'seq seq))
           (:select 'text :from 'kana-text :where (:= 'seq seq)))
          :column))
+
+(defmethod common ((obj entry) &aux (seq (seq obj)))
+  (query (:select (:max 'common) :from (:as (:union
+          (:select 'common :from 'kanji-text :where (:= 'seq seq))
+          (:select 'common :from 'kana-text :where (:= 'seq seq))) 'tmp))
+         :single))
 
 (defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 
@@ -1733,3 +1742,4 @@
 (defun find-word-info-json (text &key reading root-only)
   (mapcar (lambda (wi) (word-info-gloss-json wi :root-only root-only))
           (find-word-info text :reading reading :root-only root-only)))
+

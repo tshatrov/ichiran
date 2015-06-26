@@ -14,7 +14,7 @@
    #:recalc-entry-stats
    #:custom-init
    #:compare-queries
-   ))
+   #:display-seq-set))
 
 (in-package :ichiran/maintenance)
 
@@ -47,3 +47,12 @@
 ;; example queries
 ;; find all [uk] tag changes
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "misc") (:= 'text "uk")))
+
+(defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/dict::*connection*))
+  `(with-connection ,conn
+     (dolist (,entry-var (select-dao 'ichiran/dict:entry (:in 'seq (:set (car ,seq-set)))))
+       (when ,(or test t)
+         (print (ichiran/dict:entry-digest ,entry-var))))))
+
+;; example test
+;; (and (not (primary-nokanji entry)) (<= (length (get-kana entry)) 3) (not (eql (common entry) :null)))
