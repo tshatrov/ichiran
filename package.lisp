@@ -32,9 +32,7 @@
            :get-kanji-words
            :find-word-info
            :find-word-info-json
-           :simple-word-info
-           :entry-digest
-           :entry))
+           :simple-word-info))
 
 (defpackage #:ichiran
   (:use #:cl #:ichiran/characters #:ichiran/dict)

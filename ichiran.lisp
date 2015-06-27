@@ -50,9 +50,9 @@
 
 (defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/dict::*connection*))
   `(with-connection ,conn
-     (dolist (,entry-var (select-dao 'ichiran/dict:entry (:in 'seq (:set (car ,seq-set)))))
+     (dolist (,entry-var (select-dao 'ichiran/dict::entry (:in 'seq (:set (car ,seq-set)))))
        (when ,(or test t)
-         (print (ichiran/dict:entry-digest ,entry-var))))))
+         (print (ichiran/dict::entry-digest ,entry-var))))))
 
 ;; example test
 ;; (and (not (primary-nokanji entry)) (<= (length (get-kana entry)) 3) (not (eql (common entry) :null)))
