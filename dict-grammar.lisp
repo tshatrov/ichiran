@@ -30,8 +30,11 @@
                    (setf (word-conjugations kt) conj-ids)))
             collect kt))
 
-(defun get-kana-form (seq text)
-  (car (select-dao 'kana-text (:and (:= 'text text) (:= 'seq seq)))))
+(defun get-kana-form (seq text &key conj)
+  (let ((res (car (select-dao 'kana-text (:and (:= 'text text) (:= 'seq seq))))))
+    (when (and res conj)
+      (setf (word-conjugations res) conj))
+    res))
 
 (defun find-word-with-conj-prop (wordstr filter-fn)
   (loop for word in (find-word-full wordstr)
@@ -95,6 +98,7 @@
     (:sou "looking like ... / seeming ...")
     (:nai "negative suffix")
     (:ra "pluralizing suffix (not polite)")
+    (:kudasai "please do ...")
     ))
 
 (defun get-suffix-description (seq)
@@ -155,6 +159,8 @@
         (load-kf :te (get-kana-form 2820690 "いい") :class :ii :text "もいい")
         (load-kf :te (get-kana-form 2028940 "も") :class :mo)
 
+        (load-kf :te (get-kana-form 1184270 "ください" :conj :root) :class :kudasai) 
+
         (load-conjs :suru 1157170) ;; する
         (load-conjs :suru 1421900 :itasu) ;; いたす  
         ;; because suru isn't conjugated twice, this is added separately
@@ -188,6 +194,8 @@
 
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
+
+        (load-abbr :shimashou "しましょ")
         ))))
 
 (defun init-suffixes (&optional blocking)
@@ -326,6 +334,9 @@
 
 (def-abbr-suffix abbr-nakereba :nakereba 4 (root)
   (find-word-full (concatenate 'string root "なければ")))
+
+(def-abbr-suffix abbr-shimasho :shimashou 5 (root)
+  (find-word-full (concatenate 'string root "しましょう")))
 
 (defun get-suffix-map (str)
   (init-suffixes)

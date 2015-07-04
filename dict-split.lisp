@@ -153,9 +153,21 @@
   (2028930 1) ;; が
   (1207590 (- len 2) t))
   
-;; kawaribae split
 
 (def-simple-split split-kawaribae 1411570 10 (len txt) ;; 代わり映え
   ((1590770 1510720) (1+ (position #\り txt)))
   (1600610 2 nil t))
-  
+
+(def-simple-split split-hayaimonode 2815260 100 (len txt) ;; 早いもので
+  (1404975 (1+ (position #\い txt)))
+  (1502390 (if (find #\物 txt) 1 2))
+  (2028980 1))
+
+(def-simple-split split-dogatsukeru 2800540 30 (len) ;; ドが付ける
+  (2252690 1)
+  (2028930 1)
+  (1495740 (- len 2) t))
+
+(def-simple-split split-janaika 2819990 20 (len) ;; じゃないか
+  (("じゃない" 2089020) 4)
+  (2028970 1))
