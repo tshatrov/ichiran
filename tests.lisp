@@ -176,6 +176,7 @@
   (assert-segment "イラストカードが付きます" "イラスト" "カード" "が" "付きます")
   (assert-segment "じゃないかしら" "じゃない" "かしら")
   (assert-segment "いつか本当に" "いつか" "本当に")
+  (assert-segment "言い方もします" "言い方" "も" "します")
   )
 
 (define-test json-consistency-test

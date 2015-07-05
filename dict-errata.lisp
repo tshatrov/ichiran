@@ -47,7 +47,8 @@
         (if is-kana
             (incf (n-kana entry))
             (incf (n-kanji entry)))
-        (update-dao entry)))))
+        (update-dao entry)))
+    entry))
 
 (defun delete-reading (seq reading)
   (let* ((is-kana (test-word reading :kana))
@@ -104,7 +105,22 @@
                                                 (:like 'kt.text "では%"))))))
     (loop for (seq deha) in deha-list
          for ja = (concatenate 'string "じゃ" (subseq deha 2))
-         do (add-reading seq ja))))
+         do (add-reading seq ja)))
+
+  (let ((deha-src-reading (query (:select 'csr.conj-id 'csr.text 'csr.source-text
+                                          :from (:as 'conjugation 'conj) (:as 'conj-source-reading 'csr)
+                                          :where (:and (:= 'conj.from 2089020)
+                                                       (:= 'csr.conj-id 'conj.id)
+                                                       (:like 'csr.text "では%"))))))
+    (loop for (conj-id text source-text) in deha-src-reading
+         for ja = (concatenate 'string "じゃ" (subseq text 2))
+         for jsr = (select-dao 'conj-source-reading (:and (:= 'conj-id conj-id) (:= 'text ja) (:= 'source-text source-text)))
+         unless jsr
+         do (make-dao 'conj-source-reading :conj-id conj-id
+                      :text ja
+                      :source-text (if (alexandria:starts-with-subseq "では" source-text)
+                                       (concatenate 'string "じゃ" (subseq source-text 2))
+                                       source-text)))))
 
 (defun delete-conjugation (seq from &optional (via :null))
   (let ((conj (query-dao 'conjugation 
@@ -325,6 +341,7 @@
   (set-common 'kanji-text 1001840 "お兄ちゃん" 0)
   (set-common 'kanji-text 1341350 "旬" 0)
   (set-common 'kana-text 1188790 "いつか" 0)
+  (set-common 'kana-text 1582900 "もす" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

@@ -313,7 +313,7 @@
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a -> ~a" (source-text obj) (text obj))))
 
-(defstruct conj-data seq from via prop)
+(defstruct conj-data seq from via prop src-map)
 
 (defun get-conj-data (seq &optional from/conj-ids)
   "from/conj-ids can be either from which word to find conjugations or a list of conj-ids"
@@ -324,11 +324,30 @@
                       ((listp from/conj-ids)
                        (select-dao 'conjugation (:and (:= 'seq seq) (:in 'id (:set from/conj-ids)))))
                       (t (select-dao 'conjugation (:and (:= 'seq seq) (:= 'from from/conj-ids)))))
+       for src-map = (query (:select 'text 'source-text :from 'conj-source-reading
+                                     :where (:= 'conj-id (id conj))))
        nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
                                              :via (let ((via (seq-via conj)))
                                                     (if (eql via :null) nil via))
-                                             :prop prop))))
+                                             :prop prop
+                                             :src-map src-map
+                                             ))))
+
+(defun get-original-text (conj-datas texts)
+  (unless (listp texts)
+    (setf texts (list texts)))
+  (unless (listp conj-datas)
+    (setf conj-datas (list conj-datas)))
+  (loop for conj-data in conj-datas
+       nconc
+       (let ((src-text (loop for (txt src-txt) in (conj-data-src-map conj-data)
+                          if (find txt texts :test 'equal) collect src-txt)))
+         (if (not (conj-data-via conj-data))
+             src-text
+             (let ((new-cd (get-conj-data (conj-data-via conj-data) (conj-data-from conj-data))))
+                     (get-original-text new-cd src-text))))))
+
 
 (defun init-tables ()
   (with-connection *connection*
@@ -1018,7 +1037,7 @@
          (katakana-p (and (not kanji-p) (> (count-char-class (text reading) :katakana-uniq) 0)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
-         (kanji-prefix (kanji-prefix text))
+         ;(kanji-prefix (kanji-prefix text))
          (len (max 1 (mora-length text)))
          (seq (seq reading))
          (ord (ord reading))
@@ -1069,9 +1088,10 @@
       (return-from calc-score 0))
     (unless common-p
       (let* ((table (if kanji-p 'kanji-text 'kana-text))
+             (src-text (get-original-text conj-data (true-text reading)))
              (conj-of-common (query (:select 'common :from table
                                              :where (:and (:in 'seq (:set conj-of))
-                                                          (:like 'text (:|| kanji-prefix "%"))
+                                                          (:in 'text (:set src-text))
                                                           (:not-null 'common)))
                                     :column)))
         (when conj-of-common
