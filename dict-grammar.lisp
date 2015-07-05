@@ -155,8 +155,8 @@
              (unless (gethash tkf-short *suffix-cache*)
                (setf (gethash tkf-short *suffix-cache*) val)))
 
-        (load-kf :te (get-kana-form 2820690 "いい") :class :ii)
-        (load-kf :te (get-kana-form 2820690 "いい") :class :ii :text "もいい")
+        (load-kf :teii (get-kana-form 2820690 "いい") :class :ii)
+        (load-kf :teii (get-kana-form 2820690 "いい") :class :ii :text "もいい")
         (load-kf :te (get-kana-form 2028940 "も") :class :mo)
 
         (load-kf :te (get-kana-form 1184270 "ください" :conj :root) :class :kudasai) 
@@ -254,12 +254,19 @@
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
-  (and (find (char root (1- (length root))) "てで")
+  (and (not (equal root "で")) 
+       (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
 (def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
+  (and (not (equal root "で"))
+       (find (char root (1- (length root))) "てで")
+       (find-word-with-conj-type root 3)))
+
+(def-simple-suffix suffix-teii :teii (:connector " " :score 0) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
+
 
 (def-simple-suffix suffix-suru :suru (:connector " " :score 5) (root)
   (find-word-with-pos root "vs"))
