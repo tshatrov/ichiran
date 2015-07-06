@@ -209,6 +209,7 @@
   (add-reading 2089020 "じゃ" :common 0)
 
   (add-reading 2145800 "イラ")
+
   (delete-reading 2145800 "いら")
 
   (delete-reading 2067160 "たも")
@@ -254,8 +255,6 @@
   (delete-sense-prop 1578850 "misc" "uk")
   ;; 罹る
   (delete-sense-prop 1609500 "misc" "uk")
-  ;; 出来る
-  (delete-sense-prop 1340450 "misc" "uk")
   ;; 吐く
   (delete-sense-prop 1444150 "misc" "uk")
   ;; 要る
@@ -342,6 +341,7 @@
   (set-common 'kanji-text 1341350 "旬" 0)
   (set-common 'kana-text 1188790 "いつか" 0)
   (set-common 'kana-text 1582900 "もす" :null)
+  (set-common 'kana-text 1577270 "セリフ" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

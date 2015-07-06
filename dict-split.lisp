@@ -136,6 +136,8 @@
 
 (def-de-split 2810800 1587590) ;; 今までで
 
+(def-de-split 1343110 1343100) ;; ところで
+
 ;; nakunaru split: because naku often attaches to previous word
 
 (def-simple-split split-nakunaru 1529550 30 (len) ;; 無くなる
