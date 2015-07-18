@@ -1068,34 +1068,41 @@
                                  (or root-p (and use-length (member 13 conj-types))))
                             (and common-p (< 0 common 10)))
                         2 3)))
-         (primary-p (or (and prefer-kana conj-types-p
-                             (not kanji-p)
-                             (or (not (primary-nokanji entry))
-                                 (nokanji reading)))
-                        (and (or (= ord 0) cop-da-p)
-                             (or kanji-p conj-types-p)
-                             (or (and kanji-p (not prefer-kana))
-                                 (and common-p pronoun-p)
-                                 (= (n-kanji entry) 0)))
-                        (and prefer-kana kanji-p (= ord 0)
-                             (not (query (:select 'id :from 'sense
-                                                  :where (:and (:in 'id (:set (mapcar 'sense-id prefer-kana)))
-                                                               (:= 'ord 0))))))
-                        )))
+         (primary-p nil))
     (when (or (intersection seq-set *skip-words*)
               (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
       (return-from calc-score 0))
-    (unless common-p
+    (when (and conj-data (not (and (= ord 0) common-p)))
       (let* ((table (if kanji-p 'kanji-text 'kana-text))
              (src-text (get-original-text conj-data (true-text reading)))
-             (conj-of-common (query (:select 'common :from table
-                                             :where (:and (:in 'seq (:set conj-of))
-                                                          (:in 'text (:set src-text))
-                                                          (:not-null 'common)))
-                                    :column)))
-        (when conj-of-common
-          (setf common 0 common-p t common-of (car (sort conj-of-common #'compare-common))))))
+             (conj-of-data (query (:select 'common 'ord :from table
+                                           :where (:and (:in 'seq (:set conj-of))
+                                                        (:in 'text (:set src-text)))))))
+        (when conj-of-data
+          (unless common-p
+            (let ((conj-of-common (mapcan (lambda (row) (unless (eql (car row) :null) (list (car row)))) conj-of-data)))
+              (when conj-of-common
+                (setf common 0 common-p t common-of (car (sort conj-of-common #'compare-common))))))
+          (let ((conj-of-ord (reduce 'min conj-of-data :key 'second)))
+            (when (< conj-of-ord ord) (setf ord conj-of-ord))))))
+
+    (setf primary-p 
+          (or (and prefer-kana conj-types-p
+                   (not kanji-p)
+                   (or (not (primary-nokanji entry))
+                       (nokanji reading)))
+              (and (or (= ord 0) cop-da-p)
+                   (or kanji-p conj-types-p)
+                   (or (and kanji-p (not prefer-kana))
+                       (and common-p pronoun-p)
+                       (= (n-kanji entry) 0)))
+              (and prefer-kana kanji-p (= ord 0)
+                   (not (query (:select 'id :from 'sense
+                                        :where (:and (:in 'id (:set (mapcar 'sense-id prefer-kana)))
+                                                     (:= 'ord 0))))))
+              ))
+
     (when primary-p
       (incf score (cond (long-p 10)
                         (common-p 5)
