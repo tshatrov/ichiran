@@ -181,6 +181,7 @@
   (assert-segment "こういう物語ができるんだ" "こういう" "物語" "が" "できる" "ん" "だ")
   (assert-segment "といったところでしょうか" "といった" "ところ" "でしょうか")
   (assert-segment "広めたいと思っている" "広めたい" "と" "思っている")
+  (assert-segment "のせいかな" "の" "せい" "かな")
   )
 
 (define-test json-consistency-test
