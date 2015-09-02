@@ -1249,35 +1249,40 @@
 
 (defparameter *score-cutoff* 5) ;; this must filter out ONLY bad kana spellings, and NOT filter out any kanji spellings
 
-(defun join-substring-words (str)
+(defun join-substring-words* (str)
   (loop with sticky = (find-sticky-positions str)
         and kanji-break
         and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
-       for skb = (member start kanji-break)
        unless (member start sticky)
        nconcing 
        (loop for end from (1+ start) upto (length str)
-            for ekb = (member end kanji-break)
             unless (member end sticky)
             nconcing
             (let* ((part (subseq-slice slice str start end))
-                   (kb (or skb ekb))
-                   (segments (mapcan
+                   (segments (mapcar
                               (lambda (word)
-                                (let ((segment (gen-score (make-segment :start start :end end :word word)
-                                                          :final (= end (length str))
-                                                          :kanji-break kb)))
-                                  (when (>= (segment-score segment) *score-cutoff*) (list segment))))
+                                (make-segment :start start :end end :word word))
                               (let ((*suffix-map-temp* suffix-map)
                                     (*suffix-next-end* end))
                                 (find-word-full part)))))
               (when segments
                 (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break))
-                (list (make-segment-list :segments (cull-segments segments)
-                                         :start start :end end)))))))
+                (list (list start end segments)))))
+       into result
+     finally (return (values result kanji-break))))
 
+(defun join-substring-words (str)
+  (multiple-value-bind (result kanji-break) (join-substring-words* str)
+    (loop for (start end segments) in result
+       for kb = (intersection (list start end) kanji-break)
+       for sl = (loop for segment in segments
+                   do (gen-score segment :final (= (segment-end segment) (length str)) :kanji-break kb)
+                   if (>= (segment-score segment) *score-cutoff*)
+                   collect segment)
+       when sl
+         collect (make-segment-list :segments (cull-segments sl) :start start :end end))))
 
 (defstruct (top-array-item (:conc-name tai-)) score payload)
 
