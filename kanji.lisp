@@ -260,7 +260,7 @@
                      (push (cons (cons (list (subseq reading start end) "irr") match) (- score (- end start))) matches)))
            (if matches
                (loop with max-score and best-match
-                    for (match . score) in (nreverse matches)
+                    for (match . score) in matches
                     if (or (not max-score) (> score max-score))
                     do (setf max-score score best-match match)
                     finally (return (values best-match max-score)))
