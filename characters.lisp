@@ -57,11 +57,15 @@
                   :ha :ba :hi :bi :fu :bu :he :be :ho :bo
                   :u :vu))
 
+(hash-from-list *handakuten-hash*
+                '(:ha :pa :hi :pi :fu :pu :he :pe :ho :po))
+
 (hash-from-list *undakuten-hash*
                 '(:ga :ka :gi :ki :gu :ku :ge :ke :go :ko
                   :za :sa :ji :shi :zu :su :ze :se :zo :so
                   :da :ta :dji :chi :dzu :tsu :de :te :do :to
                   :ba :ha :bi :hi :bu :fu :be :he :bo :ho
+                  :pa :ha :pi :hi :pu :fu :pe :he :po :ho
                   :vu :u))
 
 (defun voice-char (cc)
@@ -207,12 +211,13 @@
           (setf (char txt 0) new-char)
           txt))))
 
-(defun rendaku (txt &key fresh)
+(defun rendaku (txt &key fresh handakuten)
   (if fresh (setf txt (copy-seq txt)))
   (if (zerop (length txt)) txt
       (let* ((first-char (char txt 0))
              (cc (gethash first-char *char-class-hash*))
-             (voiced (gethash cc *dakuten-hash*)))
+             (use-hash (if handakuten *handakuten-hash* *dakuten-hash*))
+             (voiced (gethash cc use-hash)))
         (unless voiced (return-from rendaku txt))
         (let* ((pos (position first-char (getf *kana-characters* cc)))
                (new-char (char (getf *kana-characters* voiced) pos)))

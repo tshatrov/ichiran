@@ -197,15 +197,17 @@
   (assert-equal (match-readings "助っ人" "すけっと") '(("助" "すけ" "ja_kun" NIL) "っ" ("人" "と" "ja_kun" NIL)))
   (assert-equal (match-readings "頑張って" "がんばって") '(("頑" "がん" "ja_on" NIL) ("張" "ば" "ja_kun" NIL) "って"))
   (assert-equal (match-readings "肝心" "かんじん") '(("肝" "かん" "ja_on" NIL) ("心" "じん" "ja_on" :RENDAKU NIL)))
-  (assert-equal (match-readings "決心" "けっしん") '(("決" "けっ" "ja_on" NIL :GEMINATED) ("心" "しん" "ja_on" NIL)))
+  (assert-equal (match-readings "決心" "けっしん") '(("決" "けっ" "ja_on" NIL "つ") ("心" "しん" "ja_on" NIL)))
   (assert-equal (match-readings "行方" "ゆくえ") '(("行" "ゆ" "ja_kun" NIL) ("方" "くえ" "irr")))
   (assert-equal (match-readings "時計" "とけい") '(("時" "と" "irr") ("計" "けい" "ja_on" NIL)))
   (assert-equal (match-readings "指図" "さしず") '(("指" "さし" "irr") ("図" "ず" "ja_on" NIL)))
   (assert-equal (match-readings "竹刀" "しない") '(("竹" "しな" "irr") ("刀" "い" "irr")))
   (assert-equal (match-readings "小売店" "こうりてん") '(("小" "こ" "ja_kun" NIL) ("売" "うり" "irr") ("店" "てん" "ja_on" NIL)))
   (assert-equal (match-readings "売上げ" "うりあげ") '(("売" "うり" "irr") ("上" "あ" "ja_kun" NIL) "げ"))
+  (assert-equal (match-readings "北方" "ほっぽう") '(("北" "ほっ" "ja_on" NIL "く") ("方" "ぽう" "ja_on" :RENDAKU NIL)))
   )
   
+;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-all-tests ()
   (init-suffixes t)

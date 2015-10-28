@@ -220,13 +220,16 @@
 (defun get-reading-alternatives (reading type &key rendaku)
   (let* ((end (1- (length reading)))
          (lst `(,(list reading type nil)
-                ,@(when (char= (char reading end) #\つ)
+                ,@(when (and (> end 0)
+                             (string= type "ja_on")
+                             (find (char reading end) "つくきち"))
                         (let ((geminated (copy-seq reading)))
                           (setf (char geminated end) #\っ)
-                          (list (list geminated type nil :geminated)))))))
+                          (list (list geminated type nil (format nil "~c" (char reading end)))))))))
     (if rendaku
         (append lst (loop for (rd nil nil gem) in lst
-                         collect (list (rendaku rd :fresh t) type :rendaku gem)))
+                       collect (list (rendaku rd :fresh t) type :rendaku gem)
+                       collect (list (rendaku rd :fresh t :handakuten t) type :rendaku gem)))
         lst)))
 
 (defun get-normal-readings (char &key rendaku)
@@ -312,7 +315,7 @@
     (setf rtext (unrendaku rtext :fresh t)))
   (when geminated
     (setf rtext (copy-seq rtext))
-    (setf (char rtext (1- (length rtext))) #\つ))
+    (setf (char rtext (1- (length rtext))) (char geminated 0)))
   rtext)
 
 (defun kanji-word-stats (char)
@@ -455,7 +458,6 @@
        (let ((match (match-readings str reading)))
          (when match
            (process-match-json match)))))
-    
          
 (defmacro query-kanji-json (var query &body extra-fields)
   (alexandria:with-gensyms  (js)

@@ -8,7 +8,7 @@
            :hash-from-list :voice-char :simplify-ngrams :normalize
            :split-by-regex :basic-split :mora-length :count-char-class
            :as-hiragana :sequential-kanji-positions
-           :*undakuten-hash* :*dakuten-hash*
+           :*undakuten-hash* :*dakuten-hash* :*handakuten-hash*
            :kanji-prefix
            :unrendaku
            :rendaku
