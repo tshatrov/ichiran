@@ -205,6 +205,7 @@
   (assert-equal (match-readings "小売店" "こうりてん") '(("小" "こ" "ja_kun" NIL) ("売" "うり" "irr") ("店" "てん" "ja_on" NIL)))
   (assert-equal (match-readings "売上げ" "うりあげ") '(("売" "うり" "irr") ("上" "あ" "ja_kun" NIL) "げ"))
   (assert-equal (match-readings "北方" "ほっぽう") '(("北" "ほっ" "ja_on" NIL "く") ("方" "ぽう" "ja_on" :RENDAKU NIL)))
+  (assert-equal (match-readings "明後日" "あさって") '(("明" "あ" "ja_kun" NIL) ("後" "さっ" "irr") ("日" "て" "irr")))
   )
   
 ;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)

@@ -46,7 +46,7 @@
   (alexandria:with-gensyms (hash key val)
     `(defparameter ,var
        (let ((,hash (make-hash-table)))
-         (loop for (,key ,val) on ,list
+         (loop for (,key ,val) on ,list by #'cddr
               do (setf (gethash ,key ,hash) ,val))
          ,hash))))
        
