@@ -1509,17 +1509,18 @@
          (return (process-word-info (nreverse result))))))
 
 (defun word-info-rec-find (wi-list test-fn)
-  (loop for wi in wi-list
+  "Find a word satisfying test-fn and the one after it"
+  (loop for (wi wi-next) on wi-list
      for components = (word-info-components wi)
-     if (funcall test-fn wi) nconc (list wi)
-     nconc (word-info-rec-find components test-fn)))
+     if (funcall test-fn wi) nconc (list (cons wi wi-next))
+     nconc (loop for (wf . wf-next) in (word-info-rec-find components test-fn)
+              collect (cons wf (or wf-next wi-next)))))
        
 (defun process-word-info (wi-list)
   "Process readings such as nani/nan (hardcoded so far)"
   (loop for (wi wi-next) on wi-list
-     when wi-next
-     do (dolist (w (word-info-rec-find (list wi) (lambda (w) (eql (word-info-seq w) 1577100))))
-          (let ((kn (word-info-kana wi-next)))
+       when (and wi-next (equal (word-info-text wi) "何")) do
+         (let ((kn (word-info-kana wi-next)))
             (unless (listp kn) (setf kn (list kn)))
             (loop with nani = nil and nan = nil
                for kana in kn
@@ -1536,10 +1537,10 @@
                  do (setf nan t)
                else
                do (setf nani t)
-               finally (let ((nani-kana (cond ((and nan nani) "なに") ;; (list "なに" "なん"))
+               finally (let ((nani-kana (cond ((and nan nani) "なに")
                                               (nan "なん")
                                               (nani "なに"))))
-                         (when nani-kana (setf (word-info-kana w) nani-kana)))))))
+                         (when nani-kana (setf (word-info-kana wi) nani-kana))))))
   wi-list)
 
 (defun dict-segment (str &key (limit 5))
