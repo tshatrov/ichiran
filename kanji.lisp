@@ -274,7 +274,6 @@
                          (values (cons item match) score)))
                  :none)))))
    
-
 (defun make-rmap (str)
   (loop with prev-kanji
      for start from 0 below (length str)
@@ -289,7 +288,7 @@
                     '(("か" "ja_on") ("が" "abbr")))
                    ((eql char #\〆)
                     (setf prev-kanji #\締)
-                    (get-normal-readings #\締 :rendaku (> start 0)))
+                    '(("しめ" "ja_kun") ("じめ" "ja_kun" :rendaku)))
                    (t (setf prev-kanji char)
                       (get-normal-readings char :rendaku (> start 0))))
      else collect char))
