@@ -196,6 +196,7 @@
         (load-abbr :nakereba "なくちゃ")
 
         (load-abbr :shimashou "しましょ")
+        (load-abbr :dewanai "じゃない")
         ))))
 
 (defun init-suffixes (&optional blocking)
@@ -345,6 +346,11 @@
 (def-abbr-suffix abbr-shimasho :shimashou 5 (root)
   (find-word-full (concatenate 'string root "しましょう")))
 
+(def-abbr-suffix abbr-dewanai :dewanai 4 (root)
+  (find-word-full (concatenate 'string root "ではない")))
+
+(pushnew :dewanai *suffix-unique-only*)
+
 (defun get-suffix-map (str)
   (init-suffixes)
   (let ((result (make-hash-table)))
@@ -371,7 +377,7 @@
        and slice = (make-slice)
      for (suffix keyword kf) in suffixes
      for suffix-fn = (cdr (assoc keyword *suffix-list*))
-     for suffix-class = (when kf (gethash (seq kf) *suffix-class*))
+     for suffix-class = (if kf (gethash (seq kf) *suffix-class*) keyword)
      for offset = (- (length word) (length suffix))
      when (and suffix-fn (> offset 0)
                (or unique (not (member suffix-class *suffix-unique-only*))))
