@@ -99,6 +99,7 @@
     (:nai "negative suffix")
     (:ra "pluralizing suffix (not polite)")
     (:kudasai "please do ...")
+    (:yagaru "indicates disdain or contempt")
     ))
 
 (defun get-suffix-description (seq)
@@ -180,11 +181,12 @@
         (load-conjs :ren 2027910 :tsutsuaru)
 
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
-
         (load-kf :ren (car (find-word-conj-of "なく" 1529520)) :class :nai)
-
+        
+        (load-conjs :ren 1012740 :yagaru)
+        
         (load-kf :ra (get-kana-form 2067770 "ら"))
-
+        
         (load-conjs :rashii 1013240) ;; らしい
 
         ;;(load-abbr :nee "ねぇ")
