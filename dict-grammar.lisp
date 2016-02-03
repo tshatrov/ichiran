@@ -38,7 +38,7 @@
 
 (defun find-word-with-conj-prop (wordstr filter-fn)
   (loop for word in (find-word-full wordstr)
-       for conj-data = (funcall filter-fn (word-conj-data word))
+       for conj-data = (remove-if-not filter-fn (word-conj-data word))
        for conj-ids = (mapcar (lambda (cdata) (conj-id (conj-data-prop cdata))) conj-data)
        when conj-data
        do (setf (word-conjugations word) conj-ids)
@@ -46,9 +46,8 @@
 
 (defun find-word-with-conj-type (word &rest conj-types)
   (find-word-with-conj-prop word
-      (lambda (conj-data)
-        (remove-if-not (lambda (cdata) (member (conj-type (conj-data-prop cdata)) conj-types))
-                       conj-data))))
+                            (lambda (cdata)
+                              (member (conj-type (conj-data-prop cdata)) conj-types))))
 
 (defun find-word-seq (word &rest seqs)
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
@@ -100,6 +99,7 @@
     (:ra "pluralizing suffix (not polite)")
     (:kudasai "please do ...")
     (:yagaru "indicates disdain or contempt")
+    (:desu "formal copula")
     ))
 
 (defun get-suffix-description (seq)
@@ -188,6 +188,8 @@
         (load-kf :ra (get-kana-form 2067770 "ら"))
         
         (load-conjs :rashii 1013240) ;; らしい
+
+        (load-kf :desu (get-kana-form 1628500 "です"))
 
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
@@ -305,9 +307,16 @@
 (def-simple-suffix suffix-rashii :rashii (:connector "" :score 3) (root)
   (find-word-with-conj-type root 2))
 
+(def-simple-suffix suffix-desu :desu (:connector "" :score 5) (root)
+  (and (or (alexandria:ends-with-subseq "ない" root)
+           (alexandria:ends-with-subseq "なかった" root))
+       (find-word-with-conj-prop root (lambda (cdata)
+                                        (conj-neg (conj-data-prop cdata))))))
+
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
 (pushnew :nikui *suffix-unique-only*)
+(pushnew :desu *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var kana-var)

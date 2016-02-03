@@ -187,6 +187,7 @@
   (assert-segment "彼が来るかどうか疑問だ" "彼" "が" "来る" "かどうか" "疑問" "だ")
   (assert-segment "泳ぎに行ってはどうかな" "泳ぎ" "に" "行って" "は" "どうかな")
   (assert-segment "どうか僕を許して下さい" "どうか" "僕" "を" "許して" "下さい")
+  (assert-segment "鏡はいらないですよ" "鏡" "は" "いらないです" "よ")
   )
 
 (define-test json-consistency-test
