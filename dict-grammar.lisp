@@ -74,6 +74,7 @@
 (defun get-suffix-class-description (class)
   (case class
     (:chau "indicates completion (to finish ...)")
+    (:ha "topic marker particle")
     (:tai "want to... / would like to...")
     (:iru "indicates continuing action (to be ...ing)")
     (:aru "indicates completion / finished action")
@@ -125,6 +126,9 @@
                  (setf (gethash text *suffix-cache*) (list key nil))))
 
         (load-conjs :chau 2013800)
+        (load-kf :chau (get-kana-form 2028920 "は") :class :ha :text "ちゃ")
+        (load-kf :chau (get-kana-form 2028920 "は") :class :ha :text "じゃ")
+
         (load-conjs :tai 2017560)
         (load-conjs :ren 2772730 :nikui)
 

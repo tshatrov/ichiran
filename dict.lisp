@@ -1013,7 +1013,7 @@
 
 (defun length-multiplier-coeff (length class)
   (let ((coeffs (assoc class *length-coeff-sequences*)))
-    (if (< length (length coeffs))
+    (if (< 0 length (length coeffs))
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
