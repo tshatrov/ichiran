@@ -144,7 +144,8 @@
 
         (load-conjs :te 1547720 :kuru) ;; くる
 
-        (load-conjs :te 1421850 :oku) ;; おく ;; TODO: implement teo -> to
+        (load-conjs :te 1421850 :oku) ;; おく
+        (load-conjs :to 2108590 :oku) ;; とく
 
         (load-conjs :te 1305380 :chau) ;; しまう
         
@@ -248,13 +249,6 @@
                                 :score-mod ,score))
                  ,primary-words)))))
   
-(def-simple-suffix suffix-chau :chau (:stem 1 :score 5) (root suf)
-  (let ((te (case (char suf 0)
-              (#\HIRAGANA_LETTER_ZI "で")
-              (#\HIRAGANA_LETTER_TI "て"))))
-    (when te
-      (find-word-with-conj-type (concatenate 'string root te) 3))))
-
 (def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
   (find-word-with-conj-type root 13))
 
@@ -276,6 +270,19 @@
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
+(def-simple-suffix suffix-chau :chau (:stem 1 :score 5) (root suf)
+  (let ((te (case (char suf 0)
+              (#\HIRAGANA_LETTER_ZI "で")
+              (#\HIRAGANA_LETTER_TI "て"))))
+    (when te
+      (find-word-with-conj-type (concatenate 'string root te) 3))))
+
+(def-simple-suffix suffix-to :to (:stem 1 :score 0) (root suf)
+  (let ((te (case (char suf 0)
+              (#\HIRAGANA_LETTER_TO "て")
+              (#\HIRAGANA_LETTER_DO "で"))))
+    (when te
+      (find-word-with-conj-type (concatenate 'string root te) 3))))
 
 (def-simple-suffix suffix-suru :suru (:connector " " :score 5) (root)
   (find-word-with-pos root "vs"))
