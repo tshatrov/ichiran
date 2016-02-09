@@ -9,7 +9,7 @@
            :split-by-regex :basic-split :mora-length :count-char-class
            :as-hiragana :sequential-kanji-positions
            :*undakuten-hash* :*dakuten-hash* :*handakuten-hash*
-           :kanji-prefix
+           :kanji-prefix :kanji-mask :kanji-regex :kanji-match
            :unrendaku
            :rendaku
            :collect-char-class

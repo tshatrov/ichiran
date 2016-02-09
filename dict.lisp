@@ -101,15 +101,6 @@
         (call-next-method)
         bk)))
 
-(defun kanji-regex (txt)
-  (ppcre:create-scanner
-   `(:sequence :start-anchor
-               ,@(loop for part in (ppcre:split *kanji-regex* txt)
-                    for first = t then nil
-                    unless first collect '(:GREEDY-REPETITION 0 NIL :EVERYTHING)
-                    collect part)
-               :end-anchor)))
-
 (defmethod get-kana ((obj kanji-text))
   "old get-kana, used when everything else fails"
   (loop with regex = (kanji-regex (text obj))
@@ -842,12 +833,15 @@
              (loop for (pid cid) in parents
                   for parent-bk = (best-kanji-conj (get-dao 'kana-text pid))
                   unless (eql parent-bk :null)
-                  do (let ((readings (query (:select 'text :from 'conj-source-reading
+                  do (let* ((readings (query (:select 'text :from 'conj-source-reading
                                                      :where (:and (:= 'conj-id cid)
                                                                   (:= 'source-text parent-bk)))
-                                            :column)))
-                       (when readings
-                         (return (car readings))))
+                                            :column))
+                            (matching-readings
+                             (some (lambda (reading) (and (kanji-match reading (text obj)) reading))
+                                   readings)))
+                       (when matching-readings
+                         (return matching-readings)))
                   finally (return :null))))))
                     
 

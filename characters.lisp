@@ -143,6 +143,24 @@
       (push (+ s 1 offset) positions))
     (nreverse positions)))
 
+(defun kanji-mask (word)
+  "SQL LIKE mask for word"
+  (let ((regex (ppcre:create-scanner `(:greedy-repetition 1 nil (:regex ,*kanji-regex*)))))
+    (ppcre:regex-replace-all regex word "%")))
+
+(defun kanji-regex (word)
+  (ppcre:create-scanner
+   `(:sequence
+     :start-anchor
+     ,@(loop for char across (kanji-mask word)
+          if (char= char #\%)
+          collect '(:greedy-repetition 1 nil :everything)
+          else collect char)
+     :end-anchor)))
+
+(defun kanji-match (word reading)
+  (ppcre:scan (kanji-regex word) reading))
+
 (defun simplify-ngrams (str map)
   (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
          (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))
