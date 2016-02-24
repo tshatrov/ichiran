@@ -1061,7 +1061,9 @@
                                  (or root-p (and use-length (member 13 conj-types))))
                             (and common-p (< 0 common 10)))
                         2 3)))
-         (no-common-bonus (or particle-p (and (not long-p) (equal posi '("int")))))
+         (no-common-bonus (or particle-p
+                              (and (not use-length) (not conj-types-p))
+                              (and (not long-p) (equal posi '("int")))))
          (primary-p nil))
     (when (or (intersection seq-set *skip-words*)
               (and (not final) (member seq *final-prt*))

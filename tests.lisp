@@ -193,6 +193,7 @@
   (assert-segment "これ洗濯しといて" "これ" "洗濯しといて")
   (assert-segment "来週までに読んどいて" "来週" "まで" "に" "読んどいて")
   (assert-segment "奴がまともに見られない" "奴" "が" "まとも" "に" "見られない")
+  (assert-segment "間違いなし" "間違いなし")
   )
 
 (define-test json-consistency-test
