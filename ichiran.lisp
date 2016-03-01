@@ -1,6 +1,6 @@
 (defpackage :ichiran/maintenance
   (:nicknames :ichiran/mnt)
-  (:use :cl :postmodern)
+  (:use :cl :postmodern :ichiran/conn)
   (:import-from :ichiran/dict :load-jmdict :load-best-readings
                 :add-errata :recalc-entry-stats)
   (:import-from :ichiran/kanji :load-kanjidic :load-kanji-stats)
@@ -29,18 +29,17 @@
   (load-kanji-stats)
   )
 
-(defun custom-init (dict-connection &key jmdict-path jmdict-data kanjidic-path kanji-connection)
-  (let ((ichiran/dict::*connection* dict-connection)
-        (ichiran/kanji::*connection* (or kanji-connection dict-connection))
-        (ichiran/dict::*jmdict-path* (or jmdict-path ichiran/dict::*jmdict-path*))
+(defun custom-init (dict-connection &key jmdict-path jmdict-data kanjidic-path)
+  (let ((ichiran/dict::*jmdict-path* (or jmdict-path ichiran/dict::*jmdict-path*))
         (ichiran/dict::*jmdict-data* (or jmdict-data ichiran/dict::*jmdict-data*))
         (ichiran/kanji::*kanjidic-path* (or kanjidic-path ichiran/kanji::*kanjidic-path*)))
-    (full-init)))
+    (let-db dict-connection
+      (full-init))))
 
 (defmacro compare-queries (conn1 conn2 &body query)
   (alexandria:with-gensyms (q1 q2)
-    `(let ((,q1 (with-connection ,conn1 (query ,@query)))
-           (,q2 (with-connection ,conn2 (query ,@query))))
+    `(let ((,q1 (with-db ,conn1 (query ,@query)))
+           (,q2 (with-db ,conn2 (query ,@query))))
        (values (set-difference ,q1 ,q2 :test 'equal)
                (set-difference ,q2 ,q1 :test 'equal)))))
 
@@ -48,8 +47,8 @@
 ;; find all [uk] tag changes
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "misc") (:= 'text "uk")))
 
-(defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/dict::*connection*))
-  `(with-connection ,conn
+(defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/conn:*connection*))
+  `(with-db ,conn
      (dolist (,entry-var (select-dao 'ichiran/dict::entry (:in 'seq (:set (car ,seq-set)))))
        (when ,(or test t)
          (print (ichiran/dict::entry-digest ,entry-var))))))

@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
-(defpackage #:ichiran/characters
-  (:use #:cl)
+(defpackage :ichiran/characters
+  (:use :cl)
   (:export :*sokuon-characters* :*iteration-characters* :*modifier-characters*
            :*kana-characters* :*all-characters* :*char-class-hash*
            :*katakana-regex* :*hiragana-regex* :*kanji-regex* :test-word
@@ -15,12 +15,18 @@
            :collect-char-class
            :*kanji-char-regex*))
 
-(defpackage #:ichiran/tokenize
-  (:use #:cl)
+(defpackage :ichiran/tokenize
+  (:use :cl)
   (:export :segment))
 
-(defpackage #:ichiran/dict
-  (:use #:cl #:postmodern #:ichiran/characters #:split-sequence)
+(defpackage :ichiran/conn
+  (:use :cl :postmodern)
+  (:export :get-spec :with-db :let-db
+           :*connection*
+           :*connections*))
+
+(defpackage :ichiran/dict
+  (:use :cl :postmodern :ichiran/characters :ichiran/conn :split-sequence)
   (:export :simple-segment :dict-segment
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score :map-word-info-kana
@@ -34,8 +40,8 @@
            :find-word-info-json
            :simple-word-info))
 
-(defpackage #:ichiran
-  (:use #:cl #:ichiran/characters #:ichiran/dict)
+(defpackage :ichiran
+  (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
   (:export :romanize :romanize-word :romanize* :romanize-word-info
            :generic-romanization :generic-hepburn :kana-table
            :simplified-hepburn :simplifications
@@ -44,22 +50,22 @@
            :kunrei-siki :*kunrei-siki*
            :*default-romanization-method*))
 
-(defpackage #:ichiran/kanji
-  (:use #:cl #:postmodern #:ichiran #:ichiran/characters #:ichiran/dict)
+(defpackage :ichiran/kanji
+  (:use :cl :postmodern :ichiran/conn :ichiran :ichiran/characters :ichiran/dict)
   (:export
-   #:kanji-info-json
-   #:match-readings
-   #:kanji-word-stats
-   #:get-readings
-   #:get-normal-readings
-   #:match-readings-json
-   #:query-kanji-json))
+   :kanji-info-json
+   :match-readings
+   :kanji-word-stats
+   :get-readings
+   :get-normal-readings
+   :match-readings-json
+   :query-kanji-json))
 
-(uiop:define-package #:ichiran/all
-    (:use #:ichiran/characters #:ichiran/dict #:ichiran #:ichiran/kanji)
-    (:reexport :ichiran :ichiran/dict :ichiran/characters :ichiran/kanji))
+(uiop:define-package :ichiran/all
+    (:use :ichiran/characters :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji)
+    (:reexport :ichiran/characters :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji))
 
-(defpackage #:ichiran/test
-  (:use #:cl #:ichiran/all #:lisp-unit)
+(defpackage :ichiran/test
+  (:use :cl :ichiran/all :lisp-unit)
   (:export :run-all-tests))
   

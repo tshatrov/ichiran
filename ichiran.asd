@@ -22,6 +22,7 @@
                (:file "characters")
                (:file "tokenize")
                (:file "romanize")
+               (:file "conn")
                (:file "dict-errata")
                (:file "dict")
                (:file "dict-grammar")
