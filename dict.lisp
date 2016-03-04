@@ -332,7 +332,7 @@
                                              :src-map src-map
                                              ))))
 
-(defun get-original-text (conj-datas texts)
+(defun get-original-text* (conj-datas texts)
   (unless (listp texts)
     (setf texts (list texts)))
   (unless (listp conj-datas)
@@ -342,10 +342,19 @@
        (let ((src-text (loop for (txt src-txt) in (conj-data-src-map conj-data)
                           if (find txt texts :test 'equal) collect src-txt)))
          (if (not (conj-data-via conj-data))
-             src-text
+             (mapcar (lambda (txt) (list txt (conj-data-from conj-data))) src-text)
              (let ((new-cd (get-conj-data (conj-data-via conj-data) (conj-data-from conj-data))))
-                     (get-original-text new-cd src-text))))))
+                     (get-original-text* new-cd src-text))))))
 
+(defgeneric get-original-text (reading)
+  (:documentation "Returns unconjugated text(s) for reading")
+  (:method ((reading simple-text))
+    (let ((orig-texts (get-original-text* (word-conj-data reading) (text reading)))
+          (table (case (word-type reading) (:kanji 'kanji-text) (:kana 'kana-text))))
+      (loop for (txt seq) in orig-texts
+           nconc (select-dao table (:and (:= 'seq seq) (:= 'text txt))))))
+  (:method ((reading proxy-text))
+    (get-original-text (source reading))))
 
 ;;;;
 
@@ -441,7 +450,7 @@
    (source :reader source :initarg :source)))
 
 (defgeneric true-text (obj)
-  (:documentation "Returns original text for reading")
+  (:documentation "Returns true text for reading")
   (:method (obj) (text obj))
   (:method ((obj proxy-text)) (true-text (source obj))))
 
@@ -604,11 +613,7 @@
               (and (not root-p) (skip-by-conj-data conj-data)))
       (return-from calc-score 0))
     (when (and conj-data (not (and (= ord 0) common-p)))
-      (let* ((table (if kanji-p 'kanji-text 'kana-text))
-             (src-text (get-original-text conj-data (true-text reading)))
-             (conj-of-data (query (:select 'common 'ord :from table
-                                           :where (:and (:in 'seq (:set conj-of))
-                                                        (:in 'text (:set src-text)))))))
+      (let ((conj-of-data (loop for ot in (get-original-text reading) collect (list (common ot) (ord ot)))))
         (when conj-of-data
           (unless common-p
             (let ((conj-of-common (mapcan (lambda (row) (unless (eql (car row) :null) (list (car row)))) conj-of-data)))
