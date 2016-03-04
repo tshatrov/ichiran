@@ -62,8 +62,7 @@
    :query-kanji-json))
 
 (uiop:define-package :ichiran/all
-    (:use :ichiran/characters :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji)
-    (:reexport :ichiran/characters :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji))
+    (:use-reexport :ichiran/characters :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji))
 
 (defpackage :ichiran/test
   (:use :cl :ichiran/all :lisp-unit)
