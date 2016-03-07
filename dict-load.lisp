@@ -73,9 +73,9 @@
     (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
       (do-node-list-ord (ord node (dom:get-elements-by-tag-name node "gloss"))
         (make-dao 'gloss :sense-id sense-id :text (node-text node) :ord ord))
-      (insert-sense-traits node "pos" sense-id seq)
-      (insert-sense-traits node "misc" sense-id seq)
-      (insert-sense-traits node "dial" sense-id seq))))
+      (loop for tag in '("pos" "misc" "dial"
+                         "s_inf" "stagk" "stagr")
+           do (insert-sense-traits node tag sense-id seq)))))
 
 (defun load-entry (content)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))

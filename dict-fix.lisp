@@ -25,3 +25,20 @@
             (incf next-seq))
           (delete-dao prop)
        ))
+
+
+(defun load-sense-props (tag-list &aux (count 0))
+  (loop for (seq content) in (query (:select 'seq 'content :from 'entry :where (:not (:= 'content ""))))
+     do
+    (when (some (lambda (tag) (search (format nil "<~a>" tag) content)) tag-list)
+      (incf count)
+      (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
+             (sense-nodes (dom:get-elements-by-tag-name parsed "sense")))
+        (do-node-list-ord (ord node sense-nodes)
+          (let ((sense (select-dao 'sense (:and (:= 'seq seq) (:= 'ord ord)))))
+            (when sense
+              (let ((sense-id (id (car sense))))
+                (loop for tag in tag-list
+                   do (insert-sense-traits node tag sense-id seq)))))))
+      (when (zerop (mod count 500))
+        (format t "~a entries processed~%" count)))))
