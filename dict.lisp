@@ -352,9 +352,7 @@
     (let ((orig-texts (get-original-text* (word-conj-data reading) (text reading)))
           (table (case (word-type reading) (:kanji 'kanji-text) (:kana 'kana-text))))
       (loop for (txt seq) in orig-texts
-           nconc (select-dao table (:and (:= 'seq seq) (:= 'text txt))))))
-  (:method ((reading proxy-text))
-    (get-original-text (source reading))))
+           nconc (select-dao table (:and (:= 'seq seq) (:= 'text txt)))))))
 
 ;;;;
 
@@ -474,6 +472,9 @@
 
 (defmethod word-type ((obj proxy-text))
   (word-type (source obj)))
+
+(defmethod get-original-text ((reading proxy-text))
+  (get-original-text (source reading)))
 
 ;; Compound words (2 or more words squished together)
 
