@@ -907,6 +907,7 @@
 (defclass word-info ()
   ((type :initarg :type :accessor word-info-type)
    (text :initarg :text :accessor word-info-text)
+   (true-text :initarg :true-text :initform nil :accessor word-info-true-text)
    (kana :initarg :kana :accessor word-info-kana)
    (seq :initarg :seq :initform nil :accessor word-info-seq)
    (conjugations :initarg :conjugations :initform nil :accessor word-info-conjugations)
@@ -919,11 +920,12 @@
    ))
 
 (defun word-info-json (word-info)
-  (with-slots (type text kana seq conjugations score components alternative primary start end)
+  (with-slots (type text true-text kana seq conjugations score components alternative primary start end)
       word-info
     (jsown:new-js
       ("type" (symbol-name type))
       ("text" text)
+      ("truetext" true-text)
       ("kana" kana)
       ("seq" seq)
       ("conjugations" (if (eql conjugations :root) "ROOT" conjugations))
@@ -962,6 +964,7 @@
           (t val))))
 
 (def-reader-for-json word-info-text "text")
+(def-reader-for-json word-info-true-text "truetext")
 (def-reader-for-json word-info-kana "kana")
 (def-reader-for-json word-info-seq "seq")
 (def-reader-for-json word-info-score "score")
@@ -983,12 +986,14 @@
                  :kana (get-kana word)
                  :seq (seq word)
                  :conjugations (when (typep word 'simple-text) (word-conjugations word))
+                 :true-text (when (typep word 'simple-text) (true-text word))
                  :components (when (typep word 'compound-text)
                                (loop with primary-id = (id (primary word)) 
                                   for wrd in (words word)
                                   collect (make-instance 'word-info 
                                                          :type (word-type wrd)
                                                          :text (get-text wrd)
+                                                         :true-text (true-text wrd)
                                                          :kana (get-kana wrd)
                                                          :seq (seq wrd)
                                                          :conjugations (word-conjugations wrd)
@@ -1134,17 +1139,46 @@
           when (> i 1) do (terpri s)
           do (format s "~a. ~a ~@[《~a》 ~]~a" i rpos rinf gloss))))
 
+
+(defun match-kana-kanji (kana-reading kanji-reading restricted)
+  (cond ((nokanji kana-reading) nil)
+        (t (let* ((kana-text (text kana-reading))
+                  (restr (loop for (rt kt) in restricted when (equal kana-text rt) collect kt)))
+             (if restr
+                 (find (text kanji-reading) restr :test 'equal)
+                 t)))))
+
+(defun match-sense-restrictions (seq props reading)
+  (let ((stagk (cdr (assoc "stagk" props :test 'equal)))
+        (stagr (cdr (assoc "stagr" props :test 'equal)))
+        (wtype (word-type reading)))
+    (cond ((and (not stagk) (not stagr)) t)
+          ((or (member (text reading) stagk :test 'equal)
+               (member (text reading) stagr :test 'equal)) t)
+          ((and (not stagr) (eql wtype :kanji)) nil)
+          ((and (not stagk) (eql wtype :kana)) nil)
+          (t (let ((restricted (query (:select 'reading 'text :from 'restricted-readings :where (:= 'seq seq)))))
+               (case wtype
+                 (:kanji
+                  (let ((rkana (select-dao 'kana-text (:and (:= 'seq seq) (:in 'text (:set stagr))))))
+                    (some (lambda (rk) (match-kana-kanji rk reading restricted)) rkana)))
+                 (:kana
+                  (let ((rkanji (select-dao 'kanji-text (:and (:= 'seq seq) (:in 'text (:set stagk))))))
+                    (some (lambda (rk) (match-kana-kanji reading rk restricted)) rkanji)))))))))
+
+
 (defun split-pos (pos-str)
   (split-sequence #\, pos-str :start 1 :end (1- (length pos-str))))
 
-(defun get-senses-json (seq &key pos-list)
+(defun get-senses-json (seq &key pos-list reading)
   (loop for (pos gloss props) in (get-senses seq)
      for emptypos = (equal pos "[]")
      for rpos = pos then (if emptypos rpos pos)
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
      for inf = (cdr (assoc "s_inf" props :test 'equal))
      for rinf = (when inf (format nil "《~{~a~^; ~}》" inf))
-     when (or (not pos-list) (intersection lpos pos-list :test 'equal))
+     when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
+               (or (not reading) (match-sense-restrictions seq props reading)))
      collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
                (if rinf (jsown:extend-js js ("info" rinf)))
                js)))
