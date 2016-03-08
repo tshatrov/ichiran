@@ -1087,25 +1087,50 @@
 (defun simple-segment (str &key (limit 5))
   (caar (dict-segment str :limit limit)))
 
+(defun get-senses-raw (seq &aux (tags '("pos" "s_inf" "stagk" "stagr")))
+  (let* ((glosses
+          (query (:order-by
+                  (:select 'sense.ord (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
+                           :from 'sense :left-join 'gloss :on (:= 'gloss.sense-id 'sense.id)
+                           :where (:= 'sense.seq seq)
+                           :group-by 'sense.id)
+                  'sense.ord)))
+         (props
+          (query (:order-by
+                  (:select 'sense.ord 'sense-prop.tag 'sense-prop.text
+                           :from 'sense 'sense-prop
+                           :where (:and (:= 'sense.seq seq)
+                                        (:= 'sense-prop.sense-id 'sense.id)
+                                        (:in 'sense-prop.tag (:set tags))))
+                  'sense.ord 'sense-prop.tag 'sense-prop.ord)))
+         (sense-list (loop for (sord gloss) in glosses
+                          collect (list :ord sord :gloss (if (eql gloss :null) "" gloss) :props nil))))
+    (print (list glosses props))
+    (loop with cursord and curtag and curprop and bag
+       for (sord tag text) in props
+       if (or (not (eql sord cursord)) (not (equal tag curtag)))
+       do (when curprop (push (cons curtag (reverse bag)) (getf curprop :props)))
+         (setf cursord sord curtag tag bag nil
+               curprop (find sord sense-list :key 'cadr))
+       do (push text bag)
+       finally (when curprop (push (cons curtag bag) (getf curprop :props))))
+    sense-list))
+
 (defun get-senses (seq)
-  (query (:order-by
-          (:select (:select (:concat "[" (:raw "string_agg(pos.text, ',' ORDER BY pos.ord)") "]")
-                            :from (:as 'sense-prop 'pos) :where (:and (:= 'pos.sense-id 'sense.id) (:= 'pos.tag "pos")))
-                   (:select (:raw "string_agg(pos.text, '; ' ORDER BY pos.ord)")
-                            :from (:as 'sense-prop 'pos) :where (:and (:= 'pos.sense-id 'sense.id) (:= 'pos.tag "s_inf"))) 
-                   (:select (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
-                            :from 'gloss :where (:= 'gloss.sense-id 'sense.id))
-                   :from 'sense
-                   :where (:= 'sense.seq seq)
-                   :group-by 'sense.id)
-          'sense.ord)))
+  (loop for sense in (get-senses-raw seq)
+       for props = (getf sense :props)
+       for gloss = (getf sense :gloss)
+       for pos = (cdr (assoc "pos" props :test 'equal))
+       for pos-str = (format nil "[~{~a~^,~}]" pos)
+       collect (list pos-str gloss props)))
 
 (defun get-senses-str (seq)
   (with-output-to-string (s)
-    (loop for (pos inf gloss) in (get-senses seq)
+    (loop for (pos gloss props) in (get-senses seq)
           for i from 1
           for rpos = pos then (if (equal pos "[]") rpos pos)
-          for rinf = (if (eql inf :null) nil inf)
+          for inf = (cdr (assoc "s_inf" props :test 'equal))
+          for rinf = (when inf (format nil "~{~a~^; ~}" inf))
           when (> i 1) do (terpri s)
           do (format s "~a. ~a ~@[《~a》 ~]~a" i rpos rinf gloss))))
 
@@ -1113,11 +1138,12 @@
   (split-sequence #\, pos-str :start 1 :end (1- (length pos-str))))
 
 (defun get-senses-json (seq &key pos-list)
-  (loop for (pos inf gloss) in (get-senses seq)
+  (loop for (pos gloss props) in (get-senses seq)
      for emptypos = (equal pos "[]")
      for rpos = pos then (if emptypos rpos pos)
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
-     for rinf = (if (eql inf :null) nil (format nil "《~a》" inf))
+     for inf = (cdr (assoc "s_inf" props :test 'equal))
+     for rinf = (when inf (format nil "《~{~a~^; ~}》" inf))
      when (or (not pos-list) (intersection lpos pos-list :test 'equal))
      collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
                (if rinf (jsown:extend-js js ("info" rinf)))
