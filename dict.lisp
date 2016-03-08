@@ -1091,6 +1091,8 @@
   (query (:order-by
           (:select (:select (:concat "[" (:raw "string_agg(pos.text, ',' ORDER BY pos.ord)") "]")
                             :from (:as 'sense-prop 'pos) :where (:and (:= 'pos.sense-id 'sense.id) (:= 'pos.tag "pos")))
+                   (:select (:raw "string_agg(pos.text, '; ' ORDER BY pos.ord)")
+                            :from (:as 'sense-prop 'pos) :where (:and (:= 'pos.sense-id 'sense.id) (:= 'pos.tag "s_inf"))) 
                    (:select (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
                             :from 'gloss :where (:= 'gloss.sense-id 'sense.id))
                    :from 'sense
@@ -1100,22 +1102,26 @@
 
 (defun get-senses-str (seq)
   (with-output-to-string (s)
-    (loop for (pos gloss) in (get-senses seq)
+    (loop for (pos inf gloss) in (get-senses seq)
           for i from 1
           for rpos = pos then (if (equal pos "[]") rpos pos)
+          for rinf = (if (eql inf :null) nil inf)
           when (> i 1) do (terpri s)
-          do (format s "~a. ~a ~a" i rpos gloss))))
+          do (format s "~a. ~a ~@[《~a》 ~]~a" i rpos rinf gloss))))
 
 (defun split-pos (pos-str)
   (split-sequence #\, pos-str :start 1 :end (1- (length pos-str))))
 
 (defun get-senses-json (seq &key pos-list)
-  (loop for (pos gloss) in (get-senses seq)
+  (loop for (pos inf gloss) in (get-senses seq)
      for emptypos = (equal pos "[]")
      for rpos = pos then (if emptypos rpos pos)
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
+     for rinf = (if (eql inf :null) nil (format nil "《~a》" inf))
      when (or (not pos-list) (intersection lpos pos-list :test 'equal))
-     collect (list rpos gloss)))
+     collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
+               (if rinf (jsown:extend-js js ("info" rinf)))
+               js)))
 
 (defun short-sense-str (seq &key with-pos)
   (query 
