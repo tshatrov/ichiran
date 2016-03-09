@@ -1175,7 +1175,7 @@
      for rpos = pos then (if emptypos rpos pos)
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
      for inf = (cdr (assoc "s_inf" props :test 'equal))
-     for rinf = (when inf (format nil "《~{~a~^; ~}》" inf))
+     for rinf = (when inf (format nil "~{~a~^; ~}" inf))
      when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
                (or (not reading) (match-sense-restrictions seq props reading)))
      collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
