@@ -1110,7 +1110,6 @@
                   'sense.ord 'sense-prop.tag 'sense-prop.ord)))
          (sense-list (loop for (sord gloss) in glosses
                           collect (list :ord sord :gloss (if (eql gloss :null) "" gloss) :props nil))))
-    (print (list glosses props))
     (loop with cursord and curtag and curprop and bag
        for (sord tag text) in props
        if (or (not (eql sord cursord)) (not (equal tag curtag)))
