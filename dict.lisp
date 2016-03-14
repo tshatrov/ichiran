@@ -1056,10 +1056,11 @@
                                           ))))))
 
 (defun word-info-from-text (text)
-  (let* ((readings (find-word-full text))
-         (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r))))
-         (segment-list (make-segment-list :segments segments :start 0 :end (length text))))
-    (word-info-from-segment-list segment-list)))
+  (with-connection *connection*
+    (let* ((readings (find-word-full text))
+           (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r))))
+           (segment-list (make-segment-list :segments segments :start 0 :end (length text))))
+      (word-info-from-segment-list segment-list))))
 
 (defun fill-segment-path (str path)
   (flet ((make-substr-gap (start end)
