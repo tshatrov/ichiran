@@ -27,7 +27,7 @@
 
 (defpackage :ichiran/dict
   (:use :cl :postmodern :ichiran/characters :ichiran/conn :split-sequence)
-  (:export :simple-segment :dict-segment
+  (:export :simple-segment :dict-segment :word-info-from-text
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score :map-word-info-kana
            :word-info-str :word-info-components :word-info-alternative

@@ -332,6 +332,15 @@
                                              :src-map src-map
                                              ))))
 
+(defun get-original-text-once (conj-datas texts)
+  (unless (listp texts)
+    (setf texts (list texts)))
+  (unless (listp conj-datas)
+    (setf conj-datas (list conj-datas)))
+  (loop for conj-data in conj-datas
+       nconc (loop for (txt src-txt) in (conj-data-src-map conj-data)
+                if (find txt texts :test 'equal) collect src-txt)))
+  
 (defun get-original-text* (conj-datas texts)
   (unless (listp texts)
     (setf texts (list texts)))
@@ -427,6 +436,22 @@
                                   :where (:and (:= 'text word)
                                                'root-p)))
         (select-dao table (:= 'text word)))))
+
+(defun find-words-seqs (words seqs)
+  "generalized version of find-word-seq from dict-grammar"
+  (unless (listp words)
+    (setf words (list words)))
+  (unless (listp seqs)
+    (setf seqs (list seqs)))
+  (loop for word in words
+     if (test-word word :kana)
+     collect word into kana-words
+     else
+     collect word into kanji-words
+     finally
+       (let ((kw (when kanji-words (select-dao 'kanji-text (:and (:in 'text (:set kanji-words)) (:in 'seq (:set seqs))))))
+             (rw (when kana-words (select-dao 'kana-text (:and (:in 'text (:set kana-words)) (:in 'seq (:set seqs)))))))
+         (return (nconc kw rw)))))
 
 (defun word-readings (word)
   (let* ((kana-seq (query (:select 'seq :from 'kana-text :where (:= 'text word)) :column))
@@ -1030,6 +1055,12 @@
                                           :end (segment-list-end segment-list)
                                           ))))))
 
+(defun word-info-from-text (text)
+  (let* ((readings (find-word-full text))
+         (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r))))
+         (segment-list (make-segment-list :segments segments :start 0 :end (length text))))
+    (word-info-from-segment-list segment-list)))
+
 (defun fill-segment-path (str path)
   (flet ((make-substr-gap (start end)
            (let ((substr (subseq str start end)))
@@ -1083,6 +1114,12 @@
                                               (nani "なに"))))
                          (when nani-kana (setf (word-info-kana wi) nani-kana))))))
   wi-list)
+
+(defun word-info-reading (word-info)
+  (let ((table (case (word-info-type word-info) (:kanji 'kanji-text) (:kana 'kana-text)))
+        (true-text (word-info-true-text word-info)))
+    (when (and table true-text)
+      (car (select-dao table (:= 'text true-text))))))
 
 (defun dict-segment (str &key (limit 5))
   (with-connection *connection*
@@ -1169,15 +1206,23 @@
 (defun split-pos (pos-str)
   (split-sequence #\, pos-str :start 1 :end (1- (length pos-str))))
 
-(defun get-senses-json (seq &key pos-list reading)
-  (loop for (pos gloss props) in (get-senses seq)
+(defun get-senses-json (seq &key pos-list reading reading-getter)
+  (loop with readp
+     for (pos gloss props) in (get-senses seq)
      for emptypos = (equal pos "[]")
      for rpos = pos then (if emptypos rpos pos)
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
      for inf = (cdr (assoc "s_inf" props :test 'equal))
      for rinf = (when inf (format nil "~{~a~^; ~}" inf))
      when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
-               (or (not reading) (match-sense-restrictions seq props reading)))
+               (or (not (or reading-getter reading))
+                   (not (or (assoc "stagk" props :test 'equal)
+                            (assoc "stagr" props :test 'equal)))
+                   (let ((rr (or reading
+                                 (and (not readp)
+                                      (setf readp t
+                                            reading (funcall reading-getter))))))
+                     (if rr (match-sense-restrictions seq props rr) t))))
      collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
                (if rinf (jsown:extend-js js ("info" rinf)))
                js)))
@@ -1239,12 +1284,13 @@
              (push via via-used)))
        (princ " ]" out)))
 
-(defun conj-info-json (seq &key conjugations)
+(defun conj-info-json (seq &key conjugations text)
   (loop with via-used = nil
      for conj in (select-conjs seq conjugations)
      for via = (seq-via conj)
      unless (member via via-used)
      collect (let* ((conj-pos nil)
+                    (orig-text (get-original-text-once (get-conj-data seq (list (id conj))) text))
                     (js (jsown:new-js 
                           ("prop" (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
                                      do (push (pos conj-prop) conj-pos)
@@ -1252,10 +1298,15 @@
                (if (eql via :null)
                    (jsown:extend-js js
                      ("reading" (reading-str-seq (seq-from conj)))
-                     ("gloss" (get-senses-json (seq-from conj) :pos-list conj-pos)))
+                     ("gloss" (get-senses-json (seq-from conj)
+                                               :pos-list conj-pos
+                                               :reading-getter (lambda ()
+                                                                 (when orig-text
+                                                                   ;; TODO: fix match-sense-restrictions to accept multiple readings
+                                                                   (car (find-words-seqs orig-text (seq-from conj))))))))
                    (progn
                      (jsown:extend-js js
-                       ("via" (conj-info-json via)))
+                       ("via" (conj-info-json via :text orig-text)))
                      (push via via-used)))
                js)))
 
@@ -1320,17 +1371,19 @@
                                         collect (inner wi (not (word-info-primary wi))))))
                      (let ((seq (word-info-seq word-info))
                            (conjs (word-info-conjugations word-info))
+                           (reading-getter (lambda () (word-info-reading word-info)))
                            desc)
                        (cond (root-only
                               (return-from inner
-                                (jsown:extend-js js ("gloss" (get-senses-json seq)))))
+                                (jsown:extend-js js ("gloss" (get-senses-json seq :reading-getter reading-getter)))))
                              ((and suffix (setf desc (get-suffix-description seq)))
                               (jsown:extend-js js ("suffix" desc)))
                              ((and seq (or (not conjs) (eql conjs :root)))
-                              (jsown:extend-js js ("gloss" (get-senses-json seq)))))
+                              (jsown:extend-js js ("gloss" (get-senses-json seq :reading-getter reading-getter)))))
                        (when seq
                          (jsown:extend-js js 
-                           ("conj" (conj-info-json seq :conjugations (word-info-conjugations word-info)))))))
+                           ("conj" (conj-info-json seq :conjugations (word-info-conjugations word-info)
+                                                   :text (word-info-true-text word-info)))))))
                  js)))
       (if (word-info-alternative word-info)
           (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))

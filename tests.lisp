@@ -197,8 +197,10 @@
   )
 
 (define-test json-consistency-test
-  (loop for word in '("の" "赤かったろう" "書いてきてる")
-       for word-info = (car (simple-segment word))
+  (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
+                      "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる" 
+                      )
+       for word-info = (word-info-from-text word)
        for word-info-json = (word-info-json word-info)
        do (assert-equal (word-info-gloss-json word-info) (word-info-gloss-json word-info-json))))
 
