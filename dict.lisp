@@ -962,7 +962,7 @@
       ("end" end))))
 
 (defun simple-word-info (seq text reading type &key (as :object))
-  (let ((obj (make-instance 'word-info :type type :text text :seq seq :kana reading)))
+  (let ((obj (make-instance 'word-info :type type :text text :true-text text :seq seq :kana reading)))
     (cond ((eql as :object)
            obj)
           ((eql as :json)
