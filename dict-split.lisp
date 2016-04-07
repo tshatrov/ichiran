@@ -44,13 +44,19 @@
          (values (nreverse ,parts) ,score)))))
 
 
-(defun get-split (reading &optional conj-of)
+(defun get-split* (reading &optional conj-of)
   (let ((split-fn (gethash (seq reading) *split-map*)))
     (if split-fn
         (funcall split-fn reading)
         (loop for seq in conj-of
            for split-fn = (gethash seq *split-map*)
            when split-fn do (return (funcall split-fn reading))))))
+
+(defun get-split (reading &optional conj-of)
+  "Includes safety check if one of split words is missing"
+  (multiple-value-bind (split score) (get-split* reading conj-of)
+    (when (and split (every 'identity split))
+      (values split score))))
 
 ;; split definitions
 

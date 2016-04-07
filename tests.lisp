@@ -199,6 +199,7 @@
 (define-test json-consistency-test
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
                       "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる" 
+                      "どおりで"
                       )
        for word-info = (word-info-from-text word)
        for word-info-json = (word-info-json word-info)
