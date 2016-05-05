@@ -433,7 +433,9 @@
 (defparameter *weak-conj-types* (list +conj-adjective-stem+))
 
 (defparameter *skip-conj-forms* ;; (type neg fml), :any matches whatever
-  '((10 t :any)))
+  '((10 t :any)
+    (3 t t)
+    ))
 
 (defun skip-by-conj-data (conj-data)
   (flet ((matches (cd)
