@@ -878,6 +878,15 @@
 (defun gap-penalty (start end)
   (* (- end start) *gap-penalty*))
 
+(defun get-seg-initial (seg)
+  (loop for split in (apply-segfilters nil seg)
+     collect (cadr split)))
+
+(defun get-seg-splits (seg-left seg-right)
+  (let ((splits (apply-segfilters seg-left seg-right)))
+    (loop for (seg-left seg-right) in splits
+         nconcing (cons (get-penalties seg-left seg-right) (get-synergies seg-left seg-right)))))
+
 (defun find-best-path (segment-lists str-length &key (limit 5))
   "generalized version of old find-best-path that operates on segment-lists and uses synergies"
   (let ((top (make-instance 'top-array :limit limit)))
@@ -888,12 +897,15 @@
 
     ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
     (loop for (seg1 . rest) on segment-lists
-         for score1 = (get-segment-score seg1)
        do
          (let ((gap-left (gap-penalty 0 (segment-list-start seg1)))
                (gap-right (gap-penalty (segment-list-end seg1) str-length)))
-           (register-item (segment-list-top seg1) (+ gap-left score1) (list seg1))
-           (register-item top (+ gap-left score1 gap-right) (list seg1)))
+           (let ((initial-segs (get-seg-initial seg1)))
+             (loop for seg in initial-segs
+                for score1 = (get-segment-score seg)
+                do
+                  (register-item (segment-list-top seg1) (+ gap-left score1) (list seg))
+                  (register-item top (+ gap-left score1 gap-right) (list seg)))))
          (loop for seg2 in rest
             for score2 = (get-segment-score seg2)
             when (>= (segment-list-start seg2) (segment-list-end seg1)) do
@@ -903,7 +915,7 @@
                    for (seg-left . tail) = (tai-payload tai)
                    for score3 = (get-segment-score seg-left)
                    for score-tail = (- (tai-score tai) score3)
-                   do (loop for split in (cons (get-penalties seg-left seg2) (get-synergies seg-left seg2))
+                   do (loop for split in (get-seg-splits seg-left seg2)
                            for accum = (+ gap-left
                                           (max (reduce #'+ split :key #'get-segment-score)
                                                (1+ score3)

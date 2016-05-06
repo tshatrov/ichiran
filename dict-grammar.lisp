@@ -420,6 +420,8 @@
     (setf (segment-list-segments new-segment-list) segments)
     new-segment-list))
 
+(defparameter *synergy-list* nil)
+
 (defmacro defsynergy (name (left-var right-var) &body body)
   `(progn
      (defun ,name (,left-var ,right-var)
@@ -442,8 +444,6 @@
                                         :connector ,connector
                                         :score ,score)
                           (make-segment-list-from ,segment-list-left ,left))))))))))
-
-(defparameter *synergy-list* nil)
 
 (defun filter-is-noun (segment)
   (destructuring-bind (k p c l) (getf (segment-info segment) :kpcl)
@@ -610,3 +610,69 @@
      when penalty
        do (return (list seg-right penalty seg-left))
      finally (return (list seg-right seg-left))))
+
+
+;;; SEGFILTERS (used to ban certain combinations of subsequent words)
+;;; a function is called with arguments segment-list-left and segment-list-right and
+;;; must return a list of possible segment-list-left/segment-list-right combinations
+;;; segfilter must work even if segment-list-left is nil
+
+(defparameter *segfilter-list* nil)
+
+(defmacro defsegfilter (name (left-var right-var) &body body)
+  `(progn
+     (defun ,name (,left-var ,right-var)
+       ,@body)
+     (pushnew ',name *segfilter-list*)))
+
+(defun classify (filter list)
+  (loop for element in list
+     if (funcall filter element)
+     collect element into yep
+     else collect element into nope
+     finally (return (values yep nope))))
+
+(defmacro def-segfilter-must-follow (name (segment-list-left segment-list-right)
+                                     filter-left filter-right)
+  "This segfilter is for when segments that satisfy filter-right MUST follow segments that
+   satisfy filter-left"
+  (alexandria:with-gensyms (satisfies-left satisfies-right contradicts-right result)
+    `(defsegfilter ,name (,segment-list-left ,segment-list-right)
+       (multiple-value-bind (,satisfies-right ,contradicts-right)
+           (classify ,filter-right (segment-list-segments ,segment-list-right))
+         (cond
+           ((not ,satisfies-right)
+            (list (list ,segment-list-left ,segment-list-right)))
+           ((or (not ,segment-list-left)
+                (/= (segment-list-end ,segment-list-left) (segment-list-start ,segment-list-right)))
+            (when ,contradicts-right
+              (list (list ,segment-list-left
+                          (make-segment-list-from ,segment-list-right ,contradicts-right)))))
+           (t (let ((,satisfies-left (classify ,filter-left (segment-list-segments ,segment-list-left)))
+                    (,result (when ,contradicts-right
+                               (list
+                                (list ,segment-list-left
+                                      (make-segment-list-from ,segment-list-right ,contradicts-right))))))
+                (when ,satisfies-left
+                  (push
+                   (list (make-segment-list-from ,segment-list-left ,satisfies-left)
+                         (make-segment-list-from ,segment-list-right ,satisfies-right))
+                   ,result))
+                ,result)))))))
+
+
+(defparameter *aux-verbs*
+  '(1342560 ;; 初める/そめる
+    ))
+
+(def-segfilter-must-follow segfilter-aux-verb (l r)
+  (filter-is-conjugation 13)
+  (apply #'filter-in-seq-set *aux-verbs*))
+
+(defun apply-segfilters (seg-left seg-right)
+  (loop with splits = (list (list seg-left seg-right))
+     for segfilter in *segfilter-list*
+     do (setf splits
+              (loop for (seg-left seg-right) in splits
+                 nconc (funcall segfilter seg-left seg-right)))
+     finally (return splits)))
