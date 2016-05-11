@@ -21,7 +21,7 @@
        do (print readings)
        (when (insert-conjugation readings :seq next-seq 
                                     :via (seq-via conj) :from (seq-from conj)
-                                    :conj-id 1 :neg t :fml t :pos (pos prop))
+                                    :conj-type 1 :neg t :fml t :pos (pos prop))
             (incf next-seq))
           (delete-dao prop)
        ))

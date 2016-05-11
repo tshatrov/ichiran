@@ -428,20 +428,28 @@
     (loop for pos in posi
          do (loop for rule in (gethash pos hash)
                  when (and (= (cr-conj rule) 1) (cr-fml rule) (cr-neg rule))
-                 do (setf (cr-okuri rule) "ません")))))
+               do (setf (cr-okuri rule) "ません"))))
+  ;; remove potential forms of vs-s verbs
+  (let ((pos (get-pos-index "vs-s")))
+    (setf (gethash pos hash) (remove-if (lambda (r) (= (cr-conj r) 5)) (gethash pos hash))))
+  )
 
 (defparameter *weak-conj-types* (list +conj-adjective-stem+))
 
 (defparameter *skip-conj-forms* ;; (type neg fml), :any matches whatever
   '((10 t :any)
     (3 t t)
+    ("vs-s" 5 :any :any)
     ))
 
 (defun skip-by-conj-data (conj-data)
   (flet ((matches (cd)
            (let* ((prop (conj-data-prop cd))
-                  (prop-list (list (conj-type prop) (conj-neg prop) (conj-fml prop))))
+                  (prop-list (list (pos prop) (conj-type prop) (conj-neg prop) (conj-fml prop))))
              (some (lambda (sk)
-                     (every (lambda (l r) (or (eql r :any) (eql l r))) prop-list sk))
+                     (case (length sk)
+                       (3 (every (lambda (l r) (or (eql r :any) (eql l r))) (cdr prop-list) sk))
+                       (4 (and (equal (car prop-list) (car sk))
+                               (every (lambda (l r) (or (eql r :any) (eql l r))) (cdr prop-list) (cdr sk))))))
                    *skip-conj-forms*))))
     (and conj-data (every #'matches conj-data))))
