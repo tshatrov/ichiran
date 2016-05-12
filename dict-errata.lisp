@@ -20,14 +20,13 @@
                              ,(sql-eql-or-null 'prop.fml fml))))
      :column)))
   
-(defun add-conj (seq-from options
-                 &rest readings)
+(defun add-conj (seq-from options reading-map)
   (unless (find-conj seq-from options)
     (destructuring-bind (conj-type pos neg fml) options
       (let ((next-seq (1+ (query (:select (:max 'seq) :from 'entry) :single))))
         (make-dao 'entry :seq next-seq :content "")
         (loop with ord-r = 0 and ord-k = 0
-           for reading in readings
+           for (src-reading reading) in reading-map
            for is-kana = (test-word reading :kana)
            for table = (if is-kana 'kana-text 'kanji-text)
            for ord = (if is-kana ord-r ord-k)
@@ -35,7 +34,11 @@
              (if is-kana (incf ord-r) (incf ord-k)))
         (let ((conj (make-dao 'conjugation :seq next-seq :from seq-from)))
           (make-dao 'conj-prop :conj-id (id conj)
-                    :pos pos :conj-type conj-type :neg neg :fml fml))))))
+                    :pos pos :conj-type conj-type :neg neg :fml fml)
+          (loop for (src-reading reading) in reading-map
+               do (make-dao 'conj-source-reading :conj-id (id conj)
+                            :text reading
+                            :source-text src-reading)))))))
 
 (defun add-reading (seq reading &key (common :null) (conjugate-p t))
   (let* ((is-kana (test-word reading :kana))
@@ -196,11 +199,11 @@
   (add-sense 2029110 4 "(used with nouns) な-adjective")
   ;;; gozaimashita / gozaimashitara
   (add-conj 1612690 '(2 "exp" :null :null)
-            "ございました")
+            '(("ございます" "ございました")))
   (add-conj 1612690 '(11 "exp" :null :null)
-            "ございましたら")
+            '(("ございます" "ございましたら")))
   (add-conj 1612690 '(1 "exp" t :null)
-            "ございません")
+            '(("ございます" "ございません")))
 
   ;; きみ / キミ
   (add-reading 1247250 "キミ")

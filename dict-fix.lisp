@@ -42,3 +42,14 @@
                    do (insert-sense-traits node tag sense-id seq)))))))
       (when (zerop (mod count 500))
         (format t "~a entries processed~%" count)))))
+
+
+(defun add-gozaimasu-source-readings ()
+  (loop for conj in (select-dao 'conjugation (:= 'from 1612690))
+     do (delete-conjugation (seq conj) (seq-from conj)))
+  (add-conj 1612690 '(2 "exp" :null :null)
+            '(("ございます" "ございました")))
+  (add-conj 1612690 '(11 "exp" :null :null)
+            '(("ございます" "ございましたら")))
+  (add-conj 1612690 '(1 "exp" t :null)
+            '(("ございます" "ございません"))))

@@ -1407,8 +1407,10 @@
                              ((and suffix (setf desc (get-suffix-description seq)))
                               (jsown:extend-js js ("suffix" desc)))
                              ((and seq (or (not conjs) (eql conjs :root)))
-                              (setf has-gloss t)
-                              (jsown:extend-js js ("gloss" (get-senses-json seq :reading-getter reading-getter)))))
+                              (let ((gloss (get-senses-json seq :reading-getter reading-getter)))
+                                (when gloss
+                                  (setf has-gloss t)
+                                  (jsown:extend-js js ("gloss" gloss))))))
                        (when seq
                          (jsown:extend-js js 
                            ("conj" (conj-info-json seq :conjugations (word-info-conjugations word-info)
