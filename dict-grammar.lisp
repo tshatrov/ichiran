@@ -559,6 +559,13 @@
   :score 10
   :connector "")
 
+(def-generic-synergy synergy-kanji-prefix (l r)
+  (filter-in-seq-set 2242840) ;; 未
+  (filter-is-pos ("n") (segment k p c l) k)
+  :description "kanji prefix+noun"
+  :score 15
+  :connector "")
+    
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))

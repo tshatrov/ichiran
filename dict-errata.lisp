@@ -357,6 +357,7 @@
   (set-common 'kanji-text 1920245 "何の" 0)
   (set-common 'kana-text 2733410 "だよね" 0)
   (set-common 'kana-text 1234260 "ともに" 0)
+  (set-common 'kanji-text 2242840 "未" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
