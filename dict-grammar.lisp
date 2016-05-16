@@ -524,6 +524,14 @@
   :score 5
   :connector " ")
 
+;; TODO: remove this hack
+(def-generic-synergy synergy-sou-nanda (l r)
+  (filter-in-seq-set 2137720)
+  (filter-in-seq-set 2140410)
+  :description "sou na n da"
+  :score 50
+  :connector " ")
+
 (def-generic-synergy synergy-no-adjectives (l r)
   (filter-is-pos ("adj-no") (segment k p c l) (or k l (and p c)))
   (filter-in-seq-set 1469800) ;; の

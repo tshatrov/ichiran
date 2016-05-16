@@ -358,6 +358,7 @@
   (set-common 'kana-text 2733410 "だよね" 0)
   (set-common 'kana-text 1234260 "ともに" 0)
   (set-common 'kanji-text 2242840 "未" 0)
+  (set-common 'kana-text 1246890 "リス" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
@@ -392,6 +393,7 @@
                              2084010 ;; になる
                              2561100 ;; うまいな
                              2210270 ;; ませんか
+                             1006610 ;; そう
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
@@ -399,6 +401,8 @@
 (defparameter *final-prt* '(2017770 ;; かい
                             2029100 ;; わ
                             1008450 ;; では
+                            2425930 ;; なの
+                            ;; 2780660 ;; もの
                             )
   "Words that only have meaning when they're final")
 
