@@ -359,6 +359,7 @@
   (set-common 'kana-text 1234260 "ともに" 0)
   (set-common 'kanji-text 2242840 "未" 0)
   (set-common 'kana-text 1246890 "リス" 0)
+  (set-common 'kana-text 1257270 "やらしい" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
@@ -394,6 +395,8 @@
                              2561100 ;; うまいな
                              2210270 ;; ませんか
                              1006610 ;; そう
+                             2257550 ;; ない
+                             2210320 ;; ません
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
