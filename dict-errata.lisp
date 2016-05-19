@@ -360,6 +360,8 @@
   (set-common 'kanji-text 2242840 "未" 0)
   (set-common 'kana-text 1246890 "リス" 0)
   (set-common 'kana-text 1257270 "やらしい" 0)
+  (set-common 'kana-text 1343100 "とこ" 0)
+  (set-common 'kana-text 1529930 "むこう" 14)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
