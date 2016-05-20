@@ -362,6 +362,8 @@
   (set-common 'kana-text 1257270 "やらしい" 0)
   (set-common 'kana-text 1343100 "とこ" 0)
   (set-common 'kana-text 1529930 "むこう" 14)
+  (set-common 'kanji-text 1317910 "自重" 30)
+  (set-common 'kana-text 1586420 "あったかい" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
@@ -408,6 +410,7 @@
                             1008450 ;; では
                             2425930 ;; なの
                             ;; 2780660 ;; もの
+                            2130430 ;; け っけ
                             )
   "Words that only have meaning when they're final")
 
