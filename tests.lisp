@@ -203,6 +203,7 @@
   (assert-segment "あったかいとこ行こう" "あったかい" "とこ" "行こう")
   (assert-segment "ぶっちゃけ話" "ぶっちゃけ" "話")
   (assert-segment "いけないわー" "いけない" "わ" :gap)
+  (assert-segment "社長としてやっていけないわ" "社長" "として" "やって" "いけない" "わ")
   )
 
 (define-test json-consistency-test
