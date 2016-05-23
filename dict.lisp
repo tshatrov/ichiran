@@ -757,20 +757,6 @@
                 :displaced-to str
                 :displaced-index-offset start))
 
-(defun find-substring-words (str)
-  (loop with sticky = (find-sticky-positions str)
-       and slice = (make-slice)
-       for start from 0 below (length str)
-       unless (member start sticky)
-       nconcing 
-       (loop for end from (1+ start) upto (length str)
-            unless (member end sticky)
-            nconcing (mapcar 
-                      (lambda (word)
-                        (gen-score (make-segment :start start :end end :word word)
-                                   :final (= end (length str))))
-                      (find-word (subseq-slice slice str start end))))))
-
 (defparameter *identical-word-score-cutoff* 1/2)
 
 (defun compare-common (c1 c2)
@@ -836,10 +822,16 @@
 
 (defun join-substring-words (str)
   (multiple-value-bind (result kanji-break) (join-substring-words* str)
-    (loop for (start end segments) in result
+    (loop
+       with ends-with-lw = (alexandria:ends-with #\ー str)
+       for (start end segments) in result
        for kb = (intersection (list start end) kanji-break)
        for sl = (loop for segment in segments
-                   do (gen-score segment :final (= (segment-end segment) (length str)) :kanji-break kb)
+                   do (gen-score segment
+                                 :final (or (= (segment-end segment) (length str))
+                                            (and ends-with-lw
+                                                 (= (segment-end segment) (1- (length str)))))
+                                 :kanji-break kb)
                    if (>= (segment-score segment) *score-cutoff*)
                    collect segment)
        when sl
@@ -895,7 +887,7 @@
     (dolist (segment-list segment-lists)
       (setf (segment-list-top segment-list) (make-instance 'top-array :limit limit)))
 
-    ;;assume segments are sorted by (start, end) (as is the result of find-substring-words)
+    ;;assume segments are sorted by (start, end) (as is the result of join-substring-words)
     (loop for (seg1 . rest) on segment-lists
        do
          (let ((gap-left (gap-penalty 0 (segment-list-start seg1)))
