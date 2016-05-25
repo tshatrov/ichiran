@@ -204,6 +204,9 @@
   (assert-segment "ぶっちゃけ話" "ぶっちゃけ" "話")
   (assert-segment "いけないわー" "いけない" "わ" :gap)
   (assert-segment "社長としてやっていけないわ" "社長" "として" "やって" "いけない" "わ")
+  (assert-segment "よくわかんないけど" "よく" "わかんない" "けど")
+  (assert-segment "ほうがいいんじゃないの" "ほうがいい" "ん" "じゃない" "の")
+  (assert-segment "こんなんじゃ" "こんな" "ん" "じゃ")
   )
 
 (define-test json-consistency-test

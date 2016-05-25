@@ -207,7 +207,9 @@
 
   ;; きみ / キミ
   (add-reading 1247250 "キミ")
-
+  (add-reading 2015370 "ワシ")
+  (add-reading 1202410 "カニ")
+   
   (add-reading 2029080 "ねぇ")
   (add-reading 2089020 "じゃ" :common 0)
 
@@ -364,6 +366,12 @@
   (set-common 'kana-text 1529930 "むこう" 14)
   (set-common 'kanji-text 1317910 "自重" 30)
   (set-common 'kana-text 1586420 "あったかい" 0)
+  (set-common 'kana-text 1214190 "かんない" :null)
+  (set-common 'kana-text 1614320 "かんない" :null)
+  (set-common 'kana-text 1517220 "ほうがい" :null)
+  (set-common 'kana-text 1380990 "せいなん" :null)
+  (set-common 'kana-text 1280630 "こうなん" :null)
+  (set-common 'kana-text 1289620 "こんなん" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
