@@ -372,6 +372,8 @@
   (set-common 'kana-text 1380990 "せいなん" :null)
   (set-common 'kana-text 1280630 "こうなん" :null)
   (set-common 'kana-text 1289620 "こんなん" :null)
+  (set-common 'kana-text 2160680 "ほうがいい" 0) ;; 2827401 in the latest db
+  (set-common 'kanji-text 2160680 "方がいい" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
