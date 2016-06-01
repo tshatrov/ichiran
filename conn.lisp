@@ -22,7 +22,33 @@
   `(let ((*connection* (get-spec ,dbid)))
      ,@body))
 
+
+(defvar *conn-vars* nil)
+
+(defvar *conn-var-cache* (make-hash-table :test #'equal))
+
+(defmacro def-conn-var (name initial-value &rest args)
+  `(progn
+     (defvar ,name ,initial-value ,@args)
+     (pushnew (cons ',name ,initial-value) *conn-vars* :key 'car)))
+
 (defmacro with-db (dbid &body body)
-  `(let ((*connection* (get-spec ,dbid)))
-     (with-connection *connection*
-       ,@body)))
+  (alexandria:with-gensyms (pv-pairs var vars val vals iv key exists)
+    `(let* ((*connection* (get-spec ,dbid))
+            (,pv-pairs (when ,dbid
+                         (loop for (,var . ,iv) in *conn-vars*
+                            for ,key = (cons ,var *connection*)
+                            for (,val ,exists) = (multiple-value-list (gethash ,key *conn-var-cache*))
+                            collect ,var into ,vars
+                            if ,exists collect ,val into ,vals
+                            else collect ,iv into ,vals
+                            finally (return (cons ,vars ,vals))))))
+       (progv (car ,pv-pairs) (cdr ,pv-pairs)
+         (unwind-protect
+              (with-connection *connection*
+                ,@body)
+           (loop for ,var in (car ,pv-pairs)
+              for ,key = (cons ,var *connection*)
+              do (setf (gethash ,key *conn-var-cache*) (symbol-value ,var))))))))
+
+(def-conn-var *test-var* 10)

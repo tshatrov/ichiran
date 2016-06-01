@@ -23,7 +23,8 @@
   (:use :cl :postmodern)
   (:export :get-spec :with-db :let-db
            :*connection*
-           :*connections*))
+           :*connections*
+           :def-conn-var))
 
 (defpackage :ichiran/dict
   (:use :cl :postmodern :ichiran/characters :ichiran/conn :split-sequence)

@@ -2,8 +2,8 @@
 
 ;;; SUFFIXES (makes compound word primary + suffix)
 
-(defparameter *suffix-cache* nil)
-(defparameter *suffix-class* nil) ;; seq -> class
+(def-conn-var *suffix-cache* nil)
+(def-conn-var *suffix-class* nil) ;; seq -> class
 
 (defun init-suffix-hashtables ()
   (setf *suffix-cache* (make-hash-table :test 'equal)
