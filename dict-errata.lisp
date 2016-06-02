@@ -291,6 +291,8 @@
   (delete-sense-prop 1612920 "misc" "uk")
   ;; まめ
   (delete-sense-prop 2827450 "misc" "uk")
+  ;; たかる
+  (delete-sense-prop 1333570 "misc" "uk")
   
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -397,6 +399,9 @@
   (set-common 'kana-text 2457920 "ですか" :null)
   (set-common 'kana-text 1228390 "すいもの" :null)
   (set-common 'kana-text 1423240 "きもの" 0)
+  (set-common 'kana-text 1212110 "かんじ" 0)
+  (set-common 'kana-text 1516160 "たから" 0)
+  (set-common 'kana-text 1575510 "コマ" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

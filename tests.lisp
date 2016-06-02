@@ -213,6 +213,7 @@
   (assert-segment "これが君のなすべきものだ" "これ" "が" "君" "の" "なす" "べき" "もの" "だ")
   (assert-segment "泥棒をつかまえた" "泥棒" "を" "つかまえた")
   (assert-segment "金もないし友達もいません" "金" "も" "ない" "し" "友達" "も" "いません")
+  (assert-segment "出来たからほら見てよ" "出来た" "から" "ほら" "見て" "よ")
   )
 
 (define-test json-consistency-test
