@@ -272,7 +272,26 @@
   (delete-sense-prop 1611260 "misc" "uk")
   ;; かける
   (delete-sense-prop 2208960 "misc" "uk")
-
+  ;; もって
+  (delete-sense-prop 1155020 "misc" "uk")
+  ;; かっこ
+  (delete-sense-prop 1208240 "misc" "uk")
+  ;; かかる
+  (delete-sense-prop 1207590 "misc" "uk")
+  ;; かまう
+  (delete-sense-prop 1279680 "misc" "uk")
+  ;; ないし
+  (delete-sense-prop 1469810 "misc" "uk")
+  ;; むく
+  ;; regrettably, but volitional form clashes with 向こう
+  (delete-sense-prop 1474370 "misc" "uk")
+  ;; うたう
+  (delete-sense-prop 1609300 "misc" "uk")
+  ;; ひく
+  (delete-sense-prop 1612920 "misc" "uk")
+  ;; まめ
+  (delete-sense-prop 2827450 "misc" "uk")
+  
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
   ;; そういう
@@ -376,6 +395,8 @@
   (set-common 'kana-text 2827401 "ほうがいい" 0)
   (set-common 'kanji-text 2827401 "方がいい" 0)
   (set-common 'kana-text 2457920 "ですか" :null)
+  (set-common 'kana-text 1228390 "すいもの" :null)
+  (set-common 'kana-text 1423240 "きもの" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

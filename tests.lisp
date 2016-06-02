@@ -208,6 +208,11 @@
   (assert-segment "ほうがいいんじゃないの" "ほうがいい" "ん" "じゃない" "の")
   (assert-segment "こんなんじゃ" "こんな" "ん" "じゃ")
   (assert-segment "増やしたほうがいいな" "増やした" "ほうがいい" "な")
+  (assert-segment "屈しやすいものだ" "屈し" "やすい" "もの" "だ")
+  (assert-segment "目をもっている" "目" "を" "もっている")
+  (assert-segment "これが君のなすべきものだ" "これ" "が" "君" "の" "なす" "べき" "もの" "だ")
+  (assert-segment "泥棒をつかまえた" "泥棒" "を" "つかまえた")
+  (assert-segment "金もないし友達もいません" "金" "も" "ない" "し" "友達" "も" "いません")
   )
 
 (define-test json-consistency-test
