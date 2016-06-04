@@ -448,7 +448,7 @@
 (defun filter-is-noun (segment)
   (destructuring-bind (k p c l) (getf (segment-info segment) :kpcl)
     (and (or l (and k (or p c)) (and p c))
-         (intersection '("n" "n-adv" "n-t" "adj-na")
+         (intersection '("n" "n-adv" "n-t" "adj-na" "n-suf")
                        (getf (segment-info segment) :posi)
                        :test 'equal))))
 

@@ -680,7 +680,7 @@
       (let ((common-bonus
              (cond
                (secondary-conj-p (if primary-p 4 2))
-               ((or long-p cop-da-p (and primary-p root-p (or kanji-p (> len 2))))
+               ((or long-p cop-da-p (and root-p (or kanji-p (and primary-p (> len 2)))))
                 (cond ((= common 0) 10)
                       ((not primary-p) (max (- 15 common) 10))
                       (t (max (- 20 common) 10))))
