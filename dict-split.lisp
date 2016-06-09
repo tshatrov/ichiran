@@ -22,6 +22,11 @@
               (,parts nil))
          (declare (ignorable ,text-var ,length-var))
          ,@(loop for (part-seq part-length-form conj-p rendaku-p) in parts-def
+              if (eql part-seq :test)
+                collect
+                `(unless ,part-length-form
+                   (return-from ,name nil))
+              else
               collect
                 `(let ((pseq ,(if (listp part-seq)
                                   (if (and part-seq (stringp (car part-seq)))
@@ -150,7 +155,8 @@
   (("無く" 1529520) 2)
   (1375610 (- len 2) t))
 
-(def-simple-split split-nakunaru2 1518540 10 (len) ;; 亡くなる
+(def-simple-split split-nakunaru2 1518540 10 (len txt) ;; 亡くなる
+  (:test (eql (word-type txt) :kana))
   (("亡く" 1518450) 2)
   (1375610 (- len 2) t))
 
