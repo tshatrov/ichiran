@@ -404,6 +404,7 @@
   (set-common 'kana-text 1516160 "たから" 0)
   (set-common 'kana-text 1575510 "コマ" 0)
   (set-common 'kanji-text 1603990 "街" 0)
+  (set-common 'kana-text 1548520 "からむ" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))

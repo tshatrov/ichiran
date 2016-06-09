@@ -214,6 +214,7 @@
   (assert-segment "泥棒をつかまえた" "泥棒" "を" "つかまえた")
   (assert-segment "金もないし友達もいません" "金" "も" "ない" "し" "友達" "も" "いません")
   (assert-segment "出来たからほら見てよ" "出来た" "から" "ほら" "見て" "よ")
+  (assert-segment "眠いからもう寝るね" "眠い" "から" "もう" "寝る" "ね")
   )
 
 (define-test json-consistency-test
