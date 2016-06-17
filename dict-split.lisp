@@ -10,9 +10,10 @@
        ,@body)
      (setf (gethash ,seq *split-map*) ',name)))
 
-(defmacro def-simple-split (name seq score (&optional length-var text-var) &body parts-def)
+(defmacro def-simple-split (name seq score (&optional length-var text-var reading-var) &body parts-def)
   "each part is (seq length-form)"
-  (alexandria:with-gensyms (reading-var offset parts)
+  (alexandria:with-gensyms (offset parts)
+    (unless reading-var (setf reading-var (gensym "RV")))
     (unless length-var (setf length-var (gensym "LV")))
     (unless text-var (setf text-var (gensym "TV")))
     `(defsplit ,name ,seq (,reading-var)
@@ -155,8 +156,8 @@
   (("無く" 1529520) 2)
   (1375610 (- len 2) t))
 
-(def-simple-split split-nakunaru2 1518540 10 (len txt) ;; 亡くなる
-  (:test (eql (word-type txt) :kana))
+(def-simple-split split-nakunaru2 1518540 10 (len txt r) ;; 亡くなる
+  (:test (eql (word-type r) :kana))
   (("亡く" 1518450) 2)
   (1375610 (- len 2) t))
 
@@ -185,3 +186,8 @@
 (def-simple-split split-janaika 2819990 20 (len) ;; じゃないか
   (("じゃない" 2089020) 4)
   (2028970 1))
+
+(def-simple-split split-kaasan 1609470 50 (len txt r) ;; 母さん
+  (:test (print (eql (word-type r) :kanji)))
+  (1514990 1)
+  (1005340 2))
