@@ -216,6 +216,7 @@
   (assert-segment "出来たからほら見てよ" "出来た" "から" "ほら" "見て" "よ")
   (assert-segment "眠いからもう寝るね" "眠い" "から" "もう" "寝る" "ね")
   (assert-segment "浮気してやがった" "浮気してやがった")
+  (assert-segment "見本通りに" "見本" "通り" "に")
   )
 
 (define-test json-consistency-test

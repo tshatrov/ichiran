@@ -68,7 +68,7 @@
 
 ;; -de expressions (need to be split otherwise -desune parses as -de sune)
 
-(defmacro def-de-split (seq seq-a &optional (score 15))
+(defmacro def-de-split (seq seq-a &key (score 15))
   (let ((name (intern (format nil "~a~a" :split-de- seq))))
     `(def-simple-split ,name ,seq ,score (len)
        (,seq-a (- len 1))
@@ -188,6 +188,38 @@
   (2028970 1))
 
 (def-simple-split split-kaasan 1609470 50 (len txt r) ;; 母さん
-  (:test (print (eql (word-type r) :kanji)))
+  (:test (eql (word-type r) :kanji))
   (1514990 1)
   (1005340 2))
+
+(defmacro def-toori-split (seq seq-a &key (score 50) (seq-b 1432930))
+  (let ((name (intern (format nil "~a~a" :split-toori- seq))))
+    `(def-simple-split ,name ,seq ,score (len txt r)
+       (:test (eql (word-type r) :kanji))
+       (,seq-a (- len 2))
+       (,seq-b 2))))
+
+(def-toori-split 1260990 1260670) ;; 元通り
+
+(def-toori-split 1414570 2082450) ;; 大通り
+
+(def-toori-split 1424950 1620400) ;; 中通り [ちゅう通り]
+(def-toori-split 1424960 1423310) ;; 中通り [なか通り]
+
+(def-toori-split 1820790 1250090) ;; 型通り
+
+(def-toori-split 1489800 1489340) ;; 表通り
+
+(def-toori-split 1523010 1522150) ;; 本通り
+
+(def-toori-split 1808080 1604890) ;; 目通り
+
+(def-toori-split 1368820 1580640) ;; 人通り
+
+(def-toori-split 1550490 1550190) ;; 裏通り
+
+(def-toori-split 1619440 2069220) ;; 素通り
+
+(def-toori-split 1164910 2821500 :seq-b 1432920) ;; 一通り
+
+(def-toori-split 1462720 1461140 :seq-b 1432920) ;; 二通り
