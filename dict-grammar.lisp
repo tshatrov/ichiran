@@ -125,7 +125,8 @@
                (load-abbr (key text)
                  (setf (gethash text *suffix-cache*) (list key nil))))
 
-        (load-conjs :chau 2013800)
+        (load-conjs :chau 2013800) ;; ちゃう
+        (load-conjs :chau 2210750) ;; ちまう
         (load-kf :chau (get-kana-form 2028920 "は") :class :ha :text "ちゃ")
         (load-kf :chau (get-kana-form 2028920 "は") :class :ha :text "じゃ")
 
@@ -148,7 +149,7 @@
         (load-conjs :to 2108590 :oku) ;; とく
 
         (load-conjs :te 1305380 :chau) ;; しまう
-        
+
         (load-conjs :te+ 1269130 :kureru) ;; くれる
 
         (loop for kf in (get-kana-forms 1578850) ;;  いく / く
