@@ -210,11 +210,11 @@
   (add-reading 2015370 "ワシ")
   (add-reading 1202410 "カニ")
   (add-reading 1521960 "ボツ")
+  (add-reading 2145800 "イラ")
+  (add-reading 1517840 "ハチ")
    
   (add-reading 2029080 "ねぇ")
   (add-reading 2089020 "じゃ" :common 0)
-
-  (add-reading 2145800 "イラ")
 
   (delete-reading 2145800 "いら")
 
@@ -405,6 +405,8 @@
   (set-common 'kana-text 1575510 "コマ" 0)
   (set-common 'kanji-text 1603990 "街" 0)
   (set-common 'kana-text 1548520 "からむ" :null)
+  (set-common 'kana-text 2174250 "もしや" 0)
+  (set-common 'kana-text 1595080 "のく" :null)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
