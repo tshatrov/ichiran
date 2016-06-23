@@ -545,14 +545,21 @@
   (filter-in-seq-set 1469800) ;; の
   :description "no-adjective"
   :score 15
-  :connector "")
+  :connector " ")
 
 (def-generic-synergy synergy-na-adjectives (l r)
   (filter-is-pos ("adj-na") (segment k p c l) (or k l (and p c)))
   (filter-in-seq-set 2029110 2028990) ;; な ; に 
   :description "na-adjective"
   :score 15
-  :connector "")
+  :connector " ")
+
+(def-generic-synergy synergy-to-adverbs (l r)
+  (filter-is-pos ("adv-to") (segment k p c l) (or k l p))
+  (filter-in-seq-set 1008490)
+  :description "to-adverb"
+  :score (+ 10 (* 10 (- (segment-list-end l) (segment-list-start l))))
+  :connector " ")
 
 (def-generic-synergy synergy-suffix-chu (l r)
   #'filter-is-noun
@@ -611,7 +618,7 @@
                         :connector ,connector
                         :score ,score))))))
 
-(declaim (inline filter-too-short))
+(declaim (inline filter-short-kana))
 (defun filter-short-kana (len)
   (lambda (segment-list)
     (and
@@ -627,6 +634,14 @@
   :serial nil
   :score -9)
 
+(def-generic-penalty penalty-semi-final (l r)
+  (lambda (sl)
+    (some (lambda (s) (funcall (apply 'filter-in-seq-set *semi-final-prt*) s))
+          (segment-list-segments sl)))
+  (constantly t)
+  :description "semi-final not final"
+  :score -15)
+    
 (defun get-penalties (seg-left seg-right)
   (loop for fn in *penalty-list*
      for penalty = (funcall fn seg-left seg-right)

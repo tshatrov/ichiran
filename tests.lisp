@@ -219,6 +219,7 @@
   (assert-segment "見本通りに" "見本" "通り" "に")
   (assert-segment "不適応" "不" "適応")
   (assert-segment "良いそうです" "良い" "そうです")
+  (assert-segment "むらむらとわいた" "むらむら" "と" "わいた")
   )
 
 (define-test json-consistency-test
