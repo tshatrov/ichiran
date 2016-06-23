@@ -218,6 +218,7 @@
   (assert-segment "浮気してやがった" "浮気してやがった")
   (assert-segment "見本通りに" "見本" "通り" "に")
   (assert-segment "不適応" "不" "適応")
+  (assert-segment "良いそうです" "良い" "そうです")
   )
 
 (define-test json-consistency-test
