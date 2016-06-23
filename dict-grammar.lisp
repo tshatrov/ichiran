@@ -479,6 +479,14 @@
     (member conj-type (getf (segment-info segment) :conj)
             :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
 
+(declaim (inline filter-is-compound))
+(defun filter-is-compound-end (&rest seqs)
+  (lambda (segment)
+    (let ((word (segment-word segment)))
+      (and (listp (seq word))
+           (member (car (last (seq word))) seqs)))))
+
+
 (defparameter *noun-particles*
   '(2028920 ;; は
     2028930 ;; が
@@ -588,7 +596,14 @@
   :description "kanji prefix+noun"
   :score 15
   :connector "")
-    
+
+(def-generic-synergy synergy-shicha-ikenai (l r)
+  (filter-is-compound-end 2028920) ;; は
+  (filter-in-seq-set 1000730 1612750 1409110) ;; いけない いけません だめ
+  :description "shicha ikenai"
+  :score 50
+  :connector " ")
+
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))

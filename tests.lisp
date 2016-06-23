@@ -220,6 +220,7 @@
   (assert-segment "不適応" "不" "適応")
   (assert-segment "良いそうです" "良い" "そうです")
   (assert-segment "むらむらとわいた" "むらむら" "と" "わいた")
+  (assert-segment "否定しちゃいけない" "否定しちゃ" "いけない")
   )
 
 (define-test json-consistency-test
