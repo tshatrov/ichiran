@@ -576,7 +576,7 @@
   :connector "")
 
 (def-generic-synergy synergy-kanji-prefix (l r)
-  (filter-in-seq-set 2242840) ;; 未
+  (filter-in-seq-set 2242840 1922780 2423740) ;; 未 不
   (filter-is-pos ("n") (segment k p c l) k)
   :description "kanji prefix+noun"
   :score 15

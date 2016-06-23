@@ -581,7 +581,9 @@
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
 (defun kanji-break-penalty (score)
-  (ceiling score 2))
+  (if (>= score *score-cutoff*)
+      (max *score-cutoff* (ceiling score 2))
+      score))
 
 ;; *skip-words* *final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
 
