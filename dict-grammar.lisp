@@ -634,17 +634,18 @@
                         :score ,score))))))
 
 (declaim (inline filter-short-kana))
-(defun filter-short-kana (len)
+(defun filter-short-kana (len &key except)
   (lambda (segment-list)
-    (and
-     (<= (- (segment-list-end segment-list)
-            (segment-list-start segment-list)) len)
-     (let ((seg (car (segment-list-segments segment-list))))
-       (not (car (getf (segment-info seg) :kpcl)))))))
-
+    (let ((seg (car (segment-list-segments segment-list))))
+      (and seg
+           (<= (- (segment-list-end segment-list)
+                  (segment-list-start segment-list)) len)
+           (not (car (getf (segment-info seg) :kpcl)))
+           (not (and except (member (get-text (segment-word seg)) except :test 'equal)))))))
+         
 (def-generic-penalty penalty-short (l r)
   (filter-short-kana 1)
-  (filter-short-kana 1)
+  (filter-short-kana 1 :except '("と"))
   :description "short"
   :serial nil
   :score -9)
