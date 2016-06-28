@@ -379,7 +379,8 @@
                                                                  (:else 'conj.from)))
                                                    (:= 'kt.text 'csr.source-text))))))
              (loop for (pid cid) in parents
-                  for parent-bk = (best-kana-conj (get-dao 'kanji-text pid))
+                  for parent-kt = (get-dao 'kanji-text pid)
+                  for parent-bk = (best-kana-conj parent-kt)
                   unless (eql parent-bk :null)
                   do (let ((readings (query (:select 'text :from 'conj-source-reading
                                                      :where (:and (:= 'conj-id cid)
@@ -389,10 +390,12 @@
                          (return
                            (if (= (length readings) 1)
                                (car readings)
-                               (loop with regex = (kanji-regex (text obj))
-                                  for rd in readings
-                                  if (ppcre:scan regex rd) do (return rd)
-                                  finally (return (car readings)))))))
+                               (let ((km (kanji-cross-match (text parent-kt) parent-bk (text obj))))
+                                 (or (car (member km readings :test 'equal))
+                                     (loop with regex = (kanji-regex (text obj))
+                                        for rd in readings
+                                        if (ppcre:scan regex rd) do (return rd)
+                                        finally (return (car readings)))))))))
                   finally (return :null))))))
 
 
@@ -425,7 +428,6 @@
                          (return matching-readings)))
                   finally (return :null))))))
                     
-
 
 ;;;
 

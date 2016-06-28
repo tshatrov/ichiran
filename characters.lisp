@@ -161,6 +161,13 @@
 (defun kanji-match (word reading)
   (ppcre:scan (kanji-regex word) reading))
 
+(defun kanji-cross-match (word reading new-word)
+  (let* ((m (mismatch word new-word))
+         (r-cut (+ m (- (length reading) (length word)))))
+    (when (and (> m 0) (<= 0 r-cut (length reading)))
+      (let ((reading-head (subseq reading 0 r-cut)))
+        (concatenate 'string reading-head (subseq new-word m))))))
+
 (defun simplify-ngrams (str map)
   (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
          (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))
