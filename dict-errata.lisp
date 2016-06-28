@@ -468,6 +468,11 @@
                                          ))
   "Particles that are final, but also have other uses")
 
+(defparameter *non-final-prt*
+  '(2139720 ;; ん
+    )
+  "Particles that don't get final bonus")
+
 ;; Additional conjugations
 
 (defconstant +conj-adverbial+ 50)

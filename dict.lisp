@@ -585,7 +585,7 @@
       (max *score-cutoff* (ceiling score 2))
       score))
 
-;; *skip-words* *final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
+;; *skip-words* *(semi-/non-)final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break)
   (when (typep reading 'compound-text)
@@ -625,6 +625,7 @@
          (common-p (not (eql common :null)))
          (particle-p (member "prt" posi :test 'equal))
          (semi-final-particle-p (member seq *semi-final-prt*))
+         (non-final-particle-p (member seq *non-final-prt*))
          (pronoun-p (member "pn" posi :test 'equal))
          (cop-da-p (member "cop-da" posi :test 'equal))
          (long-p (> len
@@ -675,7 +676,7 @@
       (incf score 2)
       (when common-p
         (incf score (+ 2 len)))
-      (when final
+      (when (and final (not non-final-particle-p))
         (cond (primary-p (incf score 5))
               (semi-final-particle-p (incf score 2)))))
     (when (and common-p (not no-common-bonus))
