@@ -582,10 +582,18 @@
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
-(defun kanji-break-penalty (score)
-  (if (>= score *score-cutoff*)
-      (max *score-cutoff* (ceiling score 2))
-      score))
+(defun kanji-break-penalty (kanji-break score &key info)
+  (let ((end (cond ((cdr kanji-break) :both)
+                   ((eql (car kanji-break) 0) :beg)
+                   (t :end)))
+        (bonus 0))
+    (when info
+      (cond ((and (eql end :beg) (member "num" (getf info :posi) :test 'equal))
+             (incf bonus 5))
+            ))
+    (if (>= score *score-cutoff*)
+        (max *score-cutoff* (+ (ceiling score 2) bonus))
+        score)))
 
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
 
@@ -595,7 +603,7 @@
                                                   :use-length (mora-length (text reading))
                                                   :score-mod (score-mod reading))
       (setf (getf info :conj) (word-conj-data reading))
-      (when kanji-break (setf score (kanji-break-penalty score)))
+      (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
       (return-from calc-score
         (values score info))))
 
@@ -724,12 +732,13 @@
                                         :score-mod (if last score-mod 0)
                                         ))))))
 
-    (when kanji-break (setf score (kanji-break-penalty score)))
-    (values score (list :posi posi :seq-set (cons seq conj-of)
-                        :conj conj-data
-                        :common (and common-p common-of)
-                        :score-info (list prop-score kanji-break)
-                        :kpcl (list kanji-p primary-p common-p long-p)))))
+    (let ((info (list :posi posi :seq-set (cons seq conj-of)
+                      :conj conj-data
+                      :common (and common-p common-of)
+                      :score-info (list prop-score kanji-break)
+                      :kpcl (list kanji-p primary-p common-p long-p))))
+      (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
+      (values score info))))
 
 (defun gen-score (segment &key final kanji-break)
   (setf (values (segment-score segment) (segment-info segment))
@@ -830,7 +839,7 @@
     (loop
        with ends-with-lw = (alexandria:ends-with #\ー str)
        for (start end segments) in result
-       for kb = (intersection (list start end) kanji-break)
+       for kb = (mapcar (lambda (n) (- n start)) (intersection (list start end) kanji-break))
        for sl = (loop for segment in segments
                    do (gen-score segment
                                  :final (or (= (segment-end segment) (length str))
