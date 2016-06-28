@@ -223,6 +223,7 @@
   (assert-segment "否定しちゃいけない" "否定しちゃ" "いけない")
   (assert-segment "観たいです" "観たいです")
   (assert-segment "あんたはわからん" "あんた" "は" "わからん")
+  (assert-segment "見られたくないとこ" "見られたくない" "とこ")
   )
 
 (define-test json-consistency-test
