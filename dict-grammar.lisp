@@ -300,8 +300,8 @@
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
 
-(def-simple-suffix suffix-sou :sou (:connector "" :score 3) (root)
-  (unless (member root '("な" "よ") :test 'equal)
+(def-simple-suffix suffix-sou :sou (:connector "" :score (constantly 60)) (root)
+  (unless (member root '("な" "い" "よ") :test 'equal)
     (find-word-with-conj-type root 13 +conj-adjective-stem+)))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)

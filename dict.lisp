@@ -545,7 +545,7 @@
   (with-slots ((s-text text) (s-kana kana) (s-words words) (s-score-mod score-mod)) word1
     (setf s-text text s-kana kana
           s-words (append s-words (list word2))
-          s-score-mod (+ s-score-mod score-mod)))
+          s-score-mod (funcall (if (listp s-score-mod) 'cons 'list) score-mod s-score-mod)))
   word1)
 
 (defgeneric word-conj-data (word)
@@ -595,6 +595,16 @@
         (max *score-cutoff* (+ (ceiling score 2) bonus))
         score)))
 
+
+(defgeneric apply-score-mod (score-mod score len)
+  (:documentation "apply score-mod")
+  (:method ((score-mod integer) score len)
+    (* score score-mod len))
+  (:method ((score-mod function) score len)
+    (funcall score-mod score))
+  (:method ((score-mod list) score len)
+    (reduce '+ score-mod :key (lambda (sm) (apply-score-mod sm score len)))))
+
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break)
@@ -623,7 +633,7 @@
          (conj-of (mapcar #'conj-data-from conj-data))
          (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
          (conj-types (unless root-p (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)))
-         (conj-types-p (or root-p (set-difference conj-types *weak-conj-types*)))
+         (conj-types-p (or root-p use-length (set-difference conj-types *weak-conj-types*)))
          (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
          (prefer-kana
           (select-dao 'sense-prop (:and (:in 'seq (:set (if (and root-p (not use-length)) (list seq) seq-set)))
@@ -644,7 +654,7 @@
                             (and common-p (< 0 common 10)))
                         2 3)))
          (no-common-bonus (or particle-p
-                              (and (not use-length) (not conj-types-p))
+                              (not conj-types-p)
                               (and (not long-p) (equal posi '("int")))))
          (primary-p nil))
     (when (or (intersection seq-set *skip-words*)
@@ -676,7 +686,7 @@
                                         :where (:and (:in 'id (:set (mapcar 'sense-id prefer-kana)))
                                                      (:= 'ord 0))))))
               ))
-
+    
     (when primary-p
       (incf score (cond (long-p 10)
                         (common-p 5)
@@ -709,13 +719,13 @@
       (when (and long-p kanji-p (or (> n-kanji 1) (> len 4)))
         (incf score 2)))
     (setf prop-score score)
-    (setf score (* score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
-                            (if (> n-kanji 1) (* (1- n-kanji) 5) 0)
-                            (if use-length
-                                (+ (length-multiplier-coeff (- use-length len) :tail)
-                                   (* score-mod (- use-length len)))
-                                0))))
-
+    (setf score (* prop-score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
+                                 (if (> n-kanji 1) (* (1- n-kanji) 5) 0))))
+    
+    (when use-length
+      (incf score (* prop-score (length-multiplier-coeff (- use-length len) :tail)))
+      (incf score (apply-score-mod score-mod prop-score (- use-length len))))
+    
     (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
       (when split
         (setf score

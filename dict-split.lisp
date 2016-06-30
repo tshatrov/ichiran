@@ -150,6 +150,39 @@
 
 (def-de-split 1343110 1343100) ;; ところで
 
+
+(defmacro def-toori-split (seq seq-a &key (score 50) (seq-b 1432930))
+  (let ((name (intern (format nil "~a~a" :split-toori- seq))))
+    `(def-simple-split ,name ,seq ,score (len txt r)
+       (:test (eql (word-type r) :kanji))
+       (,seq-a (- len 2))
+       (,seq-b 2))))
+
+(def-toori-split 1260990 1260670) ;; 元通り
+
+(def-toori-split 1414570 2082450) ;; 大通り
+
+(def-toori-split 1424950 1620400) ;; 中通り [ちゅう通り]
+(def-toori-split 1424960 1423310) ;; 中通り [なか通り]
+
+(def-toori-split 1820790 1250090) ;; 型通り
+
+(def-toori-split 1489800 1489340) ;; 表通り
+
+(def-toori-split 1523010 1522150) ;; 本通り
+
+(def-toori-split 1808080 1604890) ;; 目通り
+
+(def-toori-split 1368820 1580640) ;; 人通り
+
+(def-toori-split 1550490 1550190) ;; 裏通り
+
+(def-toori-split 1619440 2069220) ;; 素通り
+
+(def-toori-split 1164910 2821500 :seq-b 1432920) ;; 一通り
+
+(def-toori-split 1462720 1461140 :seq-b 1432920) ;; 二通り
+
 ;; nakunaru split: because naku often attaches to previous word
 
 (def-simple-split split-nakunaru 1529550 30 (len) ;; 無くなる
@@ -192,34 +225,6 @@
   (1514990 1)
   (1005340 2))
 
-(defmacro def-toori-split (seq seq-a &key (score 50) (seq-b 1432930))
-  (let ((name (intern (format nil "~a~a" :split-toori- seq))))
-    `(def-simple-split ,name ,seq ,score (len txt r)
-       (:test (eql (word-type r) :kanji))
-       (,seq-a (- len 2))
-       (,seq-b 2))))
-
-(def-toori-split 1260990 1260670) ;; 元通り
-
-(def-toori-split 1414570 2082450) ;; 大通り
-
-(def-toori-split 1424950 1620400) ;; 中通り [ちゅう通り]
-(def-toori-split 1424960 1423310) ;; 中通り [なか通り]
-
-(def-toori-split 1820790 1250090) ;; 型通り
-
-(def-toori-split 1489800 1489340) ;; 表通り
-
-(def-toori-split 1523010 1522150) ;; 本通り
-
-(def-toori-split 1808080 1604890) ;; 目通り
-
-(def-toori-split 1368820 1580640) ;; 人通り
-
-(def-toori-split 1550490 1550190) ;; 裏通り
-
-(def-toori-split 1619440 2069220) ;; 素通り
-
-(def-toori-split 1164910 2821500 :seq-b 1432920) ;; 一通り
-
-(def-toori-split 1462720 1461140 :seq-b 1432920) ;; 二通り
+(def-simple-split split-souda 1006650 5 (len)
+  (2137720 2)
+  ((2089020 1628500) (- len 2)))
