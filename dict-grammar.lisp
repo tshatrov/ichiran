@@ -166,7 +166,7 @@
         (load-kf :teii (get-kana-form 2820690 "いい") :class :ii :text "もいい")
         (load-kf :te (get-kana-form 2028940 "も") :class :mo)
 
-        (load-kf :te (get-kana-form 1184270 "ください" :conj :root) :class :kudasai) 
+        (load-kf :kudasai (get-kana-form 1184270 "ください" :conj :root))
 
         (load-conjs :suru 1157170) ;; する
         (load-conjs :suru 1421900 :itasu) ;; いたす  
@@ -257,16 +257,20 @@
   ;; generic ren'youkei suffix
   (find-word-with-conj-type root 13))
 
-(def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
+(defun te-check (root)
   (and (not (equal root "で")) 
        (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
+  
+(def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
+  (te-check root))
 
 (def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
-  (and (not (equal root "で"))
-       (find (char root (1- (length root))) "てで")
-       (find-word-with-conj-type root 3)))
-
+  (te-check root))
+  
+(def-simple-suffix suffix-kudasai :kudasai (:connector " " :score (constantly 360)) (root)
+  (te-check root))
+    
 (def-simple-suffix suffix-te-ren :teren (:connector "" :score 4) (root)
   (and (not (equal root "で"))
        (if (find (char root (1- (length root))) "てで")
@@ -510,6 +514,7 @@
     1008530 ;; とか
     1008590 ;; として
     2028960 ;; や
+    1009600 ;; にとって
     ))
 
 (def-generic-synergy synergy-noun-particle (l r)

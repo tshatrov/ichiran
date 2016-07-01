@@ -164,7 +164,7 @@
                   "あなた" "が" "いなきゃ" "こんな" "計画" "思いつかなかった")
   (assert-segment "見たかったです" "見たかったです")
   (assert-segment "出来て楽しかったな" "出来て" "楽しかった" "な")
-  (assert-segment "つかってください" "つかって" "ください")
+  (assert-segment "つかってください" "つかってください")
   (assert-segment "誰もが思ってた" "誰も" "が" "思ってた")
   (assert-segment "参考にしたらしい" "参考にしたらしい")
   (assert-segment "狙いやすそうで" "狙い" "やすそう" "で")
@@ -226,7 +226,9 @@
   (assert-segment "見られたくないとこ" "見られたくない" "とこ")
   (assert-segment "多分家で" "多分" "家" "で")
   (assert-segment "三十八" "三十" "八")
-  (assert-segment "エロそうだヤバそうだ" "エロそう" "だ" "ヤバそう" "だ") 
+  (assert-segment "エロそうだヤバそうだ" "エロそう" "だ" "ヤバそう" "だ")
+  (assert-segment "私にとっても" "私" "にとって" "も")
+  (assert-segment "睡眠を十分にとってください" "睡眠" "を" "十分" "に" "とってください")
   )
 
 (define-test json-consistency-test
