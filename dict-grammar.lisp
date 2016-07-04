@@ -540,9 +540,9 @@
 
 (def-generic-synergy synergy-no-da (l r)
   (filter-in-seq-set 1469800 2139720) 
-  (filter-in-seq-set 2089020 1007370)
+  (filter-in-seq-set 2089020 1007370 1007420)
   :description "no da/desu"
-  :score 5
+  :score 15
   :connector " ")
 
 ;; TODO: remove this hack
