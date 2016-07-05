@@ -454,6 +454,7 @@
                              2210320 ;; ません
                              2017560 ;; たい
                              2394890 ;; とる
+                             2194000 ;; であ
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
