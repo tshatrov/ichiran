@@ -632,7 +632,7 @@
          (conj-data (word-conj-data reading))
          (conj-of (mapcar #'conj-data-from conj-data))
          (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
-         (conj-types (unless root-p (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data)))
+         (conj-types (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data))
          (conj-types-p (or root-p use-length (set-difference conj-types *weak-conj-types*)))
          (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
          (prefer-kana
@@ -650,7 +650,8 @@
          (cop-da-p (member "cop-da" posi :test 'equal))
          (long-p (> len
                     (if (or (and kanji-p (not prefer-kana)
-                                 (or root-p (and use-length (member 13 conj-types))))
+                                 (or (and root-p (not conj-data))
+                                     (and use-length (member 13 conj-types))))
                             (and common-p (< 0 common 10)))
                         2 3)))
          (no-common-bonus (or particle-p

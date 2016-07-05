@@ -230,6 +230,7 @@
   (assert-segment "私にとっても" "私" "にとって" "も")
   (assert-segment "睡眠を十分にとってください" "睡眠" "を" "十分" "に" "とってください")
   (assert-segment "そうなんだけど" "そう" "な" "ん" "だけど")
+  (assert-segment "進んでない" "進んでない")
   )
 
 (define-test json-consistency-test
