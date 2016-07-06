@@ -77,6 +77,7 @@
     (:ha "topic marker particle")
     (:tai "want to... / would like to...")
     (:iru "indicates continuing action (to be ...ing)")
+    (:oru "indicates continuing action (to be ...ing) (humble)")
     (:aru "indicates completion / finished action")
     (:kuru "indicates action that had been continuing up till now / came to be ")
     (:oku "to do in advance / to leave in the current state expecting a later change")
@@ -140,6 +141,8 @@
                     (gethash (seq kf) *suffix-class*) :iru)
              (when (> (length tkf) 1)
                (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
+
+        (load-conjs :te 1577985 :oru) ;; おる
         
         (load-conjs :te 1296400 :aru) ;; ある
 
@@ -209,8 +212,8 @@
         (load-abbr :dewanai "じゃない")
         ))))
 
-(defun init-suffixes (&optional blocking)
-  (unless *suffix-cache*
+(defun init-suffixes (&optional blocking reset)
+  (when (or reset (not *suffix-cache*))
     (if blocking
         (init-suffixes-thread)
         (sb-thread:make-thread #'init-suffixes-thread)))

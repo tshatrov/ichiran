@@ -232,6 +232,9 @@
   (assert-segment "そうなんだけど" "そう" "な" "ん" "だけど")
   (assert-segment "進んでない" "進んでない")
   (assert-segment "一回だけであとは言わない" "一回" "だけ" "で" "あと" "は" "言わない")
+  (assert-segment "ご親切に恐縮しております" "ご親切に" "恐縮しております")
+  (assert-segment "官吏となっておる者がある" "官吏" "と" "なっておる" "者" "が" "ある")
+  (assert-segment "間違えておられたようですね" "間違えておられた" "ようです" "ね")
   )
 
 (define-test json-consistency-test
