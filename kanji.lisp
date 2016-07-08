@@ -400,12 +400,13 @@
       (when kanji
         (to-json kanji)))))
 
-(defun get-reading-stats (kanji reading)
+(defun get-reading-stats (kanji reading type)
   (with-connection *connection*
     (let ((query (query (:select 'r.stat-common 'k.stat-common 'k.grade :from (:as 'kanji 'k) (:as 'reading 'r)
                                  :where (:and (:= 'k.id 'r.kanji-id)
                                               (:= 'k.text kanji)
-                                              (:= 'r.text reading))) :row)))
+                                              (:= 'r.text reading)
+                                              (:= 'r.type type))) :row)))
       (when query
         (destructuring-bind (sample total grade) query
           (list sample total (calculate-perc sample total) grade))))))
@@ -418,7 +419,7 @@
       (jsown:extend-js js ("rendaku" rendaku)))
     (when geminated
       (jsown:extend-js js ("geminated" geminated)))
-    (let ((stats (get-reading-stats kanji (get-original-reading reading rendaku geminated))))
+    (let ((stats (get-reading-stats kanji (get-original-reading reading rendaku geminated) type)))
       (when stats
         (jsown:extend-js js ("stats" t))
         (destructuring-bind (sample total perc grade) stats
