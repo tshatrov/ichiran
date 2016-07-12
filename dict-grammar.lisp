@@ -591,6 +591,13 @@
   :score 10
   :connector "-")
 
+(def-generic-synergy synergy-suffix-buri (l r)
+  #'filter-is-noun
+  (filter-in-seq-set 1361140)
+  :description "suffix-buri"
+  :score 40
+  :connector "")
+
 (def-generic-synergy synergy-o-prefix (l r)
   (filter-in-seq-set 1270190)
   (filter-is-pos ("n") (segment k p c l) (or k l))
