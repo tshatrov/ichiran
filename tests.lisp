@@ -235,6 +235,7 @@
   (assert-segment "ご親切に恐縮しております" "ご親切に" "恐縮しております")
   (assert-segment "官吏となっておる者がある" "官吏" "と" "なっておる" "者" "が" "ある")
   (assert-segment "間違えておられたようですね" "間違えておられた" "ようです" "ね")
+  (assert-segment "人気のせいな" "人気" "の" "せい" "な")
   )
 
 (define-test json-consistency-test

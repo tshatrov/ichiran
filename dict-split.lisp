@@ -228,3 +228,8 @@
 (def-simple-split split-souda 1006650 5 (len)
   (2137720 2)
   ((2089020 1628500) (- len 2)))
+
+(def-simple-split split-kinosei 1221750 100 (len txt r)
+  (1221520 1)
+  (1469800 1)
+  (1610040 2))
