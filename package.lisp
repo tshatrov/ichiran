@@ -10,10 +10,8 @@
            :as-hiragana :sequential-kanji-positions
            :*undakuten-hash* :*dakuten-hash* :*handakuten-hash*
            :kanji-prefix :kanji-mask :kanji-regex :kanji-match :kanji-cross-match
-           :unrendaku
-           :rendaku
-           :collect-char-class
-           :*kanji-char-regex*))
+           :unrendaku :rendaku
+           :collect-char-class :*kanji-char-regex* :consecutive-char-groups))
 
 (defpackage :ichiran/tokenize
   (:use :cl)

@@ -118,6 +118,11 @@
   (mapcar (lambda (pair) (cons (car pair) (ppcre:create-scanner (format nil "^~a+$" (cadr pair)))))
           *char-class-regex-mapping*))
 
+(defparameter *char-scanners-inner*
+  (mapcar (lambda (pair)
+            (cons (car pair) (ppcre:create-scanner `(:greedy-repetition 1 nil (:regex ,@(cdr pair))))))
+          *char-class-regex-mapping*))
+
 (defun test-word (word char-class)
   (declare (type char-class char-class))
   (let ((regex (cdr (assoc char-class *char-scanners*))))
@@ -217,7 +222,13 @@
                char)))
        str))
   
-  
+(defun consecutive-char-groups (char-class str &key (start 0) (end (length str)))
+  (let ((regex (cdr (assoc char-class *char-scanners-inner*)))
+        result)
+    (ppcre:do-matches (s e regex str (nreverse result)
+                         :start start :end end)
+      (push (cons s e) result))))
+
 (defun kanji-prefix (word)
   (or
    (let ((regex (format nil "^.*~a" *kanji-regex*)))

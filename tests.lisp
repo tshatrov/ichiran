@@ -236,6 +236,8 @@
   (assert-segment "官吏となっておる者がある" "官吏" "と" "なっておる" "者" "が" "ある")
   (assert-segment "間違えておられたようですね" "間違えておられた" "ようです" "ね")
   (assert-segment "人気のせいな" "人気" "の" "せい" "な")
+  (assert-segment "コレはアレ" "コレ" "は" "アレ")
+  (assert-segment "アレハレ" :gap) 
   )
 
 (define-test json-consistency-test

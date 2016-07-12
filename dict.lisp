@@ -503,6 +503,16 @@
 (defmethod get-original-text ((reading proxy-text))
   (get-original-text (source reading)))
 
+(defun find-word-as-hiragana (str)
+  (let ((words (find-word (as-hiragana str) :root-only t)))
+    (when words
+      (let ((str (copy-seq str)))
+        (mapcar (lambda (w) (make-instance 'proxy-text
+                                           :source w
+                                           :text str
+                                           :kana str))
+                words)))))
+
 ;; Compound words (2 or more words squished together)
 
 (defclass compound-text ()
@@ -619,7 +629,7 @@
 
   (let* ((score 1) prop-score
          (kanji-p (eql (word-type reading) :kanji))
-         (katakana-p (and (not kanji-p) (> (count-char-class (text reading) :katakana-uniq) 0)))
+         (katakana-p (and (not kanji-p) (> (count-char-class (true-text reading) :katakana-uniq) 0)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
          ;(kanji-prefix (kanji-prefix text))
@@ -814,19 +824,23 @@
 (defvar *suffix-map-temp* nil)
 (defvar *suffix-next-end* nil)
 
-(defun find-word-full (word)
+(defun find-word-full (word &key as-hiragana)
   (let ((simple-words (find-word word)))
     (nconc simple-words
-           (find-word-suffix word :unique (not simple-words)))))
+           (find-word-suffix word :unique (not simple-words))
+           (when as-hiragana (find-word-as-hiragana word))
+           )))
 
 (defparameter *score-cutoff* 5) ;; this must filter out ONLY bad kana spellings, and NOT filter out any kanji spellings
 
 (defun join-substring-words* (str)
   (loop with sticky = (find-sticky-positions str)
+        with katakana-groups = (consecutive-char-groups :katakana str)
         and kanji-break
         and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
+       for katakana-group-end = (cdr (assoc start katakana-groups)) 
        unless (member start sticky)
        nconcing 
        (loop for end from (1+ start) upto (length str)
@@ -838,7 +852,7 @@
                                 (make-segment :start start :end end :word word))
                               (let ((*suffix-map-temp* suffix-map)
                                     (*suffix-next-end* end))
-                                (find-word-full part)))))
+                                (find-word-full part :as-hiragana (and katakana-group-end (= end katakana-group-end)))))))
               (when segments
                 (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break))
                 (list (list start end segments)))))
@@ -1459,7 +1473,7 @@
            (*suffix-next-end* end)
            (all-words (if root-only
                           (find-word text :root-only t)
-                          (find-word-full text)))
+                          (find-word-full text :as-hiragana (test-word text :katakana))))
            (segments (loop for word in all-words
                         collect (gen-score (make-segment :start 0 :end end :word word))))
            (segments (sort segments #'> :key #'segment-score))
