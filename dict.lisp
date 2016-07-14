@@ -313,8 +313,12 @@
 
 (defstruct conj-data seq from via prop src-map)
 
-(defun get-conj-data (seq &optional from/conj-ids)
-  "from/conj-ids can be either from which word to find conjugations or a list of conj-ids"
+(defun get-conj-data (seq &optional from/conj-ids texts)
+  "from/conj-ids can be either from which word to find conjugations or a list of conj-ids
+   texts is a string or list of strings, if supplied, only the conjs that have src-map with this text will be collected
+"
+  (unless (listp texts)
+    (setf texts (list texts)))
   (loop for conj in (cond
                       ((eql from/conj-ids :root) nil)
                       ((null from/conj-ids)
@@ -322,8 +326,12 @@
                       ((listp from/conj-ids)
                        (select-dao 'conjugation (:and (:= 'seq seq) (:in 'id (:set from/conj-ids)))))
                       (t (select-dao 'conjugation (:and (:= 'seq seq) (:= 'from from/conj-ids)))))
-       for src-map = (query (:select 'text 'source-text :from 'conj-source-reading
-                                     :where (:= 'conj-id (id conj))))
+     for src-map = (if texts
+                       (query (:select 'text 'source-text :from 'conj-source-reading
+                                       :where (:and (:= 'conj-id (id conj)) (:in 'text (:set texts)))))
+                       (query (:select 'text 'source-text :from 'conj-source-reading
+                                       :where (:= 'conj-id (id conj)))))
+       when (or (not texts) src-map)
        nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
                                              :via (let ((via (seq-via conj)))
@@ -562,7 +570,7 @@
   (:documentation "conjugation data for word"))
 
 (defmethod word-conj-data ((word simple-text))
-  (get-conj-data (seq word) (word-conjugations word)))
+  (get-conj-data (seq word) (word-conjugations word) (true-text word)))
 
 (defmethod word-conj-data ((word compound-text))
   (word-conj-data (car (last (words word)))))

@@ -415,6 +415,7 @@
   (set-common 'kanji-text 1407980 "多分" 1)
   (set-common 'kana-text 1579630 "なのか" :null)
   (set-common 'kana-text 1371880 "すいてき" :null)
+  (set-common 'kana-text 1008420 "でしょ" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
