@@ -1351,7 +1351,7 @@
              (push via via-used)))
        (princ " ]" out)))
 
-(defun conj-info-json (seq &key conjugations text has-gloss)
+(defun conj-info-json* (seq &key conjugations text has-gloss)
   (loop with via-used = nil
      for conj in (select-conjs seq conjugations)
      for via = (seq-via conj)
@@ -1373,12 +1373,22 @@
                        ("reading" (reading-str (or orig-reading (seq-from conj))))
                        ("gloss" (get-senses-json (seq-from conj)
                                                  :pos-list conj-pos
-                                                 :reading-getter (lambda () orig-reading)))))
+                                                 :reading-getter (lambda () orig-reading)))
+                       ("readok" (when orig-reading t))))
                    (progn
-                     (jsown:extend-js js
-                       ("via" (conj-info-json via :text orig-text :has-gloss has-gloss)))
+                     (let ((cij (conj-info-json via :text orig-text :has-gloss has-gloss)))
+                       (when cij
+                         (jsown:extend-js js
+                           ("via" cij)
+                           ("readok" (jsown:val (car cij) "readok")))))
                      (push via via-used)))
                (list js)))))
+
+(defun conj-info-json (seq &rest rest &key conjugations text has-gloss)
+  (declare (ignorable conjugations text has-gloss))
+  (let* ((cij (apply 'conj-info-json* seq rest))
+         (fcij (remove-if-not (lambda (c) (jsown:val c "readok")) cij)))
+    (or fcij cij)))
 
 (defun map-word-info-kana (fn word-info &key (separator "/")
                            &aux (wkana (word-info-kana word-info)))
