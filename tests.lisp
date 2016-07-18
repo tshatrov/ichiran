@@ -239,6 +239,7 @@
   (assert-segment "コレはアレ" "コレ" "は" "アレ")
   (assert-segment "アレハレ" :gap) 
   (assert-segment "上に文字があったり" "上" "に" "文字" "が" "あったり")
+  (assert-segment "言っただろ" "言った" "だろ")
   )
 
 (define-test json-consistency-test
