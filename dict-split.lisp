@@ -233,3 +233,30 @@
   (1221520 1)
   (1469800 1)
   (1610040 2))
+
+
+;; KANA HINTS (indicate when to romanize は as わ etc.)
+
+(defparameter *kana-hint-mod* #\u200c)
+(defparameter *kana-hint-space* #\u200b)
+
+(defparameter *hint-char-map* `(:space ,*kana-hint-space* :mod ,*kana-hint-mod*))
+
+(defparameter *kana-hint-map* (make-hash-table)) ;; seq -> split function
+
+(defun insert-hints (str hints &aux (len (length str)))
+  ;; hints are ((position character-kw) ...)
+  (unless hints
+    (return-from insert-hints str))
+  (let ((positions (make-array (1+ len) :initial-element nil)))
+    (loop for (position character-kw) in hints
+       for char = (getf *hint-char-map* character-kw)
+       when (<= 0 position len)
+       do (push char (aref positions position)))
+    (with-output-to-string (s)
+      (loop for i from 0 upto len
+         do (loop for char in (reverse (aref positions i))
+               do (write-char char s))
+         when (< i len)
+         do (write-char (char str i) s)))))
+
