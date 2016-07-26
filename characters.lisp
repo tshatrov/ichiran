@@ -80,6 +80,19 @@
     "『" " «"  "』" "» "
     "〜" " - " "：" ": " "！" "! " "？" "? " "；" "; "))
 
+(defun dakuten-join (dakuten-hash char)
+  (loop for (cc . ccd) in (alexandria:hash-table-alist dakuten-hash)
+     for kc = (getf *kana-characters* cc)
+     for kcd = (getf *kana-characters* ccd)
+     for offset = (- (length kc) (length kcd))
+     if (> offset 0) do (setf kc (subseq kc offset))
+     nconcing (loop for idx from 0 below (length kc)
+                 nconcing (list (coerce (list (char kc idx) char) 'string)
+                                (coerce (list (char kcd idx)) 'string)))))
+
+(defparameter *dakuten-join*
+  (append (dakuten-join *dakuten-hash* #\゛) (dakuten-join *handakuten-hash* #\゜)))
+
 (defparameter *abnormal-chars*
   (concatenate 'string
                "０１２３４５６７８９ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＃＄％＆（）＊＋／〈＝〉？＠［］＾＿‘｛｜｝～"
@@ -192,7 +205,7 @@
        for char = (char str i)
        for normal-char = (to-normal-char char)
        if normal-char do (setf (char str i) normal-char))
-  (setf str (simplify-ngrams str *punctuation-marks*)))
+  (setf str (simplify-ngrams str (append *punctuation-marks* *dakuten-join*))))
   
 (defun split-by-regex (regex str)
   (remove-if (lambda (seg) (= (length seg) 0))
