@@ -245,11 +245,11 @@
 (defparameter *kana-hint-map* (make-hash-table)) ;; seq -> split function
 
 (defun insert-hints (str hints &aux (len (length str)))
-  ;; hints are ((position character-kw) ...)
+  ;; hints are ((character-kw position) ...)
   (unless hints
     (return-from insert-hints str))
   (let ((positions (make-array (1+ len) :initial-element nil)))
-    (loop for (position character-kw) in hints
+    (loop for (character-kw position) in hints
        for char = (getf *hint-char-map* character-kw)
        when (<= 0 position len)
        do (push char (aref positions position)))
@@ -259,4 +259,122 @@
                do (write-char char s))
          when (< i len)
          do (write-char (char str i) s)))))
+
+(defparameter *hint-map* (make-hash-table)) ;; seq -> hint function
+
+(defmacro defhint (seqs (reading-var) &body body)
+  (unless (listp seqs)
+    (setf seqs (list seqs)))
+  `(progn
+     ,@(loop for seq in seqs
+          collect `(setf (gethash ,seq *hint-map*)
+                         (lambda (,reading-var) ,@body)))))
+
+(defmacro def-simple-hint (seqs (&optional length-var kana-var reading-var) &body hints-def)
+  (unless reading-var (setf reading-var (gensym "RV")))
+  (unless length-var (setf length-var (gensym "LV")))
+  (unless kana-var (setf kana-var (gensym "KV")))
+  `(defhint ,seqs (,reading-var)
+     (let* ((,kana-var (get-kana ,reading-var))
+            (,length-var (length ,kana-var))
+            )
+       (declare (ignorable ,length-var))
+       (insert-hints ,kana-var
+                     (list
+                      ,@(loop for pair in hints-def
+                           collect `(list ,@pair)))))))
+
+(defun get-hint (reading)
+  (let ((hint-fn (gethash (seq reading) *hint-map*))
+        (conj-of (mapcar #'conj-data-from (word-conj-data reading))))
+    (if hint-fn
+        (funcall hint-fn reading)
+        (loop for seq in conj-of
+           for hint-fn = (gethash seq *hint-map*)
+           when hint-fn do (return (funcall hint-fn reading))))))
+
+;; expressions ending with は
+
+#|
+(query (:select 'kt.seq 'kt.text :from (:as 'kana-text 'kt) (:as 'sense-prop 'sp)
+                              :where (:and (:= 'kt.seq 'sp.seq)
+                                           (:= 'sp.tag "pos")
+                                           (:= 'sp.text "exp")
+                                           (:like 'kt.text "%は"))))
+|#
+
+;; TODO pos=int
+
+(def-simple-hint ;; no space
+    (1289480 ;; こんばはん
+     1289400 ;; こんにちは
+     )
+    (l)
+    (:mod (- l 1)))
+
+(def-simple-hint ;; with space
+    (1006660 ;; そうでないばあいは
+     1008500 ;; というのは
+     1307530 ;; はじめは
+     1320830 ;; じつは
+     1324320 ;; もしくは
+     1524990 ;; または
+     1586850 ;; あるいは
+     1586850 ;; あるは
+     1877880 ;; ごきぼうのむきは
+     1897510 ;; ところでは
+     1907300 ;; へいそは
+     1912570 ;; もとは
+     2034440 ;; にかけては
+     2036130 ;; うはうは
+     2098160 ;; なくては
+     2105820 ;; にしては
+     2134680 ;; それは
+     2136300 ;; ということは
+     2173060 ;; それいがいのものは
+     2176280 ;; これは
+     2177410 ;; のぞむらくは
+     2177420 ;; おそらくは
+     2177430 ;; おしむらくは
+     2177440 ;; うらむらくは
+     2177450 ;; こいねがわくは
+     2256430 ;; としては
+     2261800 ;; それはそれは
+     2428890 ;; さすがは
+     2513540 ;; そのことじたいは
+     2523450 ;; おかれましては
+     2557290 ;; なんだこれは
+     2629620 ;; だけは
+     2673120 ;; かくなるうえは
+     2691570 ;; あいなるべくは
+     2702090 ;; ては
+     2717440 ;; ずは
+     2717510 ;; ってのは
+     2828541 ;; あさのは
+     )
+    (l)
+  (:space (- l 1))
+  (:mod (- l 1)))
+
+(def-simple-hint ;; では/には ending
+    (1009480 ;; ならでは
+     1315860 ;; ときには
+     1406050 ;; それでは
+     1550170 ;; りろんてきには
+     1917520 ;; わたくしなどには
+     1917530 ;; わたくしのほうでは
+     2026610 ;; からには
+     2061740 ;; みたかぎりでは
+     2097310 ;; ただでは
+     2101020 ;; あるいみでは
+     2119920 ;; そのわりには
+     2134700 ;; なしには
+     2200100 ;; うえでは
+     2407650 ;; このぶんでは
+     2553140 ;; こんにちでは
+     2762790 ;; ひとつには
+     )
+    (l)
+  (:space (- l 2))
+  (:mod (- l 1)))
 

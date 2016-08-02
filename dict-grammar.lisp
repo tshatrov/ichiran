@@ -366,7 +366,8 @@
                         (make-instance 'proxy-text
                                        :source pw
                                        :text text
-                                       :kana kana))
+                                       :kana kana
+                                       :hintedp t))
                        (compound-text
                         (with-slots ((stext text) (skana kana)) pw
                           (setf stext text skana kana))

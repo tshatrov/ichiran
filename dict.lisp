@@ -64,11 +64,20 @@
 
 (defclass simple-text () 
   ((conjugations :accessor word-conjugations :initform nil)
+   (hintedp :accessor hintedp :initarg :hintedp :initform nil)
    ))
 
 (defmethod print-object ((obj simple-text) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a ~a" (seq obj) (text obj))))
+
+(defparameter *disable-hints* nil)
+
+(defmethod get-kana :around ((obj simple-text))
+  (or (unless (or *disable-hints* (hintedp obj))
+        (let ((*disable-hints* t))
+          (get-hint obj)))
+      (call-next-method)))
 
 (defclass kanji-text (simple-text)
   ((id :reader id :col-type serial)
@@ -95,13 +104,13 @@
 (defmethod get-kanji ((obj kanji-text))
   (text obj))
 
-(defmethod get-kana :around ((obj kanji-text))
+(defmethod get-kana ((obj kanji-text))
   (let ((bk (best-kana-conj obj)))
     (if (eql bk :null)
-        (call-next-method)
+        (get-kanji-kana-old obj)
         bk)))
 
-(defmethod get-kana ((obj kanji-text))
+(defun get-kanji-kana-old (obj)
   "old get-kana, used when everything else fails"
   (loop with regex = (kanji-regex (text obj))
      and kts = (select-dao 'kana-text (:= 'seq (seq obj)) 'ord)
