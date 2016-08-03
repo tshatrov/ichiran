@@ -224,7 +224,8 @@
 (defun romanize-word (word &key (method *default-romanization-method*) original-spelling)
   "Romanize a word according to method"
   (or (r-special method (or original-spelling word))
-      (romanize-list (get-character-classes word) :method method)))
+      (let ((word (process-hints word)))
+        (romanize-list (get-character-classes word) :method method))))
 
 (defun join-parts (parts)
   (with-output-to-string (s)

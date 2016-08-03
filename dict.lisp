@@ -1410,10 +1410,9 @@
       (funcall fn wkana)))
 
 (defun word-info-reading-str (word-info)
-  (reading-str* (case (word-info-type word-info)
-                 (:kanji (word-info-text word-info))
-                 (t nil))
-               (word-info-kana word-info)))
+  (case (word-info-type word-info)
+    (:kanji (reading-str* (word-info-text word-info) (word-info-kana word-info)))
+    (t (reading-str* nil (word-info-text word-info)))))
 
 (defmethod reading-str ((word-info word-info))
   (word-info-reading-str word-info))

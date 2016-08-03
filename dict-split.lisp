@@ -242,6 +242,14 @@
 
 (defparameter *hint-char-map* `(:space ,*kana-hint-space* :mod ,*kana-hint-mod*))
 
+(defparameter *hint-simplify-map*
+  (list (string *kana-hint-space*) " "
+        (coerce (list *kana-hint-mod* #\は) 'string) "わ"
+        (coerce (list *kana-hint-mod* #\へ) 'string) "え"))
+
+(defun process-hints (word)
+  (simplify-ngrams word *hint-simplify-map*))
+
 (defparameter *kana-hint-map* (make-hash-table)) ;; seq -> split function
 
 (defun insert-hints (str hints &aux (len (length str)))
@@ -306,7 +314,7 @@
 ;; TODO pos=int
 
 (def-simple-hint ;; no space
-    (1289480 ;; こんばはん
+    (1289480 ;; こんばんは
      1289400 ;; こんにちは
      )
     (l)
