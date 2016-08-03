@@ -283,14 +283,18 @@
   (unless length-var (setf length-var (gensym "LV")))
   (unless kana-var (setf kana-var (gensym "KV")))
   `(defhint ,seqs (,reading-var)
-     (let* ((,kana-var (get-kana ,reading-var))
-            (,length-var (length ,kana-var))
-            )
-       (declare (ignorable ,length-var))
-       (insert-hints ,kana-var
-                     (list
-                      ,@(loop for pair in hints-def
-                           collect `(list ,@pair)))))))
+     (block hint
+       (let* ((,kana-var (get-kana ,reading-var))
+              (,length-var (length ,kana-var))
+              ,@(loop for (var value) in hints-def
+                   unless (keywordp var)
+                   collect `(,var (or ,value (return-from hint nil)))))
+         (declare (ignorable ,length-var))
+         (insert-hints ,kana-var
+                       (list
+                        ,@(loop for pair in hints-def
+                             when (keywordp (car pair))
+                             collect `(list ,@pair))))))))
 
 (defun get-hint (reading)
   (let ((hint-fn (gethash (seq reading) *hint-map*))
@@ -311,11 +315,13 @@
                                            (:like 'kt.text "%は"))))
 |#
 
-;; TODO pos=int
+;; TODO には とは
 
 (def-simple-hint ;; no space
     (1289480 ;; こんばんは
      1289400 ;; こんにちは
+     1004620 ;; こにちは
+     1008450 ;; では
      )
     (l)
     (:mod (- l 1)))
@@ -347,7 +353,6 @@
      2177440 ;; うらむらくは
      2177450 ;; こいねがわくは
      2256430 ;; としては
-     2261800 ;; それはそれは
      2428890 ;; さすがは
      2513540 ;; そのことじたいは
      2523450 ;; おかれましては
@@ -359,8 +364,20 @@
      2717440 ;; ずは
      2717510 ;; ってのは
      2828541 ;; あさのは
+     2176280 ;; これは
+     1316430 ;; つぎのれいでは
      )
     (l)
+  (:space (- l 1))
+  (:mod (- l 1)))
+
+(def-simple-hint
+    (2261800 ;; それはそれは
+     )
+    (l)
+  (:space 2)
+  (:mod 2)
+  (:space 3)
   (:space (- l 1))
   (:mod (- l 1)))
 
@@ -381,8 +398,92 @@
      2407650 ;; このぶんでは
      2553140 ;; こんにちでは
      2762790 ;; ひとつには
+     1288910 ;; いまでは
      )
     (l)
   (:space (- l 2))
   (:mod (- l 1)))
+
+;; では expressions
+
+(def-simple-hint
+    (2089020 ;; だ
+     2823770 ;; ではない
+     2098240 ;; ではある
+     2027020 ;; ではないか
+     2135480 ;; ではまた
+     2397760 ;; ではありますまいか
+     2724540 ;; ではなかろうか
+     2757720 ;; ではなさそう
+     )
+    (l k)
+  (deha (search "では" k :from-end t))
+  (:mod (1+ deha)))
+
+(def-simple-hint ;; ends with ではない
+    (1922645 ;; ふつうではない
+     2027080 ;; べきではない
+     2118000 ;; ひとごとではない
+     2126160 ;; どうじつのだんではない
+     2126140 ;; でるまくではない
+     2131120 ;; たいしたことではない
+     2136640 ;; といってもかごんではない
+     2214830 ;; すてたものではない
+     2221680 ;; いわないことではない
+     2416950 ;; ばかりがのうではない
+     2419210 ;; どうじつのろんではない
+     2664520 ;; たまったものではない
+     2682500 ;; しょうきのさたではない
+     2775790 ;; それどころではない
+     1343120 ;; どころではない
+     1012260 ;; まんざらゆめではない
+     2112270 ;; もののかずではない
+     2404260 ;; しったことではない
+     2523700 ;; ほんいではない
+     2758400 ;; みられたものではない
+     2827556 ;; だけがのうではない
+     )
+    (l k)
+  (deha (search "では" k :from-end t))
+  (:space deha)
+  (:mod (1+ deha)))
+
+;; では in the middle
+(def-simple-hint
+    (2037860 ;; ただではおかないぞ
+     2694350 ;; ころんでもただではおきない
+     2111220 ;; ひとすじなわではいかない
+     2694360 ;; ころんでもただではおきぬ
+     2182700 ;; ないではいられない
+     )
+    (l k)
+  (deha (search "では" k :from-end t))
+  (:space deha)
+  (:mod deha)
+  (:space (+ 2 deha)))
+
+;; は in the middle
+
+(def-simple-hint
+    (2101500 ;; 無い袖は振れぬ
+     2142010 ;; 口では大阪の城も建つ
+     )
+    (l k)
+  (ha (search "は" k :from-end t))
+  (:space ha)
+  (:mod ha)
+  (:space (1+ ha)))
+
+(def-simple-hint
+    (2416600 ;; 悪人は畳の上では死ねない
+     )
+    (l k)
+  (ha1 (search "は" k))
+  (ha2 (search "は" k :from-end t))
+  (:space ha1)
+  (:mod ha1)
+  (:space (1+ ha1))
+  (:space ha2)
+  (:mod ha2)
+  (:space (1+ ha2)))
 
