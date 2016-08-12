@@ -521,13 +521,14 @@
   (get-original-text (source reading)))
 
 (defun find-word-as-hiragana (str)
-  (let ((words (find-word (as-hiragana str) :root-only t)))
+  (let* ((as-hiragana (as-hiragana str))
+         (words (find-word as-hiragana :root-only t)))
     (when words
       (let ((str (copy-seq str)))
         (mapcar (lambda (w) (make-instance 'proxy-text
                                            :source w
                                            :text str
-                                           :kana str))
+                                           :kana as-hiragana))
                 words)))))
 
 ;; Compound words (2 or more words squished together)
