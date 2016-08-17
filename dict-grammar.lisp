@@ -102,6 +102,7 @@
     (:kudasai "please do ...")
     (:yagaru "indicates disdain or contempt")
     (:desu "formal copula")
+    (:tosuru "to try to .../to be about to...")
     ))
 
 (defun get-suffix-description (seq)
@@ -199,6 +200,8 @@
         (load-conjs :rashii 1013240) ;; らしい
 
         (load-kf :desu (get-kana-form 1628500 "です"))
+
+        (load-conjs :tosuru 2136890) ;; とする
 
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
@@ -337,6 +340,9 @@
            (alexandria:ends-with-subseq "なかった" root))
        (find-word-with-conj-prop root (lambda (cdata)
                                         (conj-neg (conj-data-prop cdata))))))
+
+(def-simple-suffix suffix-tosuru :tosuru (:connector " " :score 3) (root)
+  (find-word-with-conj-type root 9))
 
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
