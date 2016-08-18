@@ -245,7 +245,9 @@
 (defparameter *hint-simplify-map*
   (list (string *kana-hint-space*) " "
         (coerce (list *kana-hint-mod* #\は) 'string) "わ"
-        (coerce (list *kana-hint-mod* #\へ) 'string) "え"))
+        (coerce (list *kana-hint-mod* #\ハ) 'string) "ワ"
+        (coerce (list *kana-hint-mod* #\へ) 'string) "え"
+        (coerce (list *kana-hint-mod* #\ヘ) 'string) "エ"))
 
 (defun process-hints (word)
   (simplify-ngrams word *hint-simplify-map*))
@@ -284,13 +286,13 @@
   (unless kana-var (setf kana-var (gensym "KV")))
   `(defhint ,seqs (,reading-var)
      (block hint
-       (let* ((,kana-var (get-kana ,reading-var))
+       (let* ((,kana-var (true-kana ,reading-var))
               (,length-var (length ,kana-var))
               ,@(loop for (var value) in hints-def
                    unless (keywordp var)
                    collect `(,var (or ,value (return-from hint nil)))))
          (declare (ignorable ,length-var))
-         (insert-hints ,kana-var
+         (insert-hints (get-kana ,reading-var)
                        (list
                         ,@(loop for pair in hints-def
                              when (keywordp (car pair))

@@ -496,6 +496,10 @@
   (:method (obj) (text obj))
   (:method ((obj proxy-text)) (true-text (source obj))))
 
+(defgeneric true-kana (obj)
+  (:method (obj) (get-kana obj))
+  (:method ((obj proxy-text)) (true-kana (source obj))))
+
 (defmethod word-conjugations ((obj proxy-text))
   (word-conjugations (source obj)))
 
@@ -528,7 +532,7 @@
         (mapcar (lambda (w) (make-instance 'proxy-text
                                            :source w
                                            :text str
-                                           :kana as-hiragana))
+                                           :kana str))
                 words)))))
 
 ;; Compound words (2 or more words squished together)
@@ -1404,10 +1408,10 @@
                            &aux (wkana (word-info-kana word-info)))
   (if (listp wkana)
       (with-output-to-string (s)
-        (loop for wk in wkana
+        (loop for str in (remove-duplicates (mapcar fn wkana) :test 'equal)
              for first = t then nil
              unless first do (princ separator s)
-             do (princ (funcall fn wk) s)))
+             do (princ str s)))
       (funcall fn wkana)))
 
 (defun word-info-reading-str (word-info)
