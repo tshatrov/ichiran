@@ -247,7 +247,8 @@
         (coerce (list *kana-hint-mod* #\は) 'string) "わ"
         (coerce (list *kana-hint-mod* #\ハ) 'string) "ワ"
         (coerce (list *kana-hint-mod* #\へ) 'string) "え"
-        (coerce (list *kana-hint-mod* #\ヘ) 'string) "エ"))
+        (coerce (list *kana-hint-mod* #\ヘ) 'string) "エ"
+        (string *kana-hint-mod*) ""))
 
 (defun process-hints (word)
   (simplify-ngrams word *hint-simplify-map*))
