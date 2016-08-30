@@ -841,7 +841,7 @@
            while (>= (segment-score seg) cutoff)
            collect seg))))
 
-(defstruct segment-list segments start end (top nil))
+(defstruct segment-list segments start end (top nil) (matches 0))
 
 (defgeneric get-segment-score (seg)
   (:documentation "Like segment-score but also works for segment-list and synergies")
@@ -905,7 +905,8 @@
                    if (>= (segment-score segment) *score-cutoff*)
                    collect segment)
        when sl
-         collect (make-segment-list :segments (cull-segments sl) :start start :end end))))
+       collect (make-segment-list :segments (cull-segments sl) :start start :end end
+                                  :matches (length segments)))))
 
 (defstruct (top-array-item (:conc-name tai-)) score payload)
 
@@ -1016,10 +1017,12 @@
    (primary :initarg :primary :initform t :accessor word-info-primary)
    (start :initarg :start :initform nil :accessor word-info-start)
    (end :initarg :end :initform nil :accessor word-info-end)
+   (skipped :initarg :skipped :initform 0 :accessor word-info-skipped)
    ))
 
 (defun word-info-json (word-info)
-  (with-slots (type text true-text kana seq conjugations score components alternative primary start end)
+  (with-slots (type text true-text kana seq conjugations score components
+               alternative primary start end skipped)
       word-info
     (jsown:new-js
       ("type" (symbol-name type))
@@ -1033,7 +1036,8 @@
       ("alternative" alternative)
       ("primary" primary)
       ("start" start)
-      ("end" end))))
+      ("end" end)
+      ("skipped" skipped))))
 
 (defun simple-word-info (seq text reading type &key (as :object))
   (let ((obj (make-instance 'word-info :type type :text text :true-text text :seq seq :kana reading)))
@@ -1072,6 +1076,7 @@
 (def-reader-for-json word-info-primary "primary")
 (def-reader-for-json word-info-start "start")
 (def-reader-for-json word-info-end "end")
+(def-reader-for-json word-info-skipped "skipped")
 
 (defmethod print-object ((obj word-info) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
@@ -1111,9 +1116,11 @@
          (wi-list (remove-if (lambda (wi)
                                (< (word-info-score wi)
                                   (* *segment-score-cutoff* max-score)))
-                             wi-list*)))
+                             wi-list*))
+         (matches (segment-list-matches segment-list)))
     (if (= (length wi-list) 1)
-        wi1
+        (prog1 wi1
+          (setf (word-info-skipped wi1) (- matches 1)))
         (loop for wi in wi-list
            collect (word-info-kana wi) into kana-list
            collect (word-info-seq wi) into seq-list
@@ -1127,13 +1134,15 @@
                                           :score (word-info-score wi1)
                                           :start (segment-list-start segment-list)
                                           :end (segment-list-end segment-list)
+                                          :skipped (- matches (length wi-list))
                                           ))))))
 
 (defun word-info-from-text (text)
   (with-connection *connection*
     (let* ((readings (find-word-full text))
            (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r))))
-           (segment-list (make-segment-list :segments segments :start 0 :end (length text))))
+           (segment-list (make-segment-list :segments segments :start 0 :end (length text)
+                                            :matches (length segments))))
       (word-info-from-segment-list segment-list))))
 
 (defun fill-segment-path (str path)

@@ -31,7 +31,7 @@
            :word-info-kana :word-info-score :map-word-info-kana
            :word-info-str :word-info-components :word-info-alternative
            :word-info-start :word-info-end :word-info-json
-           :word-info-gloss-json
+           :word-info-gloss-json :word-info-skipped
            :init-suffixes :init-suffixes-running-p
            :node-text
            :get-kanji-words
