@@ -102,6 +102,7 @@
     (:kudasai "please do ...")
     (:yagaru "indicates disdain or contempt")
     (:desu "formal copula")
+    (:desho "perhaps/don't you think?")
     (:tosuru "to try to .../to be about to...")
     ))
 
@@ -201,6 +202,9 @@
 
         (load-kf :desu (get-kana-form 1628500 "です"))
 
+        (load-kf :desho (get-kana-form 1008420 "でしょう"))
+        (load-kf :desho (get-kana-form 1008420 "でしょ"))
+        
         (load-conjs :tosuru 2136890) ;; とする
 
         ;;(load-abbr :nee "ねぇ")
@@ -335,9 +339,14 @@
 (def-simple-suffix suffix-rashii :rashii (:connector "" :score 3) (root)
   (find-word-with-conj-type root 2))
 
-(def-simple-suffix suffix-desu :desu (:connector "" :score 5) (root)
+(def-simple-suffix suffix-desu :desu (:connector " " :score 5) (root)
   (and (or (alexandria:ends-with-subseq "ない" root)
            (alexandria:ends-with-subseq "なかった" root))
+       (find-word-with-conj-prop root (lambda (cdata)
+                                        (conj-neg (conj-data-prop cdata))))))
+
+(def-simple-suffix suffix-desho :desho (:connector " " :score 5) (root)
+  (and (alexandria:ends-with-subseq "ない" root)
        (find-word-with-conj-prop root (lambda (cdata)
                                         (conj-neg (conj-data-prop cdata))))))
 
