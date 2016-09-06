@@ -524,16 +524,17 @@
 (defmethod get-original-text ((reading proxy-text))
   (get-original-text (source reading)))
 
-(defun find-word-as-hiragana (str)
+(defun find-word-as-hiragana (str &key exclude)
   (let* ((as-hiragana (as-hiragana str))
          (words (find-word as-hiragana :root-only t)))
     (when words
       (let ((str (copy-seq str)))
-        (mapcar (lambda (w) (make-instance 'proxy-text
-                                           :source w
-                                           :text str
-                                           :kana str))
-                words)))))
+        (loop for w in words
+           unless (find (seq w) exclude)
+           collect (make-instance 'proxy-text
+                                  :source w
+                                  :text str
+                                  :kana str))))))
 
 ;; Compound words (2 or more words squished together)
 
@@ -859,8 +860,8 @@
   (let ((simple-words (find-word word)))
     (nconc simple-words
            (find-word-suffix word :unique (not simple-words))
-           (when as-hiragana (find-word-as-hiragana word))
-           )))
+           (when as-hiragana
+             (find-word-as-hiragana word :exclude (mapcar 'seq simple-words))))))
 
 (defparameter *score-cutoff* 5) ;; this must filter out ONLY bad kana spellings, and NOT filter out any kanji spellings
 
