@@ -758,7 +758,7 @@
       (setf score (max len score)))
     (when kanji-p
       (setf score (max 5 score))
-      (when (and long-p kanji-p (or (> n-kanji 1) (> len 4)))
+      (when (and long-p (or (> n-kanji 1) (> len 4)))
         (incf score 2)))
     (setf prop-score score)
     (setf score (* prop-score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))

@@ -241,6 +241,11 @@
   (assert-segment "上に文字があったり" "上" "に" "文字" "が" "あったり")
   (assert-segment "言っただろ" "言った" "だろ")
   (assert-segment "嵐が起ころうとしている" "嵐" "が" "起ころうとしている")
+  (assert-segment "知らないでしょう" "知らないでしょう")
+  (assert-segment "読まないでしょう" "読まないでしょう")
+  ;;(assert-segment "来ないでしょう" "来ないでしょう")
+  (assert-segment "何もかもがめんどい" "何もかも" "が" "めんどい")
+  (assert-segment "なにもかもがめんどい" "なにもかも" "が" "めんどい")
   )
 
 (define-test json-consistency-test

@@ -234,6 +234,10 @@
   (1469800 1)
   (1610040 2))
 
+(def-simple-split split-nanimokamo 1599590 20 (len) ;; なにもかも
+  (1188490 (- len 2))
+  (2143350 2))
+
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 

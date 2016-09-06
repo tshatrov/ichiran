@@ -311,13 +311,12 @@
   (add-sense-prop 1207610 0 "misc" "uk")
   ;; やつめ
   (add-sense-prop 2424410 0 "misc" "uk")
-
+  
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
-
   ;; わね
   (add-sense-prop 2457930 0 "pos" "prt")
-
+  
   ;; set/unset common flag for choice kana readings
   (set-common 'kana-text 1310920 "したい" :null)
   (set-common 'kana-text 1159430 "いたい" :null)

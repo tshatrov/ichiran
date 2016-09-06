@@ -102,7 +102,7 @@
     (:kudasai "please do ...")
     (:yagaru "indicates disdain or contempt")
     (:desu "formal copula")
-    (:desho "perhaps/don't you think?")
+    (:desho "it seems/perhaps/don't you think?")
     (:tosuru "to try to .../to be about to...")
     ))
 
