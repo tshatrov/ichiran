@@ -243,7 +243,7 @@
   (assert-segment "嵐が起ころうとしている" "嵐" "が" "起ころうとしている")
   (assert-segment "知らないでしょう" "知らないでしょう")
   (assert-segment "読まないでしょう" "読まないでしょう")
-  ;;(assert-segment "来ないでしょう" "来ないでしょう")
+  (assert-segment "来ないでしょう" "来ないでしょう")
   (assert-segment "何もかもがめんどい" "何もかも" "が" "めんどい")
   (assert-segment "なにもかもがめんどい" "なにもかも" "が" "めんどい")
   )
