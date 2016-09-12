@@ -453,6 +453,15 @@
 (def-abbr-suffix abbr-seba :seba 2 (root)
   (find-word-full (concatenate 'string root "せば")))
 
+(pushnew :eba *suffix-unique-only*)
+(pushnew :teba *suffix-unique-only*)
+(pushnew :reba *suffix-unique-only*)
+(pushnew :keba *suffix-unique-only*)
+(pushnew :geba *suffix-unique-only*)
+(pushnew :neba *suffix-unique-only*)
+(pushnew :beba *suffix-unique-only*)
+(pushnew :meba *suffix-unique-only*)
+(pushnew :seba *suffix-unique-only*)
 
 (defun parse-suffix-val (substr val)
   (when val

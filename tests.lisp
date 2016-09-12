@@ -246,6 +246,7 @@
   (assert-segment "来ないでしょう" "来ないでしょう")
   (assert-segment "何もかもがめんどい" "何もかも" "が" "めんどい")
   (assert-segment "なにもかもがめんどい" "なにもかも" "が" "めんどい")
+  (assert-segment "あいつ規制されりゃいいのに" "あいつ" "規制されりゃ" "いい" "のに")
   )
 
 (define-test json-consistency-test
