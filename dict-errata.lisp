@@ -316,6 +316,8 @@
   (add-sense-prop 2425930 0 "pos" "prt")
   ;; わね
   (add-sense-prop 2457930 0 "pos" "prt")
+  ;; とん
+  (delete-sense-prop 2629920 "pos" "adv-to")
   
   ;; set/unset common flag for choice kana readings
   (set-common 'kana-text 1310920 "したい" :null)
