@@ -285,22 +285,26 @@
        ,@(loop for seq in seqs
             collect `(setf (gethash ,seq *hint-map*) ,fn)))))
 
-(defmacro def-simple-hint (seqs (&optional length-var kana-var reading-var) &body hints-def)
+(defmacro def-simple-hint (seqs (&optional length-var kana-var reading-var) &body hints-def
+                           &aux test-var test-var-used)
   (unless reading-var (setf reading-var (gensym "RV")))
   (unless length-var (setf length-var (gensym "LV")))
   (unless kana-var (setf kana-var (gensym "KV")))
+  (setf test-var (gensym "TV"))
   `(defhint ,seqs (,reading-var)
      (block hint
        (let* ((,kana-var (true-kana ,reading-var))
               (,length-var (length ,kana-var))
               ,@(loop for (var value) in hints-def
-                   unless (keywordp var)
-                   collect `(,var (or ,value (return-from hint nil)))))
-         (declare (ignorable ,length-var))
+                     for tvar = (cond ((eql var :test) (setf test-var-used t) test-var)
+                                      ((keywordp var) nil)
+                                      (t var))
+                     when tvar collect `(,tvar (or ,value (return-from hint nil)))))
+         (declare (ignorable ,length-var ,@(when test-var-used (list test-var))))
          (insert-hints (get-kana ,reading-var)
                        (list
                         ,@(loop for pair in hints-def
-                             when (keywordp (car pair))
+                             when (and (keywordp (car pair)) (not (eql (car pair) :test)))
                              collect `(list ,@pair))))))))
 
 (defun get-hint (reading)
@@ -332,8 +336,9 @@
      2215430 ;; には
      2028950 ;; とは
      )
-    (l)
-    (:mod (- l 1)))
+    (l k)
+  (:test (alexandria:ends-with #\は k))
+  (:mod (- l 1)))
 
 (def-simple-hint ;; with space
     (1006660 ;; そうでないばあいは
@@ -394,7 +399,8 @@
      2008290 ;; さては
      2136690 ;; にあっては
      )
-    (l)
+    (l k)
+  (:test (alexandria:ends-with #\は k))
   (:space (- l 1))
   (:mod (- l 1)))
 
@@ -431,7 +437,8 @@
      1006890 ;; そのばあいには
      1887540 ;; 成功の暁には
      )
-    (l)
+    (l k)
+  (:test (alexandria:ends-with #\は k))
   (:space (- l 2))
   (:mod (- l 1)))
 
