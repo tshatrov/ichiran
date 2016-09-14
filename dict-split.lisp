@@ -12,7 +12,7 @@
 
 (defmacro def-simple-split (name seq score (&optional length-var text-var reading-var) &body parts-def)
   "each part is (seq length-form)"
-  (alexandria:with-gensyms (offset parts)
+  (alexandria:with-gensyms (offset parts pseq part-length)
     (unless reading-var (setf reading-var (gensym "RV")))
     (unless length-var (setf length-var (gensym "LV")))
     (unless text-var (setf text-var (gensym "TV")))
@@ -29,26 +29,26 @@
                    (return-from ,name nil))
               else
               collect
-                `(let ((pseq ,(if (listp part-seq)
-                                  (if (and part-seq (stringp (car part-seq)))
-                                      `(list (seq (car (find-word-conj-of ,@part-seq))))
-                                      `',part-seq)
-                                  `',(list part-seq)))
-                       (part-length ,part-length-form))
+                `(let ((,pseq ,(if (listp part-seq)
+                                   (if (and part-seq (stringp (car part-seq)))
+                                       `(list (seq (car (find-word-conj-of ,@part-seq))))
+                                       `',part-seq)
+                                   `',(list part-seq)))
+                       (,part-length ,part-length-form))
                    (push (car (apply
                                ,(if conj-p
                                    ''find-word-conj-of
                                    ''find-word-seq)
                                 (let ((part-txt (subseq ,text-var ,offset 
-                                                       (and part-length (+ ,offset part-length)))))
+                                                       (and ,part-length (+ ,offset ,part-length)))))
                                   ,(if rendaku-p
                                       '(unrendaku part-txt)
                                       'part-txt))
-                                pseq))
+                                ,pseq))
                          ,parts)
-                   (incf ,offset part-length)))
+                   (when ,part-length
+                     (incf ,offset ,part-length))))
          (values (nreverse ,parts) ,score)))))
-
 
 (defun get-split* (reading &optional conj-of)
   (let ((split-fn (gethash (seq reading) *split-map*)))
@@ -187,19 +187,19 @@
 
 (def-simple-split split-nakunaru 1529550 30 (len) ;; 無くなる
   (("無く" 1529520) 2)
-  (1375610 (- len 2) t))
+  (1375610 nil t))
 
 (def-simple-split split-nakunaru2 1518540 10 (len txt r) ;; 亡くなる
   (:test (eql (word-type r) :kana))
   (("亡く" 1518450) 2)
-  (1375610 (- len 2) t))
+  (1375610 nil t))
 
 ;; tegakakaru split (kana form might conflict with other uses of kakaru verb)
 
 (def-simple-split split-tegakakaru 2089710 10 (len) ;; 手が掛かる
   (1327190 1) ;; 手
   (2028930 1) ;; が
-  (1207590 (- len 2) t))
+  (1207590 nil t))
   
 
 (def-simple-split split-kawaribae 1411570 10 (len txt) ;; 代わり映え
@@ -214,7 +214,7 @@
 (def-simple-split split-dogatsukeru 2800540 30 (len) ;; ドが付ける
   (2252690 1)
   (2028930 1)
-  (1495740 (- len 2) t))
+  (1495740 nil t))
 
 (def-simple-split split-janaika 2819990 20 (len) ;; じゃないか
   (("じゃない" 2089020) 4)
@@ -227,7 +227,7 @@
 
 (def-simple-split split-souda 1006650 5 (len)
   (2137720 2)
-  ((2089020 1628500) (- len 2)))
+  ((2089020 1628500)))
 
 (def-simple-split split-kinosei 1221750 100 (len txt r)
   (1221520 1)
@@ -237,6 +237,11 @@
 (def-simple-split split-nanimokamo 1599590 20 (len) ;; なにもかも
   (1188490 (- len 2))
   (2143350 2))
+
+(def-simple-split split-katawonaraberu 2102910 20 (len txt) ;; 肩を並べる
+  (1258950 (position #\を txt))
+  (2029010 1)
+  (1508390 nil t))
 
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
