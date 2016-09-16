@@ -243,6 +243,9 @@
   (2029010 1)
   (1508390 nil t))
 
+(def-simple-split split-moushiwakenasasou 2057340 300 (len txt) ;; 申し訳なさそう
+  (1363050 (position #\な txt))
+  (2246510))
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 

@@ -250,6 +250,7 @@
   (assert-segment "塗ってみようと思って" "塗って" "みよう" "と" "思って")
   (assert-segment "肩を並べられなかった" "肩を並べられなかった")
   (assert-segment "じゃなくて良かった" "じゃなくて" "良かった")
+  (assert-segment "申し訳なさそう" "申し訳なさそう")
   )
 
 (define-test json-consistency-test
