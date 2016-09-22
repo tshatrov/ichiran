@@ -251,6 +251,8 @@
   (assert-segment "肩を並べられなかった" "肩を並べられなかった")
   (assert-segment "じゃなくて良かった" "じゃなくて" "良かった")
   (assert-segment "申し訳なさそう" "申し訳なさそう")
+  (assert-segment "決まってたし" "決まってた" "し")
+  (assert-segment "決まっている" "決まっている")
   )
 
 (define-test json-consistency-test

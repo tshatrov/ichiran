@@ -247,6 +247,9 @@
   (1363050 (position #\な txt))
   (2246510))
 
+(def-simple-split split-kimatte 1951150 50 () ;; 決まって
+  (("決まって" 1591420)))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
