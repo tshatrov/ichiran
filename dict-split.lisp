@@ -250,6 +250,10 @@
 (def-simple-split split-kimatte 1951150 50 () ;; 決まって
   (("決まって" 1591420)))
 
+(def-simple-split split-osoreiru 1236680 100 (len txt) ;; 恐れ入る
+  (1236660 (1+ (position #\れ txt)))
+  (1465580 nil t))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
