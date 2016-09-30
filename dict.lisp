@@ -638,7 +638,7 @@
   (:method ((score-mod list) score len)
     (reduce '+ score-mod :key (lambda (sm) (apply-score-mod sm score len)))))
 
-;; *skip-words* *(semi-/non-)final-prt* *weak-conj-types* *skip-conj-forms* are defined in dict-errata.lisp
+;; *skip-words* *(semi-/non-)final-prt* *weak-conj-forms* *skip-conj-forms* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break)
   (when (typep reading 'compound-text)
@@ -665,8 +665,12 @@
          (conj-data (word-conj-data reading))
          (conj-of (mapcar #'conj-data-from conj-data))
          (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
-         (conj-types (mapcar (lambda (cd) (conj-type (conj-data-prop cd))) conj-data))
-         (conj-types-p (or root-p use-length (set-difference conj-types *weak-conj-types*)))
+         (conj-props (mapcar 'conj-data-prop conj-data))
+         (conj-types (mapcar 'conj-type conj-props))
+         (conj-types-p (or root-p use-length
+                           (notevery (lambda (prop)
+                                       (test-conj-prop prop *weak-conj-forms*))
+                                     conj-props)))
          (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
          (sp-seq-set (if (and root-p (not use-length)) (list seq) seq-set))
          (prefer-kana

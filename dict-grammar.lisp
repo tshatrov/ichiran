@@ -13,8 +13,7 @@
   (unless (skip-by-conj-data conj-data)
     (loop for cd in conj-data
        for prop = (conj-data-prop cd)
-       for ctype = (conj-type prop)
-       unless (member ctype *weak-conj-types*)
+       unless (test-conj-prop prop *weak-conj-forms*)
        collect (conj-id prop)))) 
 
 (defun get-kana-forms (seq)

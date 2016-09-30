@@ -522,22 +522,26 @@
     (setf (gethash pos hash) (remove-if (lambda (r) (= (cr-conj r) 5)) (gethash pos hash))))
   )
 
-(defparameter *weak-conj-types* (list +conj-adjective-stem+))
-
 (defparameter *skip-conj-forms* ;; (type neg fml), :any matches whatever
   '((10 t :any)
     (3 t t)
     ("vs-s" 5 :any :any)
     ))
 
+(defparameter *weak-conj-forms*
+  `((,+conj-adjective-stem+ :any :any)
+    (9 t :any)))
+
+(defun test-conj-prop (prop forms)
+  (let ((prop-list (list (pos prop) (conj-type prop) (conj-neg prop) (conj-fml prop))))
+    (some (lambda (sk)
+            (case (length sk)
+              (3 (every (lambda (l r) (or (eql r :any) (eql l r))) (cdr prop-list) sk))
+              (4 (and (equal (car prop-list) (car sk))
+                      (every (lambda (l r) (or (eql r :any) (eql l r))) (cdr prop-list) (cdr sk))))))
+          forms)))
+
 (defun skip-by-conj-data (conj-data)
   (flet ((matches (cd)
-           (let* ((prop (conj-data-prop cd))
-                  (prop-list (list (pos prop) (conj-type prop) (conj-neg prop) (conj-fml prop))))
-             (some (lambda (sk)
-                     (case (length sk)
-                       (3 (every (lambda (l r) (or (eql r :any) (eql l r))) (cdr prop-list) sk))
-                       (4 (and (equal (car prop-list) (car sk))
-                               (every (lambda (l r) (or (eql r :any) (eql l r))) (cdr prop-list) (cdr sk))))))
-                   *skip-conj-forms*))))
+           (test-conj-prop (conj-data-prop cd) *skip-conj-forms*)))
     (and conj-data (every #'matches conj-data))))
