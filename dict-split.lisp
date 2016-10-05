@@ -254,6 +254,10 @@
   (1236660 (1+ (position #\れ txt)))
   (1465580 nil t))
 
+(def-simple-split split-nantokanaru 2104540 20 (len txt) ;; なんとかなる
+  (1188420 (1+ (position #\か txt)))
+  (1375610 nil t))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
