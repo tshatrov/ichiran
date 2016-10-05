@@ -258,6 +258,10 @@
   (1188420 (1+ (position #\か txt)))
   (1375610 nil t))
 
+(def-simple-split split-hajiketobu 2610760 50 (len txt) ;; 弾け飛ぶ
+  (("弾け" 1419380) (1+ (position #\け txt)))
+  (1429700 nil t))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)

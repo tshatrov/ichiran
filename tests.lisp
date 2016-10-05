@@ -255,6 +255,7 @@
   (assert-segment "決まっている" "決まっている")
   (assert-segment "恐れ入りました" "恐れ入りました")
   (assert-segment "はうまい" "は" "うまい")
+  (assert-segment "弾け飛びました" "弾け飛びました")
   )
 
 (define-test json-consistency-test
