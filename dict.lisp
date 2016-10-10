@@ -700,7 +700,7 @@
                                 (and use-length (member 13 conj-types))))
                        2)
                       ((and common-p (< 0 common 10)) 2)
-                      ((member 3 conj-types) 4)
+                      ((and (member 3 conj-types) (not use-length)) 4)
                       (t 3))))
          (no-common-bonus (or particle-p
                               (not conj-types-p)
