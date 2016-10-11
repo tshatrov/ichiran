@@ -183,6 +183,20 @@
 
 (def-toori-split 1462720 1461140 :seq-b 1432920) ;; 二通り
 
+(defmacro def-do-split (seq seq-b &key (score 30) (seq-a 2252690))
+  (let ((name (intern (format nil "~a~a" :split-do- seq))))
+    `(def-simple-split ,name ,seq ,score (len txt r)
+       (,seq-a 1)
+       (,seq-b))))
+
+(def-do-split 2142710 1185200) ;; ど下手
+
+(def-do-split 2803190 1595630) ;; どすけべ
+
+(def-do-split 2142680 1290210) ;; ど根性
+
+(def-do-split 2523480 1442750) ;; ど田舎
+
 ;; nakunaru split: because naku often attaches to previous word
 
 (def-simple-split split-nakunaru 1529550 30 (len) ;; 無くなる
@@ -261,6 +275,10 @@
 (def-simple-split split-hajiketobu 2610760 50 (len txt) ;; 弾け飛ぶ
   (("弾け" 1419380) (1+ (position #\け txt)))
   (1429700 nil t))
+
+(def-simple-split split-motteiku 1315700 30 (len txt) ;; 持って行く
+  (("持って" 1315720) (1+ (position #\て txt)))
+  (1578850 nil t))
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 

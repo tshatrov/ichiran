@@ -468,6 +468,7 @@
                              2394890 ;; とる
                              2194000 ;; であ
                              2822130 ;; て良い
+                             2568000 ;; れる/られる
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
