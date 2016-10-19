@@ -275,7 +275,7 @@
                                 :kana (let ((k (get-kana pw)))
                                         (concatenate 'string
                                                      (or ,kana-var
-                                                         (subseq k 0 (- (length k) ,stem)))
+                                                         (destem k ,stem))
                                                      ,connector
                                                      ,suf-var))
                                 :score-mod ,score))
@@ -395,7 +395,7 @@
                          (kana (let ((k (get-kana pw)))
                                  (concatenate 'string
                                               (or ,kana-var
-                                                  (subseq k 0 (- (length k) ,stem)))
+                                                  (destem k ,stem))
                                               ,suf-var))))
                      (etypecase pw
                        (simple-text

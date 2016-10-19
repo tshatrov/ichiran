@@ -272,3 +272,13 @@
                (new-char (char (getf *kana-characters* voiced) pos)))
           (setf (char txt 0) new-char)
           txt))))
+
+(defun destem (word stem &optional (char-class :kana))
+  "Remove `stem` characters of char-class + whatever else gets in the way from the end of `word`"
+  (declare (type char-class char-class))
+  (when (= stem 0) (return-from destem word))
+  (let ((regex (cadr (assoc char-class *char-class-regex-mapping*)))
+        pos)
+    (ppcre:do-matches (s e regex word) (push s pos))
+    (let ((tail (nthcdr (1- stem) pos)))
+      (if tail (subseq word 0 (car tail)) ""))))
