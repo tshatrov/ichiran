@@ -336,7 +336,7 @@
            (find-word-with-conj-type root 3))))
 
 (def-simple-suffix suffix-sou :sou (:connector "" :score (constantly 60)) (root)
-  (unless (member root '("な" "い" "よ") :test 'equal)
+  (unless (member root '("な" "い" "よ" "よさ" "に") :test 'equal)
     (find-word-with-conj-type root 13 +conj-adjective-stem+)))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
