@@ -239,11 +239,11 @@
   (1514990 1)
   (1005340 2))
 
-(def-simple-split split-souda 1006650 5 (len)
+(def-simple-split split-souda 1006650 5 ()
   (2137720 2)
   ((2089020 1628500)))
 
-(def-simple-split split-kinosei 1221750 100 (len txt r)
+(def-simple-split split-kinosei 1221750 100 ()
   (1221520 1)
   (1469800 1)
   (1610040 2))
@@ -279,6 +279,11 @@
 (def-simple-split split-motteiku 1315700 30 (len txt) ;; 持って行く
   (("持って" 1315720) (1+ (position #\て txt)))
   (1578850 nil t))
+
+(def-simple-split split-hairikomeru 1465460 100 (len txt r) ;; 入り込める
+  (:test (eql (word-type r) :kanji))
+  (("入り" 1465590) (1+ (position #\り txt)))
+  (1288790 nil t))
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
