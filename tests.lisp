@@ -260,6 +260,7 @@
   (assert-segment "じゃないけど下手に" "じゃない" "けど" "下手" "に")
   (assert-segment "的にそうではない" "的" "に" "そう" "ではない")
   (assert-segment "入り込めなかった" "入り込めなかった")
+  (assert-segment "がいまいちなんだよ" "が" "いまいち" "な" "ん" "だ" "よ")
   )
 
 (define-test json-consistency-test

@@ -355,7 +355,7 @@
    (find-word-with-pos root "adj-na")))
 
 (def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
-  (find-word-seq root 1002290 1457730 1445640))
+  (find-word-seq root 1002290 1457730 1445640 1580640))
 
 (def-simple-suffix suffix-rashii :rashii (:connector "" :score 3) (root)
   (find-word-with-conj-type root 2))

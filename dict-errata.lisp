@@ -192,6 +192,7 @@
 
   (set-primary-nokanji 1538900 nil) ;; ただ
   (set-primary-nokanji 1580640 nil) ;; 人
+  (set-primary-nokanji 1289030 nil) ;; いまいち
 
   (add-primary-nokanji 1415510 "タカ")
 
@@ -398,6 +399,7 @@
   (set-common 'kana-text 1380990 "せいなん" :null)
   (set-common 'kana-text 1280630 "こうなん" :null)
   (set-common 'kana-text 1289620 "こんなん" :null)
+  (set-common 'kana-text 1204090 "がいまい" :null)
 
   (set-common 'kana-text 2827401 "ほうがいい" 0)
   (set-common 'kanji-text 2827401 "方がいい" 0)
