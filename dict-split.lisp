@@ -285,6 +285,16 @@
   (("入り" 1465590) (1+ (position #\り txt)))
   (1288790 nil t))
 
+(def-simple-split split-shinikakaru 1881080 30 () ;;死に掛かる
+  (1310720 1)
+  (2028990 1)
+  (1207590 nil t))
+
+(def-simple-split split-hisshininatte 1903910 50 (len txt) ;;必死になって
+  (1601890 (position #\に txt))
+  (2028990 1)
+  (("なって" 1375610) nil))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
