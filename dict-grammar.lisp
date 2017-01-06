@@ -85,6 +85,7 @@
     (:suru "makes a verb from a noun")
     (:itasu "makes a verb from a noun (humble)")
     (:sareru "makes a verb from a noun (honorific or passive)")
+    (:saseru "let/make someone/something do ...")
     (:rou "probably / it seems that... / I guess ...")
     (:ii "it's ok if ... / is it ok if ...?")
     (:mo "even if ...")
@@ -187,8 +188,9 @@
         (load-conjs :suru 1157170) ;; する
         (load-conjs :suru 1421900 :itasu) ;; いたす  
         ;; because suru isn't conjugated twice, this is added separately
-        (load-conjs :suru  2269820 :sareru) ;;  される
-
+        (load-conjs :suru 2269820 :sareru) ;; される
+        (load-conjs :suru 1005160 :saseru) ;; させる
+        
         (load-conjs :kara 1002980) ;; から
 
         (load-conjs :sou 1006610) ;; そう

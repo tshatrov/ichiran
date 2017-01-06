@@ -263,6 +263,7 @@
   (assert-segment "がいまいちなんだよ" "が" "いまいち" "な" "ん" "だ" "よ")
   (assert-segment "脱がしにかかってる" "脱がし" "に" "かかってる")
   (assert-segment "必死になってる" "必死" "に" "なってる")
+  (assert-segment "安心させた" "安心させた")
   )
 
 (define-test json-consistency-test
