@@ -312,6 +312,8 @@
   (add-sense-prop 1207610 0 "misc" "uk")
   ;; やつめ
   (add-sense-prop 2424410 0 "misc" "uk")
+  ;; セミ
+  (add-sense-prop 1387080 0 "misc" "uk")
   
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
