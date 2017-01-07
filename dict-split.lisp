@@ -276,7 +276,7 @@
   (("弾け" 1419380) (1+ (position #\け txt)))
   (1429700 nil t))
 
-(def-simple-split split-motteiku 1315700 30 (len txt) ;; 持って行く
+(def-simple-split split-motteiku 1315700 50 (len txt) ;; 持って行く
   (("持って" 1315720) (1+ (position #\て txt)))
   (1578850 nil t))
 
