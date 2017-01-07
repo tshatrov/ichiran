@@ -295,6 +295,12 @@
   (2028990 1)
   (("なって" 1375610) nil))
 
+(def-simple-split split-hitogayoi 2827409 30 (len txt) ;;人が好い
+  (1580640 (position #\が txt))
+  (2028930 1)
+  (1605820 nil t))
+
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)

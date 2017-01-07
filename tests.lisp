@@ -264,6 +264,7 @@
   (assert-segment "脱がしにかかってる" "脱がし" "に" "かかってる")
   (assert-segment "必死になってる" "必死" "に" "なってる")
   (assert-segment "安心させた" "安心させた")
+  (assert-segment "人が好きそうだ" "人" "が" "好き" "そうだ")
   )
 
 (define-test json-consistency-test
