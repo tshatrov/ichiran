@@ -220,6 +220,9 @@
         
         (load-conjs :tosuru 2136890) ;; とする
 
+        (load-kf :kurai (get-kana-form 1154340 "くらい"))
+        (load-kf :kurai (get-kana-form 1154340 "ぐらい"))
+
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
@@ -375,6 +378,9 @@
 
 (def-simple-suffix suffix-tosuru :tosuru (:connector " " :score 3) (root)
   (find-word-with-conj-type root 9))
+
+(def-simple-suffix suffix-kurai :kurai (:connector " " :score 3) (root)
+  (find-word-with-conj-type root 2))
 
 (pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
