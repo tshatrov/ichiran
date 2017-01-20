@@ -484,6 +484,7 @@
                             2425930 ;; なの
                             ;; 2780660 ;; もの
                             2130430 ;; け っけ
+                            2029130 ;; ぞ / ぜ
                             )
   "Words that only have meaning when they're final")
 
