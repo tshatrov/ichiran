@@ -445,6 +445,8 @@
   (rearrange-readings-conj 1584060 'kana-text "つつ")
   (set-common 'kana-text 1584060 "つつむ" 6)
 
+  (rearrange-readings-conj 1602880 'kanji-text "増や")
+
   ;; delete noun sense for と
   (delete-senses 1008490 (lambda (prop) (and (equal (text prop) "n") (equal (tag prop) "pos"))))
 
