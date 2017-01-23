@@ -270,7 +270,7 @@
   (assert-segment "ぜいたくで" "ぜいたく" "で")
   (assert-segment "したくらいで" "したくらい" "で")
   (assert-segment "でもうまく人" "でも" "うまく" "人")
-  (assert-segment "もしないように" "も" "しない" "ように")
+  (assert-segment "好き嫌いもしないように" "好き嫌い" "も" "しない" "ように")
   )
 
 (define-test json-consistency-test
