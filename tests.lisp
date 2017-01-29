@@ -272,6 +272,7 @@
   (assert-segment "でもうまく人" "でも" "うまく" "人")
   (assert-segment "好き嫌いもしないように" "好き嫌い" "も" "しない" "ように")
   (assert-segment "のどこが思える" "の" "どこ" "が" "思える")
+  (assert-segment "出会えて良かった" "出会えて" "良かった")
   )
 
 (define-test json-consistency-test

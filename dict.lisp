@@ -738,8 +738,8 @@
                 )))
 
     (when primary-p
-      (incf score (cond (secondary-conj-p (if long-p 5 2))
-                        (long-p 10)
+      (incf score (cond (long-p 10)
+                        ((and secondary-conj-p (not kanji-p)) 2)
                         (common-p 5)
                         ((or prefer-kana (= (n-kanji entry) 0)) 3)
                         (t 2))))
