@@ -295,6 +295,10 @@
   (delete-sense-prop 2827450 "misc" "uk")
   ;; たかる
   (delete-sense-prop 1333570 "misc" "uk")
+  ;; つける
+  (delete-sense-prop 1610400 "misc" "uk")
+  ;; つく
+  (delete-sense-prop 2097190 "misc" "uk")
   
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
@@ -439,6 +443,10 @@
   (set-common 'kana-text 1459400 "ないよう" 0)
   (set-common 'kana-text 1590480 "カッコ" 0)
   (set-common 'kana-text 1208240 "カッコ" 0)
+  (set-common 'kana-text 1495770 "つける" 11)
+  (set-common 'kana-text 1610400 "つける" 12)
+  (set-common 'kana-text 1495740 "つく" 11)
+  (set-common 'kanji-text 1495740 "付く" 11)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
