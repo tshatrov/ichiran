@@ -437,6 +437,8 @@
   (set-common 'kana-text 1158240 "いこう" 0)
   (set-common 'kana-text 1534440 "もうまく" :null)
   (set-common 'kana-text 1459400 "ないよう" 0)
+  (set-common 'kana-text 1590480 "カッコ" 0)
+  (set-common 'kana-text 1208240 "カッコ" 0)
   
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
