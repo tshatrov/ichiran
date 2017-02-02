@@ -274,6 +274,7 @@
   (assert-segment "のどこが思える" "の" "どこ" "が" "思える")
   (assert-segment "出会えて良かった" "出会えて" "良かった")
   (assert-segment "無理しなくていいから" "無理しなくていい" "から")
+  (assert-segment "調子にのらないほうが" "調子" "に" "のらない" "ほう" "が")
   )
 
 (define-test json-consistency-test
