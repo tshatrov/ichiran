@@ -313,7 +313,7 @@
            (find-word-with-conj-type root 3)
            (find-word-with-conj-type root 13))))
 
-(def-simple-suffix suffix-teii :teii (:connector " " :score 0) (root)
+(def-simple-suffix suffix-teii :teii (:connector " " :score 1) (root)
   (and (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
 
