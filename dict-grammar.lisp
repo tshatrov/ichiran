@@ -265,21 +265,24 @@
 
 (defmacro def-simple-suffix (name keyword
                              (&key (stem 0) (score 0) (connector ""))
-                                (root-var &optional suf-var kana-var)
+                                (root-var &optional suf-var patch-var)
                              &body get-primary-words)
   (alexandria:with-gensyms (suf primary-words)
     (unless suf-var (setf suf-var (gensym "SV")))
-    (unless kana-var (setf kana-var (gensym "KV")))
+    (unless patch-var (setf patch-var (gensym "PV")))
     `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
        (let* ((*suffix-map-temp* ,(if (= stem 0) '*suffix-map-temp* nil))
-              (,kana-var nil)
+              (,patch-var nil)
               (,primary-words (progn ,@get-primary-words)))
          (mapcar (lambda (pw)
                    (adjoin-word pw ,suf
                                 :text (concatenate 'string ,root-var ,suf-var)
                                 :kana (let ((k (get-kana pw)))
                                         (concatenate 'string
-                                                     (or ,kana-var
+                                                     (if ,patch-var
+                                                         (concatenate 'string
+                                                                      (destem k (length (car ,patch-var)))
+                                                                      (cdr ,patch-var))
                                                          (destem k ,stem))
                                                      ,connector
                                                      ,suf-var))
@@ -340,19 +343,35 @@
       (and (find (char root (1- (length root))) "てで")
            (find-word-with-conj-type root 3))))
 
-(def-simple-suffix suffix-sou :sou (:connector "" :score (constantly 60)) (root)
-  (unless (member root '("な" "い" "よ" "よさ" "に" "き") :test 'equal)
-    (find-word-with-conj-type root 13 +conj-adjective-stem+)))
+(defun apply-patch (root patch)
+  (concatenate 'string (subseq root 0 (- (length root) (length (cdr patch)))) (car patch)))
+
+(def-simple-suffix suffix-sou :sou (:connector "" :score (constantly 60)) (root suf patch)
+  (cond ((alexandria:ends-with-subseq "なさ" root)
+         (setf patch '("い" . "さ"))
+         (let ((root (apply-patch root patch))
+               (*suffix-map-temp* nil))
+           (find-word-with-conj-prop root (lambda (cdata)
+                                            (conj-neg (conj-data-prop cdata))))))
+        ((not (member root '("な" "い" "よ" "よさ" "に" "き") :test 'equal))
+         (find-word-with-conj-type root 13 +conj-adjective-stem+))))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
   (find-word-with-conj-type root 2))
 
-(def-simple-suffix suffix-sugiru :sugiru (:stem 1 :connector "" :score 5) (root suf kana)
+(def-simple-suffix suffix-sugiru :sugiru (:stem 1 :connector "" :score 5) (root suf patch)
   (let ((root (cond ((equal root "い") nil)
-                    ((equal root "なさ") (setf kana "なさ") "ない")
+                    ((or (alexandria:ends-with-subseq "なさ" root)
+                         (alexandria:ends-with-subseq "無さ" root))
+                     (setf patch '("い" . "さ"))
+                     (apply-patch root patch))
                     (t (concatenate 'string root "い")))))
     (when root
-      (find-word-with-pos root "adj-i"))))
+      (cond
+        ((and patch (> (length root) 2))
+         (find-word-with-conj-prop root (lambda (cdata)
+                                          (conj-neg (conj-data-prop cdata)))))
+        (t (find-word-with-pos root "adj-i"))))))
 
 (def-simple-suffix suffix-sa :sa (:connector "" :score 2) (root)
   (nconc
