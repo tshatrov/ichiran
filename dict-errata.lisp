@@ -320,6 +320,8 @@
   (add-sense-prop 1387080 0 "misc" "uk")
   ;; くせ
   (add-sense-prop 1509350 0 "misc" "uk")
+  ;; はやる
+  (add-sense-prop 1637460 0 "misc" "uk")
   
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
