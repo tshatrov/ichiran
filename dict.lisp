@@ -54,7 +54,13 @@
   (when (> (n-kanji obj) 0)
     (text (car (select-dao 'kanji-text (:and (:= 'seq (seq obj)) (:= 'ord 0)))))))
 
-(defun recalc-entry-stats ()
+(defun recalc-entry-stats (&rest entries)
+  (query (:update 'entry :set
+                  'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
+                  'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq))
+                  :where (:in 'entry.seq (:set entries)))))
+
+(defun recalc-entry-stats-all ()
   (query (:update 'entry :set
                   'n-kanji (:select (:count 'id) :from 'kanji-text :where (:= 'kanji-text.seq 'entry.seq))
                   'n-kana (:select (:count 'id) :from 'kana-text :where (:= 'kana-text.seq 'entry.seq)))))

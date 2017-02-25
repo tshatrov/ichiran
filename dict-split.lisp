@@ -300,6 +300,9 @@
   (2028930 1)
   (1605820 nil t))
 
+(def-simple-split split-nitotte 1009600 50 (len txt) ;; にとって
+  (2028990 1)
+  (("取って" 1326980)))
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 

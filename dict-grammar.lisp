@@ -16,7 +16,7 @@
        unless (test-conj-prop prop *weak-conj-forms*)
        collect (conj-id prop)))) 
 
-(defun get-kana-forms (seq)
+(defun get-kana-forms* (seq)
   (loop for kt in 
        (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
                                       :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
@@ -28,6 +28,10 @@
                  (when conj-ids
                    (setf (word-conjugations kt) conj-ids)))
             collect kt))
+
+(defun get-kana-forms (seq)
+  (or (get-kana-forms* seq)
+      (warn "No kana forms found for: ~a" seq)))
 
 (defun get-kana-form (seq text &key conj)
   (let ((res (car (select-dao 'kana-text (:and (:= 'text text) (:= 'seq seq))))))

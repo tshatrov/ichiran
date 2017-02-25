@@ -51,4 +51,13 @@
               for ,key = (cons ,var *connection*)
               do (setf (gethash ,key *conn-var-cache*) (symbol-value ,var))))))))
 
+(defun switch-conn-vars (dbid)
+  (setf *connection* (get-spec dbid)) 
+  (loop
+     for (var . iv) in *conn-vars*
+     for key = (cons var *connection*)
+     for (val exists) = (multiple-value-list (gethash key *conn-var-cache*))
+     for value = (if exists val iv)
+     do (setf (symbol-value var) value))) 
+
 (def-conn-var *test-var* 10)

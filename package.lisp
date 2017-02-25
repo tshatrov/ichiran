@@ -22,7 +22,8 @@
   (:export :get-spec :with-db :let-db
            :*connection*
            :*connections*
-           :def-conn-var))
+           :def-conn-var
+           :switch-conn-vars))
 
 (defpackage :ichiran/dict
   (:use :cl :postmodern :ichiran/characters :ichiran/conn :split-sequence)

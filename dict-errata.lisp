@@ -473,7 +473,61 @@
   ;; delete adj stem conjugation for ない
   (delete-conjugation 2029110 2257550)
   (delete-conjugation 2086640 2684620) ;; しい
+  
+  (add-errata-feb17)
+  )
 
+(defun add-errata-feb17 ()
+  (set-common 'kana-text 2136890 "とする" :null)
+  (set-common 'kana-text 2100900 "となる" :null)
+  (set-common 'kana-text 1006200 "すべき" :null)
+  (set-common 'kana-text 2683060 "なのです" :null)
+  (set-common 'kana-text 2683060 "なんです" :null)
+  (set-common 'kana-text 1001200 "おい" :null)
+  (set-common 'kana-text 1001200 "おおい" :null)
+  (set-common 'kanji-text 1441840 "伝い" 0)
+  (set-common 'kanji-text 1409140 "身体" 0)
+  (set-common 'kanji-text 2830705 "身体" :null)
+  (set-common 'kana-text 1009040 "どきっと" 0)
+  (set-common 'kana-text 2261300 "するべき" :null)
+  (set-common 'kana-text 2215430 "には" :null)
+  (set-common 'kana-text 2210140 "まい" :null)
+  (set-common 'kana-text 2192950 "なさい" :null)
+  (set-common 'kana-text 2143350 "かも" :null)
+  (set-common 'kana-text 2106890 "そのよう" :null)
+  (set-common 'kana-text 2084040 "すれば" :null)
+  (set-common 'kana-text 2036080 "うつ" :null)
+  (set-common 'kana-text 1922760 "という" :null)
+  (set-common 'kana-text 1632520 "ふん" :null)
+  (set-common 'kana-text 1631750 "がる" :null)
+  (set-common 'kana-text 1394680 "そういう" :null)
+  (set-common 'kana-text 1208840 "かつ" :null)
+  (set-common 'kana-text 1011430 "べき" :null)
+  (set-common 'kana-text 1009610 "にも" :null)
+  (set-common 'kana-text 1008340 "である" :null)
+  (set-common 'kana-text 1007960 "ちんちん" :null)
+
+  (delete-sense-prop 2021030 "misc" "uk") ;; 摂る（とる）
+  (delete-sense-prop 1586730 "misc" "uk") ;; 粗 (あら)
+  (delete-sense-prop 1441400 "misc" "uk") ;; 点く （つく）
+
+  (add-sense-prop 1569590 0 "misc" "uk") ;; 痙攣 けいれん
+  (add-sense-prop 1590540 0 "misc" "uk") ;; 仮名 かな
+
+  (set-primary-nokanji 1374550 nil) ;; すごい
+  (set-primary-nokanji 1591900 nil) ;; きれい
+
+  (load-entry "
+<entry>
+<ent_seq>1613860</ent_seq>
+<k_ele><keb>回戦</keb></k_ele>
+<r_ele><reb>かいせん</reb></r_ele>
+<sense>
+<pos>n</pos><pos>ctr</pos>
+<gloss xml:lang=\"eng\">match</gloss><gloss xml:lang=\"eng\">game</gloss>
+</sense>
+</entry>" :skip-if-exists t)
+  (recalc-entry-stats 1613860)
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい
@@ -486,6 +540,7 @@
                              2084010 ;; になる
                              2561100 ;; うまいな
                              2210270 ;; ませんか
+                             2210710 ;; ましょうか
                              1006610 ;; そう
                              2257550 ;; ない
                              2210320 ;; ません
@@ -494,6 +549,7 @@
                              2194000 ;; であ
                              2822130 ;; て良い
                              2568000 ;; れる/られる
+                             2537250 ;; しようとする
                              )
   "seq of words that aren't really words, like suffixes etc."
   )

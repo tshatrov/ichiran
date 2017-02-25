@@ -77,10 +77,12 @@
                          "s_inf" "stagk" "stagr")
            do (insert-sense-traits node tag sense-id seq)))))
 
-(defun load-entry (content)
+(defun load-entry (content &key skip-if-exists)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
          (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
          (seq (parse-integer (node-text entseq-node))))
+    (when (and skip-if-exists (get-dao 'entry seq))
+      (return-from load-entry))
     (make-dao 'entry :seq seq :content content :root-p t)
     (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
            (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))
@@ -110,7 +112,7 @@
            (let ((content (klacks:serialize-element source (cxml:make-string-sink))))
              (load-entry content))
          if (zerop (mod cnt 1000)) do (format t "~a entries loaded~%" cnt)
-         finally (recalc-entry-stats) (query "ANALYZE") (format t "~a entries total~%" cnt)))
+         finally (recalc-entry-stats-all) (query "ANALYZE") (format t "~a entries total~%" cnt)))
     (when load-extras (load-extras))))
 
 (defun load-extras ()
@@ -119,7 +121,7 @@
   (format t "Loading secondary conjugations...~%")
   (load-secondary-conjugations)
   (add-errata)
-  (recalc-entry-stats)
+  (recalc-entry-stats-all)
   (query "ANALYZE"))
 
 (defun drop-extras ()

@@ -14,7 +14,8 @@
    #:recalc-entry-stats
    #:custom-init
    #:compare-queries
-   #:display-seq-set))
+   #:display-seq-set
+   #:switch-connection))
 
 (in-package :ichiran/maintenance)
 
@@ -46,6 +47,8 @@
 ;; example queries
 ;; find all [uk] tag changes
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "misc") (:= 'text "uk")))
+;; find common kana changes
+;; (:select 'seq 'text :distinct :from 'kana-text :where (:not (:is-null 'common)))
 
 (defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/conn:*connection*))
   `(with-db ,conn
@@ -55,3 +58,10 @@
 
 ;; example test
 ;; (and (not (primary-nokanji entry)) (<= (length (get-kana entry)) 3) (not (eql (common entry) :null)))
+
+
+(defun switch-connection (conn &key reset)
+  (with-db conn
+    (ichiran/dict:init-suffixes t reset))
+  (switch-conn-vars conn))
+  
