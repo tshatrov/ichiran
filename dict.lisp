@@ -803,7 +803,7 @@
                       :conj conj-data
                       :common (and common-p common-of)
                       :score-info (list prop-score kanji-break)
-                      :kpcl (list kanji-p primary-p common-p long-p))))
+                      :kpcl (list (or kanji-p katakana-p) primary-p common-p long-p))))
       (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
       (values score info))))
 

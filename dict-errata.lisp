@@ -506,6 +506,7 @@
   (set-common 'kana-text 1009610 "にも" :null)
   (set-common 'kana-text 1008340 "である" :null)
   (set-common 'kana-text 1007960 "ちんちん" :null)
+  (set-common 'kana-text 1301230 "さんなん" :null)
 
   (delete-sense-prop 2021030 "misc" "uk") ;; 摂る（とる）
   (delete-sense-prop 1586730 "misc" "uk") ;; 粗 (あら)
