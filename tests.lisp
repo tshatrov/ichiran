@@ -280,6 +280,8 @@
   (assert-segment "平和である" "平和" "で" "ある")
   (assert-segment "私にとっては少しおかしいです" "私" "にとって" "は" "少し" "おかしいです")
   (assert-segment "パーティーは" "パーティー" "は")
+  (assert-segment "彼以上のばかはいない" "彼" "以上" "の" "ばか" "は" "いない")
+  (assert-segment "君がいないと淋しい" "君" "が" "いない" "と" "淋しい")
   )
 
 (define-test json-consistency-test
