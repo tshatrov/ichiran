@@ -282,6 +282,8 @@
   (assert-segment "パーティーは" "パーティー" "は")
   (assert-segment "彼以上のばかはいない" "彼" "以上" "の" "ばか" "は" "いない")
   (assert-segment "君がいないと淋しい" "君" "が" "いない" "と" "淋しい")
+  (assert-segment "思いきって" "思いきって")
+  (assert-segment "思いきっている" "思いきっている")
   )
 
 (define-test json-consistency-test
