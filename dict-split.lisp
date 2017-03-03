@@ -304,6 +304,12 @@
   (2028990 1)
   (("取って" 1326980)))
 
+(def-simple-split split-kotonisuru 2215340 100 (len txt) ;; 事にする
+  (1313580 (position #\に txt))
+  (2028990 1)
+  (1157170 nil t))
+
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
