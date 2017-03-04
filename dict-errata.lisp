@@ -533,8 +533,28 @@
 <pos>n</pos><pos>ctr</pos>
 <gloss xml:lang=\"eng\">match</gloss><gloss xml:lang=\"eng\">game</gloss>
 </sense>
-</entry>" :skip-if-exists t)
-  (recalc-entry-stats 1613860)
+</entry>" :if-exists :skip)
+
+  (load-entry "
+<entry>
+<ent_seq>99000000</ent_seq>
+<k_ele><keb>お掛け</keb><ke_pri>spec1</ke_pri></k_ele>
+<r_ele><reb>おかけ</reb><re_pri>spec1</re_pri></r_ele>
+<sense>
+<pos>vs</pos><misc>uk</misc><misc>hum</misc>
+<gloss xml:lang=\"eng\">to cause</gloss>
+</sense>
+<sense>
+<pos>vs</pos><misc>uk</misc><misc>hum</misc>
+<gloss xml:lang=\"eng\">to sit</gloss>
+</sense>
+<sense>
+<pos>vs</pos><misc>uk</misc><misc>hum</misc>
+<gloss xml:lang=\"eng\">to spend (time)</gloss>
+</sense>
+</entry>" :if-exists :overwrite)
+
+  (recalc-entry-stats 1613860 99000000)
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい

@@ -77,12 +77,14 @@
                          "s_inf" "stagk" "stagr")
            do (insert-sense-traits node tag sense-id seq)))))
 
-(defun load-entry (content &key skip-if-exists)
+(defun load-entry (content &key if-exists)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
          (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
          (seq (parse-integer (node-text entseq-node))))
-    (when (and skip-if-exists (get-dao 'entry seq))
-      (return-from load-entry))
+    (case if-exists
+      (:skip (when (get-dao 'entry seq) (return-from load-entry)))
+      (:overwrite (let ((entry (get-dao 'entry seq)))
+                    (when entry (delete-dao entry)))))
     (make-dao 'entry :seq seq :content content :root-p t)
     (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
            (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))

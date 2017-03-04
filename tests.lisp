@@ -286,6 +286,11 @@
   (assert-segment "思いきっている" "思いきっている")
   (assert-segment "大事にします" "大事" "に" "します")
   (assert-segment "大事になります" "大事" "に" "なります")
+  (assert-segment "ご迷惑おかけしてすみません" "ご迷惑" "おかけして" "すみません")
+  (assert-segment "不便をおかけすることを謝ります" "不便" "を" "おかけする" "こと" "を" "謝ります")
+  (assert-segment "お手数おかけし申し訳ないが" "お手数" "おかけし" "申し訳ない" "が")
+  (assert-segment "私はあなたにお手数をおかけました" "私" "は" "あなた" "に" "お手数" "を" "お" "かけました")
+  (assert-segment "ここにおかけなさい" "ここ" "に" "お" "かけなさい")
   )
 
 (define-test json-consistency-test
