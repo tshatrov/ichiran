@@ -13,6 +13,9 @@
            :unrendaku :rendaku :destem
            :collect-char-class :*kanji-char-regex* :consecutive-char-groups))
 
+(defpackage :ichiran/numbers
+  (:use :cl :ichiran/characters))
+
 (defpackage :ichiran/tokenize
   (:use :cl)
   (:export :segment))
