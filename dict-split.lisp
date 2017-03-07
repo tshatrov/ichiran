@@ -309,6 +309,10 @@
   (2028990 1)
   (1157170 nil t))
 
+(def-simple-split split-hajikidasu 1419350 100 (len txt) ;; 弾き出す
+  (1901710 (1+ (position #\き txt)))
+  (1338180 nil t))
+
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
