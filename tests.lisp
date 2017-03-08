@@ -321,7 +321,13 @@
   (assert-equal (match-readings "北方" "ほっぽう") '(("北" "ほっ" "ja_on" NIL "く") ("方" "ぽう" "ja_on" :RENDAKU NIL)))
   (assert-equal (match-readings "明後日" "あさって") '(("明" "あ" "ja_kun" NIL) ("後" "さっ" "irr") ("日" "て" "irr")))
   )
-  
+
+(define-test parse-number-test
+  (dolist (n '(0 10001 20020001 12423000430))
+    (assert-eql (parse-number (number-to-kanji n)) n))
+  (assert-eql (parse-number "100万") 1000000)
+  (assert-eql (parse-number "100万500") 1000500))
+
 ;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-all-tests ()

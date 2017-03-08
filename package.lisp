@@ -14,7 +14,13 @@
            :collect-char-class :*kanji-char-regex* :consecutive-char-groups))
 
 (defpackage :ichiran/numbers
-  (:use :cl :ichiran/characters))
+  (:use :cl :ichiran/characters)
+  (:export
+   #:*digit-kanji-default*
+   #:*digit-kanji-legal*
+   #:*power-kanji*
+   #:number-to-kanji
+   #:parse-number))
 
 (defpackage :ichiran/tokenize
   (:use :cl)
@@ -66,7 +72,8 @@
    :query-kanji-json))
 
 (uiop:define-package :ichiran/all
-    (:use-reexport :ichiran/characters :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji))
+    (:use-reexport :ichiran/characters :ichiran/numbers
+                   :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji))
 
 (defpackage :ichiran/test
   (:use :cl :ichiran/all :lisp-unit)
