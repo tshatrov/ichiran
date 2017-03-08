@@ -292,6 +292,7 @@
   (assert-segment "私はあなたにお手数をおかけました" "私" "は" "あなた" "に" "お手数" "を" "お" "かけました")
   (assert-segment "ここにおかけなさい" "ここ" "に" "お" "かけなさい")
   (assert-segment "弾き出されてる" "弾き出されてる")
+  (assert-segment "あかんわ" "あかん" "わ")
   )
 
 (define-test json-consistency-test

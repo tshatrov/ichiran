@@ -523,6 +523,7 @@
 
   (set-primary-nokanji 1374550 nil) ;; すごい
   (set-primary-nokanji 1591900 nil) ;; きれい
+  (set-primary-nokanji 1000230 nil) ;; あかん
 
   (load-entry "
 <entry>
