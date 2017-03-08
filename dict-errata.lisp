@@ -513,6 +513,9 @@
   (set-common 'kana-text 1155180 "いない" 10)
   (set-common 'kanji-text 1609450 "思いきって" 0)
   (set-common 'kanji-text 1309320 "思いきる" 0)
+  (set-common 'kana-text 1312880 "メス" 15)
+  (set-common 'kana-text 1312880 "めす" :null)
+  (set-common 'kana-text 2061540 "ぶっちゃける" 0)
 
   (delete-sense-prop 2021030 "misc" "uk") ;; 摂る（とる）
   (delete-sense-prop 1586730 "misc" "uk") ;; 粗 (あら)

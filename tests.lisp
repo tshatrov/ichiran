@@ -293,6 +293,7 @@
   (assert-segment "ここにおかけなさい" "ここ" "に" "お" "かけなさい")
   (assert-segment "弾き出されてる" "弾き出されてる")
   (assert-segment "あかんわ" "あかん" "わ")
+  (assert-segment "ぶっちゃけ" "ぶっちゃけ")
   )
 
 (define-test json-consistency-test
