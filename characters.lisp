@@ -276,6 +276,11 @@
           (setf (char txt 0) new-char)
           txt))))
 
+(defun geminate (txt &key fresh)
+  (if fresh (setf txt (copy-seq txt)))
+  (if (zerop (length txt)) txt
+      (progn (setf (char txt (1- (length txt))) #\っ) txt)))
+
 (defun destem (word stem &optional (char-class :kana))
   "Remove `stem` characters of char-class + whatever else gets in the way from the end of `word`"
   (declare (type char-class char-class))

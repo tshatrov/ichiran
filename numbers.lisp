@@ -22,6 +22,12 @@
              do (setf (gethash char hash) class)))
     hash))
 
+(defparameter *digit-to-kana*
+  '(0 "れい" 1 "いち" 2 "に" 3 "さん" 4 "よん" 5 "ご" 6 "ろく" 7 "なな" 8 "はち" 9 "きゅう"))
+
+(defparameter *power-to-kana*
+  '(1 "じゅう" 2 "ひゃく" 3 "せん" 4 "まん" 8 "おく" 12 "ちょう" 16 "けい"))
+
 
 (defun number-to-kanji (n &rest keys &key (digits *digit-kanji-default*) (powers *power-kanji*) (1sen nil))
   (assert (and (integerp n) (>= n 0)))
@@ -64,3 +70,59 @@
                                 (or (gethash c *char-number-class-hash*)
                                     (error "Invalid character: ~c" c)))
                       str)))
+
+
+(defgeneric num-sandhi (c1 v1 c2 v2 s1 s2)
+  (:documentation "join s1 and s2 taking digit classes into account")
+  (:method (c1 v1 c2 v2 s1 s2)
+    (declare (ignore c1 v1 c2 v2))
+    (concatenate 'string s1 s2))
+  (:method ((c1 (eql :jd)) (v1 (eql 1)) (c2 (eql :p)) v2 s1 s2)
+    (case v2
+      ((3 12 16) (geminate s1)))
+    (call-next-method))
+  (:method ((c1 (eql :jd)) (v1 (eql 3)) (c2 (eql :p)) v2 s1 s2)
+    (case v2
+      ((2 3) (concatenate 'string s1 (rendaku s2)))
+      (t (call-next-method))))
+  (:method ((c1 (eql :jd)) (v1 (eql 6)) (c2 (eql :p)) v2 s1 s2)
+    (case v2
+      (2 (geminate s1) (concatenate 'string s1 (rendaku s2 :handakuten t)))
+      (16 (geminate s1) (call-next-method))
+      (t (call-next-method))))
+  (:method ((c1 (eql :jd)) (v1 (eql 8)) (c2 (eql :p)) v2 s1 s2)
+    (case v2
+      (2 (geminate s1) (concatenate 'string s1 (rendaku s2 :handakuten t)))
+      ((3 12 16) (geminate s1) (call-next-method))
+      (t (call-next-method))))
+  (:method ((c1 (eql :p)) (v1 (eql 1)) (c2 (eql :p)) v2 s1 s2)
+    (case v2
+      ((12 16) (geminate s1)))
+    (call-next-method))
+  (:method ((c1 (eql :p)) (v1 (eql 2)) (c2 (eql :p)) v2 s1 s2)
+    (case v2
+      ((16) (geminate s1)))
+    (call-next-method)))
+
+(defun group-to-kana (group &key (class-to-kana `(:jd ,*digit-to-kana* :p ,*power-to-kana*)))
+  (loop with result = "" and last-class and last-val
+     for (class val) in group
+     for kana = (copy-seq (getf (getf class-to-kana class) val))
+     do (setf result (num-sandhi last-class last-val class val result kana)
+              last-class class last-val val)
+     finally (return result)))
+
+(defun number-to-kana (n &key (kanji-method 'number-to-kanji))
+  (loop with groups and cur-group and last-class and last-val
+     for kanji across (funcall kanji-method n)
+     for (class val) = (gethash kanji *char-number-class-hash*)
+     if (or (not last-class)
+            (and (eql class :p)
+                 (or (eql last-class :jd)
+                     (and (eql last-class :p) (> val last-val)))))
+     do (setf cur-group (cons (list class val) cur-group))
+     else do (setf groups (cons (nreverse cur-group) groups) cur-group (list (list class val)))
+     do (setf last-class class last-val val)
+     finally (push (nreverse cur-group) groups)
+       (return (loop for group in (nreverse groups)
+                  collect (group-to-kana group)))))

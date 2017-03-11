@@ -223,9 +223,7 @@
                 ,@(when (and (> end 0)
                              (string= type "ja_on")
                              (find (char reading end) "つくきち"))
-                        (let ((geminated (copy-seq reading)))
-                          (setf (char geminated end) #\っ)
-                          (list (list geminated type nil (format nil "~c" (char reading end)))))))))
+                        (list (list (geminate reading :fresh t) type nil (format nil "~c" (char reading end))))))))
     (if rendaku
         (append lst (loop for (rd nil nil gem) in lst
                        collect (list (rendaku rd :fresh t) type :rendaku gem)
