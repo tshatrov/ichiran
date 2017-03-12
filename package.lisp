@@ -21,7 +21,8 @@
    #:*digit-kanji-legal*
    #:*power-kanji*
    #:number-to-kanji
-   #:parse-number))
+   #:parse-number
+   #:number-to-kana))
 
 (defpackage :ichiran/tokenize
   (:use :cl)
@@ -36,7 +37,8 @@
            :switch-conn-vars))
 
 (defpackage :ichiran/dict
-  (:use :cl :postmodern :ichiran/characters :ichiran/conn :split-sequence)
+  (:use :cl :postmodern :split-sequence
+        :ichiran/characters :ichiran/conn :ichiran/numbers)
   (:export :simple-segment :dict-segment :word-info-from-text
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score :map-word-info-kana

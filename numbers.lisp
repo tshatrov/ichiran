@@ -83,18 +83,18 @@
     (call-next-method))
   (:method ((c1 (eql :jd)) (v1 (eql 3)) (c2 (eql :p)) v2 s1 s2)
     (case v2
-      ((2 3) (concatenate 'string s1 (rendaku s2)))
-      (t (call-next-method))))
+      ((2 3) (rendaku s2)))
+    (call-next-method))
   (:method ((c1 (eql :jd)) (v1 (eql 6)) (c2 (eql :p)) v2 s1 s2)
     (case v2
-      (2 (geminate s1) (concatenate 'string s1 (rendaku s2 :handakuten t)))
-      (16 (geminate s1) (call-next-method))
-      (t (call-next-method))))
+      (2 (geminate s1) (rendaku s2 :handakuten t))
+      (16 (geminate s1)))
+    (call-next-method))
   (:method ((c1 (eql :jd)) (v1 (eql 8)) (c2 (eql :p)) v2 s1 s2)
     (case v2
-      (2 (geminate s1) (concatenate 'string s1 (rendaku s2 :handakuten t)))
-      ((3 12 16) (geminate s1) (call-next-method))
-      (t (call-next-method))))
+      (2 (geminate s1) (rendaku s2 :handakuten t))
+      ((3 12 16) (geminate s1)))
+    (call-next-method))
   (:method ((c1 (eql :p)) (v1 (eql 1)) (c2 (eql :p)) v2 s1 s2)
     (case v2
       ((12 16) (geminate s1)))
@@ -112,7 +112,7 @@
               last-class class last-val val)
      finally (return result)))
 
-(defun number-to-kana (n &key (kanji-method 'number-to-kanji))
+(defun number-to-kana (n &key (separator #\Space) (kanji-method 'number-to-kanji))
   (loop with groups and cur-group and last-class and last-val
      for kanji across (funcall kanji-method n)
      for (class val) = (gethash kanji *char-number-class-hash*)
@@ -124,5 +124,11 @@
      else do (setf groups (cons (nreverse cur-group) groups) cur-group (list (list class val)))
      do (setf last-class class last-val val)
      finally (push (nreverse cur-group) groups)
-       (return (loop for group in (nreverse groups)
-                  collect (group-to-kana group)))))
+       (return
+         (if separator
+             (with-output-to-string (out)
+               (loop for (group . more) on (nreverse groups)
+                  do (princ (group-to-kana group) out)
+                  when more do (princ separator out)))
+             (loop for group in (nreverse groups)
+                collect (group-to-kana group))))))

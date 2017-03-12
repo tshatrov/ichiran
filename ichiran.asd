@@ -28,6 +28,7 @@
                (:file "dict")
                (:file "dict-grammar")
                (:file "dict-split")
+               (:file "dict-counters")
                (:file "dict-load")
                (:file "kanji")
                (:file "ichiran")
