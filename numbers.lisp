@@ -63,14 +63,21 @@
                 (+ (expt 10 mp) (if (< (1+ start) end) (parse-number* na :start (1+ start) :end end) 0)))
                (t (+ (* (parse-number* na :start start :end mi) (expt 10 mp))
                      (if (< (1+ mi) end) (parse-number* na :start (1+ mi) :end end) 0)))))))
-           
+
+(define-condition not-a-number (error)
+  ((text :reader text :initarg :text)
+   (reason :reader reason :initarg :reason))
+  (:report (lambda (c s)
+             (format s "~S is not a number: ~a"
+                     (text c) (reason c)))))
 
 (defun parse-number (str)
   (parse-number* (map 'vector (lambda (c)
                                 (or (gethash c *char-number-class-hash*)
-                                    (error "Invalid character: ~c" c)))
+                                    (error 'not-a-number
+                                           :text str
+                                           :reason (format nil "Invalid character: ~c" c))))
                       str)))
-
 
 (defgeneric num-sandhi (c1 v1 c2 v2 s1 s2)
   (:documentation "join s1 and s2 taking digit classes into account")

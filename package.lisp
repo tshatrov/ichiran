@@ -22,7 +22,8 @@
    #:*power-kanji*
    #:number-to-kanji
    #:parse-number
-   #:number-to-kana))
+   #:number-to-kana
+   #:not-a-number))
 
 (defpackage :ichiran/tokenize
   (:use :cl)
