@@ -296,6 +296,8 @@
   (assert-segment "ぶっちゃけ" "ぶっちゃけ")
   (assert-segment "賢人たち" "賢人" "たち")
   (assert-segment "差ついた" "差" "ついた")
+  (assert-segment "ですら" "ですら")
+  (assert-segment "でさえ" "でさえ")
   )
 
 (define-test json-consistency-test

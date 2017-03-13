@@ -317,6 +317,10 @@
   (1580640 (if (position #\人 txt) 1 2))
   (1416220 (if (position #\達 txt) 1 2)))
 
+(def-simple-split split-desura 2034520 30 (len txt) ;; でさえ ですら
+  (2028980 1)
+  ((2827091))) ;; 1005120
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
