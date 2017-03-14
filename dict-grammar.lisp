@@ -849,6 +849,10 @@
   (filter-is-conjugation 13)
   (apply #'filter-in-seq-set *aux-verbs*))
 
+(def-segfilter-must-follow segfilter-tsu-iru (l r) ;; TODO: remove this, or make more generic
+  (complement (filter-in-seq-set 2221640))
+  (filter-in-seq-set 1577980))
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*
