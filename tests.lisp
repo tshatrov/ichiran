@@ -298,6 +298,7 @@
   (assert-segment "差ついた" "差" "ついた")
   (assert-segment "ですら" "ですら")
   (assert-segment "でさえ" "でさえ")
+  (assert-segment "みごとにやってのける" "みごと" "に" "やってのける")
   )
 
 (define-test json-consistency-test

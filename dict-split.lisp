@@ -321,6 +321,10 @@
   (2028980 1)
   ((2827091))) ;; 1005120
 
+(def-simple-split split-gotoni 1524660 50 (len txt) ;; ごとに
+  (1524640 (position #\に txt))
+  (2028990 1))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
