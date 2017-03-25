@@ -313,6 +313,17 @@
   (1901710 (1+ (position #\き txt)))
   (1338180 nil t))
 
+(def-simple-split split-hitotachi 1368740 100 (len txt) ;; 人たち
+  (1580640 (if (position #\人 txt) 1 2))
+  (1416220 (if (position #\達 txt) 1 2)))
+
+(def-simple-split split-desura 2034520 30 (len txt) ;; でさえ ですら
+  (2028980 1)
+  ((2827091))) ;; 1005120
+
+(def-simple-split split-gotoni 1524660 50 (len txt) ;; ごとに
+  (1524640 (position #\に txt))
+  (2028990 1))
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 

@@ -294,6 +294,11 @@
   (assert-segment "弾き出されてる" "弾き出されてる")
   (assert-segment "あかんわ" "あかん" "わ")
   (assert-segment "ぶっちゃけ" "ぶっちゃけ")
+  (assert-segment "賢人たち" "賢人" "たち")
+  (assert-segment "差ついた" "差" "ついた")
+  (assert-segment "ですら" "ですら")
+  (assert-segment "でさえ" "でさえ")
+  (assert-segment "みごとにやってのける" "みごと" "に" "やってのける")
   )
 
 (define-test json-consistency-test
