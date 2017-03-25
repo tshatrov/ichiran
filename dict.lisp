@@ -870,23 +870,35 @@
 (defvar *suffix-map-temp* nil)
 (defvar *suffix-next-end* nil)
 
-(defun find-word-full (word &key as-hiragana)
+(defun find-word-full (word &key as-hiragana counter)
   (let ((simple-words (find-word word)))
     (nconc simple-words
            (find-word-suffix word :unique (not simple-words))
            (when as-hiragana
-             (find-word-as-hiragana word :exclude (mapcar 'seq simple-words))))))
+             (find-word-as-hiragana word :exclude (mapcar 'seq simple-words)))
+           (when counter
+             (case counter
+               (:auto
+                (let ((groups (consecutive-char-groups :number word)))
+                  (when groups
+                    (find-counter (subseq word (caar groups) (cdar groups))
+                                  (subseq word (cdar groups) (length word))))))
+               (t (let ((number (subseq word 0 counter))
+                        (counter (subseq word counter (length word))))
+                    (find-counter number counter :unique (not simple-words)))))))))
 
 (defparameter *score-cutoff* 5) ;; this must filter out ONLY bad kana spellings, and NOT filter out any kanji spellings
 
 (defun join-substring-words* (str)
   (loop with sticky = (find-sticky-positions str)
         with katakana-groups = (consecutive-char-groups :katakana str)
+        with number-groups = (consecutive-char-groups :number str)
         and kanji-break
         and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
-       for katakana-group-end = (cdr (assoc start katakana-groups)) 
+       for katakana-group-end = (cdr (assoc start katakana-groups))
+       for number-group-end = (cdr (assoc start number-groups))
        unless (member start sticky)
        nconcing 
        (loop for end from (1+ start) upto (length str)
@@ -898,7 +910,11 @@
                                 (make-segment :start start :end end :word word))
                               (let ((*suffix-map-temp* suffix-map)
                                     (*suffix-next-end* end))
-                                (find-word-full part :as-hiragana (and katakana-group-end (= end katakana-group-end)))))))
+                                (find-word-full part
+                                                :as-hiragana (and katakana-group-end (= end katakana-group-end))
+                                                :counter (and number-group-end
+                                                              (<= number-group-end end)
+                                                              (- number-group-end start)))))))
               (when segments
                 (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break))
                 (list (list start end segments)))))

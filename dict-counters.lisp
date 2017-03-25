@@ -1,5 +1,7 @@
 (in-package :ichiran/dict)
 
+(def-conn-var *counter-cache* nil)
+
 (defgeneric counter-join (counter n number-kana counter-kana)
   (:documentation "Construct counter kana text")
   (:method (counter n number-kana counter-kana)
@@ -11,6 +13,12 @@
    (kana :reader counter-kana :initarg :kana)
    (number-text :reader number-text :initarg :number-text)
    (number :reader number-value)))
+
+(defgeneric verify (counter unique)
+  (:documentation "Verify if counter is valid")
+  (:method (counter unique)
+    (declare (ignore counter))
+    unique))
 
 (defmethod initialize-instance :after ((obj counter-text) &key)
   (setf (slot-value obj 'number) (parse-number (number-text obj))))
@@ -73,5 +81,24 @@
             (rendaku counter-kana :handakuten t))))))
   (call-next-method))
 
-    
-    
+(defclass number-text (counter-text)
+  ((text :initform "")
+   (kana :initform "")))
+
+(defmethod get-kana ((obj number-text))
+  (number-to-kana (number-value obj) :separator *kana-hint-space*))
+
+(defun init-counters ()
+  (setf *counter-cache* (make-hash-table :test 'equal))
+  (labels ((add-args (text &rest args) (push args (gethash text *counter-cache* nil))))
+    (add-args "" 'number-text)))
+
+(defun find-counter (number counter &key (unique t))
+  (let ((counter-args (gethash counter *counter-cache*)))
+    (when counter-args
+      (loop for args in counter-args
+         for counter-obj = (handler-case
+                               (apply 'make-instance `(,@args :number-text ,number))
+                             (not-a-number () nil))
+         when (and counter-obj (verify counter-obj unique))
+           collect counter-obj))))
