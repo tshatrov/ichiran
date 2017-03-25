@@ -12,7 +12,9 @@
   ((text :reader counter-text :initarg :text)
    (kana :reader counter-kana :initarg :kana)
    (number-text :reader number-text :initarg :number-text)
-   (number :reader number-value)))
+   (number :reader number-value)
+   (source :reader source :initform nil :initarg :source)
+   ))
 
 (defgeneric verify (counter unique)
   (:documentation "Verify if counter is valid")
@@ -37,6 +39,24 @@
   (let ((n (number-value obj)))
     (counter-join obj n (number-to-kana n :separator *kana-hint-space*)
                   (copy-seq (counter-kana obj)))))
+
+(defmethod word-type ((obj counter-text))
+  (when (> (count-char-class (text obj) :kanji-char) 0) :kanji :kana))
+
+(defmethod common ((obj counter-text))
+  (if (source obj) (common (source obj)) 0))
+
+(defmethod seq ((obj counter-text))
+  (and (source obj) (seq (source obj))))
+
+(defmethod ord ((obj counter-text))
+  (if (source obj) (ord (source obj)) 0))
+
+(defmethod word-conjugations ((obj counter-text)) nil)
+
+(defmethod word-conj-data ((obj counter-text)) nil)
+
+(defmethod root-p ((obj counter-text)) t)
 
 (defmethod counter-join ((obj counter-text) n number-kana counter-kana
                          &aux (digit (mod n 10))

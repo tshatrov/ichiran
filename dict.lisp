@@ -646,15 +646,18 @@
 
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-forms* *skip-conj-forms* are defined in dict-errata.lisp
 
-(defun calc-score (reading &key final use-length (score-mod 0) kanji-break)
-  (when (typep reading 'compound-text)
-    (multiple-value-bind (score info) (calc-score (primary reading)
-                                                  :use-length (mora-length (text reading))
-                                                  :score-mod (score-mod reading))
-      (setf (getf info :conj) (word-conj-data reading))
-      (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
-      (return-from calc-score
-        (values score info))))
+(defun calc-score (reading &key final use-length (score-mod 0) kanji-break &aux ctr-mode)
+  (typecase reading
+    (compound-text 
+     (multiple-value-bind (score info) (calc-score (primary reading)
+                                                   :use-length (mora-length (text reading))
+                                                   :score-mod (score-mod reading))
+       (setf (getf info :conj) (word-conj-data reading))
+       (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
+       (return-from calc-score
+         (values score info))))
+    (counter-text
+     (setf ctr-mode t)))
 
   (let* ((score 1) prop-score
          (kanji-p (eql (word-type reading) :kanji))
@@ -665,9 +668,9 @@
          (len (max 1 (mora-length text)))
          (seq (seq reading))
          (ord (ord reading))
-         (entry (get-dao 'entry seq))
+         (entry (and seq (get-dao 'entry seq)))
          (conj-only (let ((wc (word-conjugations reading))) (and wc (not (eql wc :root)))))
-         (root-p (and (not conj-only) (root-p entry)))
+         (root-p (or ctr-mode (and (not conj-only) (root-p entry))))
          (conj-data (word-conj-data reading))
          (conj-of (mapcar #'conj-data-from conj-data))
          (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
@@ -677,8 +680,8 @@
                            (notevery (lambda (prop)
                                        (test-conj-prop prop *weak-conj-forms*))
                                      conj-props)))
-         (seq-set (cons seq conj-of)) ;;(if root-p (list seq) (cons seq conj-of)))
-         (sp-seq-set (if (and root-p (not use-length)) (list seq) seq-set))
+         (seq-set (and seq (cons seq conj-of))) ;;(if root-p (list seq) (cons seq conj-of)))
+         (sp-seq-set (if (and seq root-p (not use-length)) (list seq) seq-set))
          (prefer-kana
           (select-dao 'sense-prop (:and (:in 'seq (:set sp-seq-set))
                                         (:= 'tag "misc") (:= 'text "uk"))))
@@ -689,8 +692,9 @@
                                                                        (:= 'sp.text "arch"))
                             :where (:in 'sense.seq (:set sp-seq-set)))
                    :single))
-         (posi (query (:select 'text :distinct :from 'sense-prop
-                               :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column))
+         (posi (if ctr-mode (list "ctr")
+                   (query (:select 'text :distinct :from 'sense-prop
+                                   :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column)))
          (common (if conj-only :null (common reading)))
          (common-of common)
          (common-p (not (eql common :null)))
@@ -728,7 +732,8 @@
 
     (unless is-arch
       (setf primary-p
-            (or (and prefer-kana conj-types-p
+            (or (not entry)
+                (and prefer-kana conj-types-p
                      (not kanji-p)
                      (or (not (primary-nokanji entry))
                          (nokanji reading)))
@@ -747,7 +752,7 @@
       (incf score (cond (long-p 10)
                         ((and secondary-conj-p (not kanji-p)) 2)
                         (common-p 5)
-                        ((or prefer-kana (= (n-kanji entry) 0)) 3)
+                        ((or prefer-kana (not entry) (= (n-kanji entry) 0)) 3)
                         (t 2))))
     (when (and particle-p (or final (not semi-final-particle-p)))
       (incf score 2)
@@ -782,24 +787,25 @@
     (when use-length
       (incf score (* prop-score (length-multiplier-coeff (- use-length len) :tail)))
       (incf score (apply-score-mod score-mod prop-score (- use-length len))))
-    
-    (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
-      (when split
-        (setf score
-              (+ score-mod-split
-                 (loop with nparts = (length split)
-                    for part in split
-                    for cnt from 1
-                    for last = (= cnt nparts)
-                    summing (calc-score part
-                                        :final (and final last)
-                                        :use-length (when (and last use-length)
-                                                      (+ (mora-length (text part))
-                                                         (- use-length len)))
-                                        :score-mod (if last score-mod 0)
-                                        ))))))
 
-    (let ((info (list :posi posi :seq-set (cons seq conj-of)
+    (unless ctr-mode
+      (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
+        (when split
+          (setf score
+                (+ score-mod-split
+                   (loop with nparts = (length split)
+                      for part in split
+                      for cnt from 1
+                      for last = (= cnt nparts)
+                      summing (calc-score part
+                                          :final (and final last)
+                                          :use-length (when (and last use-length)
+                                                        (+ (mora-length (text part))
+                                                           (- use-length len)))
+                                          :score-mod (if last score-mod 0)
+                                          )))))))
+
+    (let ((info (list :posi posi :seq-set (if ctr-mode seq-set (cons seq conj-of))
                       :conj conj-data
                       :common (and common-p common-of)
                       :score-info (list prop-score kanji-break)
