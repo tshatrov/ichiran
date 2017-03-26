@@ -1520,11 +1520,22 @@
                                        )))
                  (when (word-info-score word-info)
                    (jsown:extend-js js ("score" (word-info-score word-info))))
-                 (if (word-info-components word-info)
-                     (jsown:extend-js js
-                       ("compound" (mapcar #'word-info-text (word-info-components word-info)))
-                       ("components" (loop for wi in (word-info-components word-info)
-                                        collect (inner wi (not (word-info-primary wi))))))
+                 (cond
+                   ((word-info-components word-info)
+                    (jsown:extend-js js
+                      ("compound" (mapcar #'word-info-text (word-info-components word-info)))
+                      ("components" (loop for wi in (word-info-components word-info)
+                                       collect (inner wi (not (word-info-primary wi)))))))
+                   ((word-info-counter word-info)
+                    (destructuring-bind (value ordinal) (word-info-counter word-info)
+                      (jsown:extend-js js ("counter" (jsown:new-js ("value" (write-to-string value)) ("ordinal" ordinal)))))
+                    (let ((seq (word-info-seq word-info)))
+                      (when seq
+                        (let* ((reading-getter (lambda () (word-info-reading word-info)))
+                               (gloss (get-senses-json seq :pos-list '("ctr") :reading-getter reading-getter)))
+                          (when gloss
+                            (jsown:extend-js js ("gloss" gloss)))))))
+                   (t
                      (let ((seq (word-info-seq word-info))
                            (conjs (word-info-conjugations word-info))
                            (reading-getter (lambda () (word-info-reading word-info)))
@@ -1543,7 +1554,7 @@
                          (jsown:extend-js js 
                            ("conj" (conj-info-json seq :conjugations (word-info-conjugations word-info)
                                                    :text (word-info-true-text word-info)
-                                                   :has-gloss has-gloss))))))
+                                                   :has-gloss has-gloss)))))))
                  js)))
       (if (word-info-alternative word-info)
           (jsown:new-js ("alternative" (mapcar #'inner (word-info-components word-info))))
