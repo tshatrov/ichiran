@@ -44,8 +44,8 @@
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score :map-word-info-kana
            :word-info-str :word-info-components :word-info-alternative
-           :word-info-start :word-info-end :word-info-json
-           :word-info-gloss-json :word-info-skipped
+           :word-info-start :word-info-end :word-info-counter :word-info-skipped
+           :word-info-json :word-info-gloss-json
            :init-suffixes :init-suffixes-running-p
            :node-text
            :get-kanji-words

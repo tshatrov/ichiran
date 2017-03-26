@@ -1054,12 +1054,13 @@
    (primary :initarg :primary :initform t :accessor word-info-primary)
    (start :initarg :start :initform nil :accessor word-info-start)
    (end :initarg :end :initform nil :accessor word-info-end)
+   (counter :initarg :counter :initform nil :accessor word-info-counter)
    (skipped :initarg :skipped :initform 0 :accessor word-info-skipped)
    ))
 
 (defun word-info-json (word-info)
   (with-slots (type text true-text kana seq conjugations score components
-               alternative primary start end skipped)
+               alternative primary start end counter skipped)
       word-info
     (jsown:new-js
       ("type" (symbol-name type))
@@ -1074,6 +1075,7 @@
       ("primary" primary)
       ("start" start)
       ("end" end)
+      ("counter" counter)
       ("skipped" skipped))))
 
 (defun simple-word-info (seq text reading type &key (as :object))
@@ -1113,6 +1115,7 @@
 (def-reader-for-json word-info-primary "primary")
 (def-reader-for-json word-info-start "start")
 (def-reader-for-json word-info-end "end")
+(def-reader-for-json word-info-counter "counter")
 (def-reader-for-json word-info-skipped "skipped")
 
 (defmethod print-object ((obj word-info) stream)
@@ -1139,6 +1142,7 @@
                                                          :seq (seq wrd)
                                                          :conjugations (word-conjugations wrd)
                                                          :primary (= (id wrd) primary-id))))
+                 :counter (when (typep word 'counter-text) (list (number-value word) (ordinalp word)))
                  :score (segment-score segment)
                  :start (segment-start segment)
                  :end (segment-end segment)))
@@ -1477,22 +1481,29 @@
       (labels ((inner (word-info &optional suffix marker)
                  (when marker (princ " * " s))
                  (princ (reading-str word-info) s)
-                 (if (word-info-components word-info)
-                     (progn
-                       (format s " Compound word: ~{~a~^ + ~}" (mapcar #'word-info-text (word-info-components word-info)))
-                       (dolist (comp (word-info-components word-info))
-                         (terpri s)
-                         (inner comp (not (word-info-primary comp)) t)))
-                     (let ((seq (word-info-seq word-info)) 
-                           (conjs (word-info-conjugations word-info))
-                           desc)
-                       (cond ((and suffix (setf desc (get-suffix-description seq)))
-                              (format s "  [suffix]: ~a " desc))
-                             ((or (not conjs) (eql conjs :root))
-                              (terpri s) (princ (if seq (get-senses-str seq) "???") s)))
-                       (when seq
-                         (print-conj-info seq :out s
-                                          :conjugations conjs))))))
+                 (cond
+                   ((word-info-components word-info)
+                    (progn
+                      (format s " Compound word: ~{~a~^ + ~}" (mapcar #'word-info-text (word-info-components word-info)))
+                      (dolist (comp (word-info-components word-info))
+                        (terpri s)
+                        (inner comp (not (word-info-primary comp)) t))))
+                   ((word-info-counter word-info)
+                    (destructuring-bind (value ordinal) (word-info-counter word-info)
+                      (terpri s) (princ value s) (when ordinal (princ " (ordinal)"))
+                      (let ((seq (word-info-seq word-info)))
+                        (when seq (terpri s) (princ (get-senses-str seq) s)))))
+                   (t
+                    (let ((seq (word-info-seq word-info))
+                          (conjs (word-info-conjugations word-info))
+                          desc)
+                      (cond ((and suffix (setf desc (get-suffix-description seq)))
+                             (format s "  [suffix]: ~a " desc))
+                            ((or (not conjs) (eql conjs :root))
+                             (terpri s) (princ (if seq (get-senses-str seq) "???") s)))
+                      (when seq
+                        (print-conj-info seq :out s
+                                         :conjugations conjs)))))))
         (if (word-info-alternative word-info)
             (loop for wi in (word-info-components word-info)
                  for i from 1

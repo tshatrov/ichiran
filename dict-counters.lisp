@@ -14,6 +14,7 @@
    (number-text :reader number-text :initarg :number-text)
    (number :reader number-value)
    (source :reader source :initform nil :initarg :source)
+   (ordinalp :reader ordinalp :initarg :ordinalp)
    ))
 
 (defgeneric verify (counter unique)
@@ -41,7 +42,7 @@
                   (copy-seq (counter-kana obj)))))
 
 (defmethod word-type ((obj counter-text))
-  (when (> (count-char-class (text obj) :kanji-char) 0) :kanji :kana))
+  (if (> (count-char-class (text obj) :kanji-char) 0) :kanji :kana))
 
 (defmethod common ((obj counter-text))
   (if (source obj) (common (source obj)) 0))
@@ -103,7 +104,8 @@
 
 (defclass number-text (counter-text)
   ((text :initform "")
-   (kana :initform "")))
+   (kana :initform "")
+   (ordinalp :initform nil)))
 
 (defmethod get-kana ((obj number-text))
   (number-to-kana (number-value obj) :separator *kana-hint-space*))
