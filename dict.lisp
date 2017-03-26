@@ -1180,7 +1180,7 @@
 
 (defun word-info-from-text (text)
   (with-connection *connection*
-    (let* ((readings (find-word-full text))
+    (let* ((readings (find-word-full text :counter :auto))
            (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r))))
            (segment-list (make-segment-list :segments segments :start 0 :end (length text)
                                             :matches (length segments))))

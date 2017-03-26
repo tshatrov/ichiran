@@ -224,7 +224,7 @@
   (assert-segment "あんたはわからん" "あんた" "は" "わからん")
   (assert-segment "見られたくないとこ" "見られたくない" "とこ")
   (assert-segment "多分家で" "多分" "家" "で")
-  (assert-segment "三十八" "三十" "八")
+  (assert-segment "三十八" "三十八")
   (assert-segment "エロそうだヤバそうだ" "エロそう" "だ" "ヤバそう" "だ")
   (assert-segment "私にとっても" "私" "にとって" "も")
   (assert-segment "睡眠を十分にとってください" "睡眠" "を" "十分" "に" "とってください")
@@ -304,7 +304,7 @@
 (define-test json-consistency-test
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
                       "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる" 
-                      "どおりで"
+                      "どおりで" "十万三" "5万100" "1234"
                       )
        for word-info = (word-info-from-text word)
        for word-info-json = (word-info-json word-info)
