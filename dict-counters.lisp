@@ -110,12 +110,14 @@
 (defmethod get-kana ((obj number-text))
   (number-to-kana (number-value obj) :separator *kana-hint-space*))
 
-(defun init-counters ()
-  (setf *counter-cache* (make-hash-table :test 'equal))
-  (labels ((add-args (text &rest args) (push args (gethash text *counter-cache* nil))))
-    (add-args "" 'number-text)))
+(defun init-counters (&optional reset)
+  (when (or reset (not *counter-cache*))
+    (setf *counter-cache* (make-hash-table :test 'equal))
+    (labels ((add-args (text &rest args) (push args (gethash text *counter-cache* nil))))
+      (add-args "" 'number-text))))
 
 (defun find-counter (number counter &key (unique t))
+  (init-counters)
   (let ((counter-args (gethash counter *counter-cache*)))
     (when counter-args
       (loop for args in counter-args
