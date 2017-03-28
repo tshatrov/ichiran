@@ -1142,7 +1142,7 @@
                                                          :seq (seq wrd)
                                                          :conjugations (word-conjugations wrd)
                                                          :primary (= (id wrd) primary-id))))
-                 :counter (when (typep word 'counter-text) (list (number-value word) (ordinalp word)))
+                 :counter (when (typep word 'counter-text) (list (value-string word) (ordinalp word)))
                  :score (segment-score segment)
                  :start (segment-start segment)
                  :end (segment-end segment)))
@@ -1528,7 +1528,7 @@
                                        collect (inner wi (not (word-info-primary wi)))))))
                    ((word-info-counter word-info)
                     (destructuring-bind (value ordinal) (word-info-counter word-info)
-                      (jsown:extend-js js ("counter" (jsown:new-js ("value" (write-to-string value)) ("ordinal" ordinal)))))
+                      (jsown:extend-js js ("counter" (jsown:new-js ("value" value) ("ordinal" ordinal)))))
                     (let ((seq (word-info-seq word-info)))
                       (when seq
                         (let* ((reading-getter (lambda () (word-info-reading word-info)))

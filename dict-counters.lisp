@@ -23,6 +23,11 @@
     (declare (ignore counter))
     unique))
 
+(defgeneric value-string (counter)
+  (:documentation "Value to be presented as string")
+  (:method ((counter counter-text))
+    (format nil "Value: ~a" (number-value counter))))
+
 (defmethod initialize-instance :after ((obj counter-text) &key)
   (setf (slot-value obj 'number) (parse-number (number-text obj))))
 
