@@ -14,7 +14,7 @@
    (number-text :reader number-text :initarg :number-text)
    (number :reader number-value)
    (source :reader source :initform nil :initarg :source)
-   (ordinalp :reader ordinalp :initarg :ordinalp)
+   (ordinalp :reader ordinalp :initform nil :initarg :ordinalp)
    ))
 
 (defgeneric verify (counter unique)
@@ -126,7 +126,7 @@
         (loop for seq being each hash-key of readings-hash using (hash-value readings)
            for (kanji . kana) = readings
            for special = (gethash seq *special-counters*)
-           if special do (mapcar (lambda (args) (apply #'add-args args)) (funcall special readings))
+           if special do (mapcar (lambda (args) (apply #'add-args args)) (funcall special (append kanji kana)))
            else do (loop for kt in kanji
                       for text = (text kt)
                       do (add-args text 'counter-text
@@ -192,3 +192,36 @@
                                         (sort (cdr value) '< :key 'ord))))
        hash)
       hash)))
+
+(defmacro def-special-counter (seq (&optional readings-var) &body body)
+  (alexandria:with-gensyms (class-var text-var kana-var keys-var)
+    (unless readings-var (setf readings-var (gensym "RV")))
+    `(setf (gethash ,seq *special-counters*)
+           (lambda (,readings-var)
+             (flet ((args (,class-var ,text-var ,kana-var &rest ,keys-var &key &allow-other-keys)
+                      (apply 'list ,text-var ,class-var :text ,text-var :kana ,kana-var
+                             :source (find ,text-var ,readings-var :key 'text)
+                             ,keys-var)))
+               ,@body)))))
+
+
+(defclass counter-hifumi (counter-text) ())
+
+(defmethod verify ((counter counter-hifumi) unique)
+  (and (<= 1 (number-value counter) 9) unique))
+
+(defmethod get-kana ((obj counter-hifumi))
+  (case (number-value obj)
+    (1 "ひとつ")
+    (2 "ふたつ")
+    (3 "みっつ")
+    (4 "よっつ")
+    (5 "いつつ")
+    (6 "むっつ")
+    (7 "ななつ")
+    (8 "やっつ")
+    (9 "ここのつ")
+    (t (call-next-method))))
+
+(def-special-counter 2220330 ()
+  (list (args 'counter-hifumi "つ" "つ")))
