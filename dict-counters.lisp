@@ -115,11 +115,37 @@
 (defmethod get-kana ((obj number-text))
   (number-to-kana (number-value obj) :separator *kana-hint-space*))
 
+(defparameter *special-counters* (make-hash-table))
+
 (defun init-counters (&optional reset)
   (when (or reset (not *counter-cache*))
     (setf *counter-cache* (make-hash-table :test 'equal))
     (labels ((add-args (text &rest args) (push args (gethash text *counter-cache* nil))))
-      (add-args "" 'number-text))))
+      (add-args "" 'number-text)
+      (let ((readings-hash (get-counter-readings)))
+        (loop for seq being each hash-key of readings-hash using (hash-value readings)
+           for (kanji . kana) = readings
+           for special = (gethash seq *special-counters*)
+           if special do (mapcar (lambda (args) (apply #'add-args args)) (funcall special readings))
+           else do (loop for kt in kanji
+                      for text = (text kt)
+                      do (add-args text 'counter-text
+                                   :text text :kana (text (car kana)) :source kt
+                                   :ordinalp (alexandria:ends-with #\目 text)))))
+      (loop for counter in (alexandria:hash-table-keys *counter-cache*)
+         for cord = (concatenate 'string counter "目")
+         unless (or (alexandria:emptyp counter)
+                    (alexandria:ends-with #\目 counter)
+                    (gethash cord *counter-cache*))
+         do (loop for old-args in (gethash counter *counter-cache*)
+               for (cls . args) = (copy-list old-args)
+               unless (getf args :ordinal)
+               do
+                 (setf (getf args :text) cord
+                       (getf args :kana) (concatenate 'string (getf args :kana) "め")
+                       (getf args :ordinal) t)
+                 (apply #'add-args cord cls args)))
+      )))
 
 (defun find-counter (number counter &key (unique t))
   (init-counters)
@@ -131,3 +157,38 @@
                              (not-a-number () nil))
          when (and counter-obj (verify counter-obj unique))
            collect counter-obj))))
+
+(defun get-counter-ids ()
+  (sort
+   (query (:select 'seq :distinct
+                   :from 'sense-prop
+                   :where (:and (:= 'tag "pos") (:= 'text "ctr")))
+          :column)
+   '<))
+
+(defparameter *extra-counter-ids* '())
+
+(defparameter *skip-counter-ids* '(2426510))
+
+(defun get-counter-readings ()
+  (with-connection *connection*
+    (let* ((hash (make-hash-table))
+           (counter-ids (set-difference
+                         (nconc (get-counter-ids) *extra-counter-ids*)
+                         *skip-counter-ids*))
+           (kanji-readings (select-dao 'kanji-text (:in 'seq (:set counter-ids))))
+           (kana-readings (select-dao 'kana-text (:in 'seq (:set counter-ids)))))
+      (loop for r in kanji-readings
+         for val = (gethash (seq r) hash)
+         unless val do (setf val (cons nil nil) (gethash (seq r) hash) val)
+         do (push r (car val)))
+      (loop for r in kana-readings
+         for val = (gethash (seq r) hash)
+         unless val do (setf val (cons nil nil) (gethash (seq r) hash) val)
+         do (push r (cdr val)))
+      (maphash
+       (lambda (key value)
+         (setf (gethash key hash) (cons (sort (car value) '< :key 'ord)
+                                        (sort (cdr value) '< :key 'ord))))
+       hash)
+      hash)))

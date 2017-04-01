@@ -1581,7 +1581,7 @@
            (*suffix-next-end* end)
            (all-words (if root-only
                           (find-word text :root-only t)
-                          (find-word-full text :as-hiragana (test-word text :katakana))))
+                          (find-word-full text :as-hiragana (test-word text :katakana) :counter :auto)))
            (segments (loop for word in all-words
                         collect (gen-score (make-segment :start 0 :end end :word word))))
            (segments (sort segments #'> :key #'segment-score))
