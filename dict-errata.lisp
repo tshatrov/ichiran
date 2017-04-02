@@ -531,6 +531,9 @@
 
   (add-reading 1029150 "えっち")
 
+  (delete-reading 1299960 "さんかい")
+  (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
+
   (load-entry "
 <entry>
 <ent_seq>1613860</ent_seq>

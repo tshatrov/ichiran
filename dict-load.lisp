@@ -415,7 +415,7 @@
                        (member (text obj) restr :test 'equal)))
          do (unless (equal cur-best (text reading))
               (setf (best-kana obj) (text reading)) (update-dao obj))
-            (return))
+            (return-from set-reading))
     (unless (equal cur-best :null)
       (setf (best-kana obj) :null) (update-dao obj))
     ))
