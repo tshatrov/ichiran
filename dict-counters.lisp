@@ -200,17 +200,17 @@
            (lambda (,readings-var)
              (flet ((args (,class-var ,text-var ,kana-var &rest ,keys-var &key &allow-other-keys)
                       (apply 'list ,text-var ,class-var :text ,text-var :kana ,kana-var
-                             :source (find ,text-var ,readings-var :key 'text)
+                             :source (find ,text-var ,readings-var :key 'text :test 'equal)
                              ,keys-var)))
-               ,@body)))))
+               (list ,@body))))))
 
 
-(defclass counter-hifumi (counter-text) ())
+(defclass counter-tsu (counter-text) ())
 
-(defmethod verify ((counter counter-hifumi) unique)
+(defmethod verify ((counter counter-tsu) unique)
   (and (<= 1 (number-value counter) 9) unique))
 
-(defmethod get-kana ((obj counter-hifumi))
+(defmethod get-kana ((obj counter-tsu))
   (case (number-value obj)
     (1 "ひとつ")
     (2 "ふたつ")
@@ -224,4 +224,29 @@
     (t (call-next-method))))
 
 (def-special-counter 2220330 ()
-  (list (args 'counter-hifumi "つ" "つ")))
+  (args 'counter-tsu "つ" "つ"))
+
+(defclass counter-hifumi (counter-text)
+  ((digitset :reader digitset :initarg :digitset)))
+
+(defmethod get-kana ((obj counter-hifumi) &aux (value (number-value obj)))
+  (cond
+    ((find value (digitset obj))
+     (concatenate 'string
+                  (case value
+                    (1 "ひと")
+                    (2 "ふた")
+                    (3 "み")
+                    (4 "よ")
+                    (5 "いつ")
+                    (6 "む")
+                    (7 "なな")
+                    (8 "や")
+                    (9 "ここの")
+                    (10 "とお")
+                    )
+                  (counter-kana obj)))
+    (t (call-next-method))))
+
+(def-special-counter 1208920 ()
+  (args 'counter-hifumi "株" "かぶ" :digitset '(1 2)))
