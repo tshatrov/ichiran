@@ -15,6 +15,11 @@
    (number :reader number-value)
    (source :reader source :initform nil :initarg :source)
    (ordinalp :reader ordinalp :initform nil :initarg :ordinalp)
+   (digit-opts :reader digit-opts :initform nil :initarg :digit-opts
+               :documentation "alist of form (digit opt1 opt2 ...)
+    where opt can be :g (geminate) :d (dakuten) :h (handakuten) (only one of :d and :h is meaningful)
+    These options are used in counter-join, if digit is present then the usual rules are ignored.
+    Empty options are equivalent to simple concatenation.")
    ))
 
 (defgeneric verify (counter unique)
@@ -66,7 +71,16 @@
 
 (defmethod counter-join ((obj counter-text) n number-kana counter-kana
                          &aux (digit (mod n 10))
-                           (head (gethash (char counter-kana 0) *char-class-hash*)))                   
+                           (head (gethash (char counter-kana 0) *char-class-hash*))
+                           (digit-opts (assoc digit (digit-opts obj))))
+  (when digit-opts
+    (loop for opt in digit-opts
+       do (case opt
+            (:g (geminate number-kana))
+            (:r (rendaku counter-kana))
+            (:h (rendaku counter-kana :handakuten t))))
+    (return-from counter-join (call-next-method)))
+  
   (case digit
     (1 (case head
          ((:ka :ki :ku :ke :ko
@@ -204,6 +218,8 @@
                              ,keys-var)))
                (list ,@body))))))
 
+(def-special-counter 1203020 ()
+  (args 'counter-text "階" "かい" :digit-opts '((3 :r))))
 
 (defclass counter-tsu (counter-text) ())
 
@@ -227,11 +243,11 @@
   (args 'counter-tsu "つ" "つ"))
 
 (defclass counter-hifumi (counter-text)
-  ((digitset :reader digitset :initarg :digitset)))
+  ((digit-set :reader digit-set :initarg :digit-set)))
 
 (defmethod get-kana ((obj counter-hifumi) &aux (value (number-value obj)))
   (cond
-    ((find value (digitset obj))
+    ((find value (digit-set obj))
      (concatenate 'string
                   (case value
                     (1 "ひと")
@@ -249,4 +265,9 @@
     (t (call-next-method))))
 
 (def-special-counter 1208920 ()
-  (args 'counter-hifumi "株" "かぶ" :digitset '(1 2)))
+  (args 'counter-hifumi "株" "かぶ" :digit-set '(1 2)))
+
+(def-special-counter 1214060 ()
+  (args 'counter-hifumi "竿" "さお" :digit-set '(1 2 3 4 5))
+  (args 'counter-hifumi "棹" "さお" :digit-set '(1 2 3 4 5)))
+
