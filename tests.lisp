@@ -299,6 +299,7 @@
   (assert-segment "ですら" "ですら")
   (assert-segment "でさえ" "でさえ")
   (assert-segment "みごとにやってのける" "みごと" "に" "やってのける")
+  (assert-segment "いる" "いる")
   )
 
 (define-test json-consistency-test
