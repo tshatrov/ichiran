@@ -180,9 +180,31 @@
           :column)
    '<))
 
+(defun get-counter-stags (seqs)
+  (let ((stagks (make-hash-table))
+        (stagrs (make-hash-table)))
+    (flet ((q (tag)
+             (query (:select 'sp.seq 'sp.text
+                             :from (:as 'sense-prop 'sp) (:as 'sense-prop 'sp1)
+                             :where (:and (:= 'sp.seq 'sp1.seq)
+                                          (:= 'sp.sense-id 'sp1.sense-id)
+                                          (:= 'sp.tag tag)
+                                          (:= 'sp1.tag "pos")
+                                          (:= 'sp1.text "ctr")
+                                          (:in 'sp.seq (:set seqs))
+                                          )))))
+      (loop for (seq text) in (q "stagk")
+         do (push text (gethash seq stagks nil)))
+      (loop for (seq text) in (q "stagr")
+         do (push text (gethash seq stagrs nil)))
+      (cons stagks stagrs))))
+
 (defparameter *extra-counter-ids* '())
 
-(defparameter *skip-counter-ids* '(2426510))
+(defparameter *skip-counter-ids*
+  '(2426510 ;; 一個当り
+    1241750 ;; 筋 条
+    ))
 
 (defun get-counter-readings ()
   (with-connection *connection*
@@ -190,16 +212,21 @@
            (counter-ids (set-difference
                          (nconc (get-counter-ids) *extra-counter-ids*)
                          *skip-counter-ids*))
+           (stags (get-counter-stags counter-ids))
            (kanji-readings (select-dao 'kanji-text (:in 'seq (:set counter-ids))))
            (kana-readings (select-dao 'kana-text (:in 'seq (:set counter-ids)))))
       (loop for r in kanji-readings
          for val = (gethash (seq r) hash)
-         unless val do (setf val (cons nil nil) (gethash (seq r) hash) val)
-         do (push r (car val)))
+         for stagks = (gethash (seq r) (car stags))
+         when (or (not stagks) (find (text r) stagks :test 'equal))
+         do (unless val (setf val (cons nil nil) (gethash (seq r) hash) val))
+           (push r (car val)))
       (loop for r in kana-readings
          for val = (gethash (seq r) hash)
-         unless val do (setf val (cons nil nil) (gethash (seq r) hash) val)
-         do (push r (cdr val)))
+         for stagrs = (gethash (seq r) (cdr stags))
+         when (or (not stagrs) (find (text r) stagrs :test 'equal))
+         do (unless val (setf val (cons nil nil) (gethash (seq r) hash) val))
+           (push r (cdr val)))
       (maphash
        (lambda (key value)
          (setf (gethash key hash) (cons (sort (car value) '< :key 'ord)
