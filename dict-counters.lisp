@@ -81,11 +81,16 @@
                            (digit-opts (assoc digit (digit-opts obj))))
   (when digit-opts
     (loop for opt in digit-opts
-       do (case opt
-            (:g (geminate number-kana))
-            (:r (rendaku counter-kana))
-            (:h (rendaku counter-kana :handakuten t))))
-    (return-from counter-join (call-next-method)))
+       if (stringp opt)
+       do (let ((stem (length (getf ichiran/numbers::*digit-to-kana* digit))))
+            (setf number-kana
+                  (concatenate 'string (subseq number-kana 0 (- (length number-kana) stem)) opt)))
+       else do
+         (case opt
+           (:g (geminate number-kana))
+           (:r (rendaku counter-kana))
+           (:h (rendaku counter-kana :handakuten t))))
+    (return-from counter-join (call-next-method obj n number-kana counter-kana)))
   
   (case digit
     (1 (case head
@@ -304,3 +309,12 @@
   (args 'counter-hifumi "竿" "さお" :digit-set '(1 2 3 4 5))
   (args 'counter-hifumi "棹" "さお" :digit-set '(1 2 3 4 5)))
 
+(def-special-counter 1260670 ()  ;; uncertain
+  (args 'counter-hifumi "本" "もと" :digit-set '(1 2 3)))
+
+(def-special-counter 1275640 ()
+  (args 'counter-hifumi "口" "くち" :digit-set '(1 2 3)))
+
+(def-special-counter 1299680 ()
+  (args 'counter-hifumi "皿" "さら" :digit-set '(1 2 3))
+  (args 'counter-hifumi "盤" "さら" :digit-set '(1 2 3)))
