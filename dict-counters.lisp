@@ -15,6 +15,8 @@
    (number :reader number-value)
    (source :reader source :initform nil :initarg :source)
    (ordinalp :reader ordinalp :initform nil :initarg :ordinalp)
+   (suffix :reader counter-suffix :initarg :suffix :initform nil
+           :documentation "Kana suffix (i.e. め for 目)")
    (digit-opts :reader digit-opts :initform nil :initarg :digit-opts
                :documentation "alist of form (digit opt1 opt2 ...)
     where opt can be :g (geminate) :d (dakuten) :h (handakuten) (only one of :d and :h is meaningful)
@@ -50,6 +52,10 @@
   (let ((n (number-value obj)))
     (counter-join obj n (number-to-kana n :separator *kana-hint-space*)
                   (copy-seq (counter-kana obj)))))
+
+(defmethod get-kana :around ((obj counter-text))
+  (let ((kana (call-next-method)))
+    (if (counter-suffix obj) (concatenate 'string kana (counter-suffix obj)) kana)))
 
 (defmethod word-type ((obj counter-text))
   (if (> (count-char-class (text obj) :kanji-char) 0) :kanji :kana))
@@ -153,11 +159,11 @@
                     (gethash cord *counter-cache*))
          do (loop for old-args in (gethash counter *counter-cache*)
                for (cls . args) = (copy-list old-args)
-               unless (getf args :ordinal)
+               unless (getf args :ordinalp)
                do
                  (setf (getf args :text) cord
-                       (getf args :kana) (concatenate 'string (getf args :kana) "め")
-                       (getf args :ordinal) t)
+                       (getf args :suffix) (format nil "~@[~a~]め" (getf args :suffix))
+                       (getf args :ordinalp) t)
                  (apply #'add-args cord cls args)))
       )))
 
