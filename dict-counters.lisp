@@ -75,8 +75,15 @@
 
 (defmethod root-p ((obj counter-text)) t)
 
+(defun get-digit (n)
+  (let ((digit (mod n 10)))
+    (if (zerop digit)
+        (loop for (p pn . rest) on '(10 100 1000 10000 100000000)
+           when (and pn (not (zerop (mod n pn)))) do (return p))
+        digit)))
+
 (defmethod counter-join ((obj counter-text) n number-kana counter-kana
-                         &aux (digit (mod n 10))
+                         &aux (digit (get-digit n))
                            (head (gethash (char counter-kana 0) *char-class-hash*))
                            (digit-opts (assoc digit (digit-opts obj))))
   (when digit-opts
@@ -103,7 +110,10 @@
           (rendaku counter-kana :handakuten t))))
     (3 (case head
          ((:ha :hi :fu :he :ho)
-          (rendaku counter-kana))))
+          (rendaku counter-kana :handakuten t))))
+    (4 (case head
+         ((:ha :hi :fu :he :ho)
+          (rendaku counter-kana :handakuten t))))
     (6 (case head
          ((:ka :ki :ku :ke :ko)
           (geminate number-kana))
@@ -120,8 +130,7 @@
          ((:ha :hi :fu :he :ho)
           (geminate number-kana)
           (rendaku counter-kana :handakuten t))))
-    (0 (unless (zerop (mod n 100))
-         (case head
+    (10 (case head
            ((:ka :ki :ku :ke :ko
              :sa :shi :su :se :so
              :ta :chi :tsu :te :to
@@ -129,7 +138,21 @@
             (geminate number-kana))
            ((:ha :hi :fu :he :ho)
             (geminate number-kana)
-            (rendaku counter-kana :handakuten t))))))
+            (rendaku counter-kana :handakuten t))))
+    (100 (case head
+         ((:ka :ki :ku :ke :ko)
+          (geminate number-kana))
+         ((:ha :hi :fu :he :ho
+           :pa :pi :pu :pe :po)
+          (geminate number-kana)
+          (rendaku counter-kana :handakuten t))))
+    (1000 (case head
+            ((:ha :hi :fu :he :ho)
+             (rendaku counter-kana :handakuten t))))
+    (10000 (case head
+             ((:ha :hi :fu :he :ho)
+              (rendaku counter-kana :handakuten t))))
+    )
   (call-next-method))
 
 (defclass number-text (counter-text)
