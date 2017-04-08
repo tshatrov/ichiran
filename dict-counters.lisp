@@ -85,9 +85,10 @@
 (defmethod counter-join ((obj counter-text) n number-kana counter-kana
                          &aux (digit (get-digit n))
                            (head (gethash (char counter-kana 0) *char-class-hash*))
-                           (digit-opts (assoc digit (digit-opts obj))))
-  (when digit-opts
-    (loop for opt in digit-opts
+                           (digit-opts (assoc digit (digit-opts obj)))
+                           (off (assoc :off (digit-opts obj))))
+  (when (or off digit-opts)
+    (loop for opt in (cdr digit-opts)
        if (stringp opt)
        do (let ((stem (length (getf ichiran/numbers::*digit-to-kana* digit))))
             (setf number-kana
@@ -168,7 +169,13 @@
 (defun init-counters (&optional reset)
   (when (or reset (not *counter-cache*))
     (setf *counter-cache* (make-hash-table :test 'equal))
-    (labels ((add-args (text &rest args) (push args (gethash text *counter-cache* nil))))
+    (labels ((add-args (text &rest args)
+               (if (listp text)
+                   (loop for txt in text
+                      for new-args = (copy-list args)
+                      do (setf (getf (cdr new-args) :text) txt)
+                         (push new-args (gethash txt *counter-cache* nil)))
+                   (push args (gethash text *counter-cache* nil)))))
       (add-args "" 'number-text)
       (let ((readings-hash (get-counter-readings)))
         (loop for seq being each hash-key of readings-hash using (hash-value readings)
@@ -282,6 +289,12 @@
 (def-special-counter 1203020 ()
   (args 'counter-text "階" "かい" :digit-opts '((3 :r))))
 
+(def-special-counter 1315920 ()
+  (args 'counter-text "時間" "じかん" :digit-opts '((4 "よ") (9 "く"))))
+
+(def-special-counter 1356740 ()
+  (args 'counter-text "畳" "じょう" :digit-opts '((4 "よ"))))
+
 (defclass counter-tsu (counter-text) ())
 
 (defmethod verify ((counter counter-tsu) unique)
@@ -320,7 +333,7 @@
                     (7 "なな")
                     (8 "や")
                     (9 "ここの")
-                    (10 "とお")
+                    (10 "と")
                     )
                   (counter-kana obj)))
     (t (call-next-method))))
@@ -329,8 +342,7 @@
   (args 'counter-hifumi "株" "かぶ" :digit-set '(1 2)))
 
 (def-special-counter 1214060 ()
-  (args 'counter-hifumi "竿" "さお" :digit-set '(1 2 3 4 5))
-  (args 'counter-hifumi "棹" "さお" :digit-set '(1 2 3 4 5)))
+  (args 'counter-hifumi '("竿" "棹") "さお" :digit-set '(1 2 3 4 5)))
 
 (def-special-counter 1260670 ()  ;; uncertain
   (args 'counter-hifumi "本" "もと" :digit-set '(1 2 3)))
@@ -339,5 +351,29 @@
   (args 'counter-hifumi "口" "くち" :digit-set '(1 2 3)))
 
 (def-special-counter 1299680 ()
-  (args 'counter-hifumi "皿" "さら" :digit-set '(1 2 3))
-  (args 'counter-hifumi "盤" "さら" :digit-set '(1 2 3)))
+  (args 'counter-hifumi '("皿" "盤") "さら" :digit-set '(1 2 3)))
+
+(def-special-counter 1302680 () ;; uncertain
+  (args 'counter-hifumi "山" "やま" :digit-set '(1 2 3)))
+
+(def-special-counter 1335810 () ;; uncertain
+  (args 'counter-hifumi '("重ね" "襲") "かさね" :digit-set '(1 2 3)))
+
+(def-special-counter 1361130 () ;; uncertain
+  (args 'counter-hifumi '("振り" "風") "ふり" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1366210 ()
+  (args 'counter-hifumi '("針" "鉤" "鈎") "はり" :digit-set '(1 2) :digit-opts '((:off))))
+
+(defclass counter-e (counter-hifumi)
+  ((digit-set :initform '(1 2 3 5 7 8 9 10))))
+
+(defmethod verify ((counter counter-e) unique)
+  (and (find (number-value counter) (digit-set counter)) unique))
+
+(def-special-counter 1335730 ()
+  (args 'counter-e "重" "え"))
+
+(def-special-counter 2108240 ()
+  (args 'counter-text "重" "じゅう" :digit-opts '((4 "し") (7 "しち") (9 "く"))))
+
