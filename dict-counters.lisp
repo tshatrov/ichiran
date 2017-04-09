@@ -22,6 +22,7 @@
     where opt can be :g (geminate) :d (dakuten) :h (handakuten) (only one of :d and :h is meaningful)
     These options are used in counter-join, if digit is present then the usual rules are ignored.
     Empty options are equivalent to simple concatenation.")
+   (common :reader counter-common :initform nil :initarg :common)
    ))
 
 (defgeneric verify (counter unique)
@@ -67,7 +68,7 @@
   (if (> (count-char-class (text obj) :kanji-char) 0) :kanji :kana))
 
 (defmethod common ((obj counter-text))
-  (if (source obj) (common (source obj)) 0))
+  (or (counter-common obj) (if (source obj) (common (source obj)) 0)))
 
 (defmethod seq ((obj counter-text))
   (and (source obj) (seq (source obj))))
@@ -293,7 +294,14 @@
                                          (lambda (,text-var)
                                            (find ,text-var ,readings-var :key 'text :test 'equal))
                                          (find ,text-var ,readings-var :key 'text :test 'equal))
-                             ,keys-var)))
+                             ,keys-var))
+                    (args-suffix (,class-var ,text-var ,kana-var &rest ,keys-var &key &allow-other-keys)
+                      (apply 'list (apply 'concatenate 'string ,text-var) ,class-var
+                             :text (apply 'concatenate 'string ,text-var)
+                             :kana (car ,kana-var) :suffix (cadr ,kana-var)
+                             :source (find (car ,text-var) ,readings-var :key 'text :test 'equal)
+                             ,keys-var))
+                    )
                (list ,@body))))))
 
 (def-special-counter 1203020 ()
@@ -304,6 +312,16 @@
 
 (def-special-counter 1356740 ()
   (args 'counter-text "畳" "じょう" :digit-opts '((4 "よ"))))
+
+(def-special-counter 1396490 ()
+  (args 'counter-text "膳" "ぜん" :digit-opts '((4 "よ") (7 "しち"))))
+
+(def-special-counter 1427240 ()
+  (args 'counter-text "丁" "ちょう")
+  (args-suffix 'counter-text '("丁" "目") '("ちょう" "め") :ordinalp t))
+
+(def-special-counter 1427420 ()
+  (args 'counter-text "丁目" "ちょうめ" :ordinalp t))
 
 (defclass counter-tsu (counter-text) ())
 
@@ -374,6 +392,30 @@
 
 (def-special-counter 1366210 ()
   (args 'counter-hifumi '("針" "鉤" "鈎") "はり" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1379650 ()
+  (args 'counter-hifumi '("盛り" "盛") "もり" :digit-set '(1 2)))
+
+(def-special-counter 1383800 ()
+  (args 'counter-hifumi '("切り" "限り" "限") "きり" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1384840 ()
+  (args 'counter-hifumi "切れ" "きれ" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1385780 ()
+  (args 'counter-hifumi "折" "おり" :digit-set '(1 2)))
+
+(def-special-counter 1404450 ()
+  (args 'counter-hifumi "束" "たば" :digit-set '(1 2)))
+
+(def-special-counter 1426480 ()
+  (args 'counter-hifumi "柱" "はしら" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1432920 ()
+  (args 'counter-hifumi "通り" "とおり" :digit-set '(1 2) :digit-opts '((100 :g))))
+
+(def-special-counter 1445150 ()
+  (args 'counter-hifumi "度" "たび" :digit-set '(1 2) :digit-opts '((:off)) :common :null))
 
 (defclass counter-e (counter-hifumi)
   ((digit-set :initform '(1 2 3 5 7 8 9 10))))

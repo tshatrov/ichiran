@@ -475,6 +475,7 @@
   (delete-conjugation 2086640 2684620) ;; しい
   
   (add-errata-feb17)
+  (add-errata-counters)
   )
 
 (defun add-errata-feb17 ()
@@ -531,9 +532,6 @@
 
   (add-reading 1029150 "えっち")
 
-  (delete-reading 1299960 "さんかい")
-  (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
-
   (load-entry "
 <entry>
 <ent_seq>1613860</ent_seq>
@@ -565,6 +563,13 @@
 </entry>" :if-exists :overwrite)
 
   (recalc-entry-stats 1613860 99000000)
+  )
+
+(defun def-errata-counters ()
+  (delete-reading 1299960 "さんかい")
+  (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
+
+  (add-sense-prop 1427420 0 "pos" "ctr") ;; 丁目
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい
