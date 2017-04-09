@@ -30,10 +30,16 @@
     (declare (ignore counter))
     unique))
 
+(defun ordinal-str (n)
+  (let* ((digit (mod n 10))
+         (teenp (< 10 (mod n 100) 20))
+         (suffix (if teenp "th" (case digit (1 "st") (2 "nd") (3 "rd") (t "th")))))
+    (format nil "~a~a" n suffix)))
+
 (defgeneric value-string (counter)
   (:documentation "Value to be presented as string")
-  (:method ((counter counter-text))
-    (format nil "Value: ~a" (number-value counter))))
+  (:method ((counter counter-text) &aux (value (number-value counter)))
+    (format nil "Value: ~a" (if (ordinalp counter) (ordinal-str value) value))))
 
 (defmethod initialize-instance :after ((obj counter-text) &key)
   (setf (slot-value obj 'number) (parse-number (number-text obj))))
@@ -173,7 +179,8 @@
                (if (listp text)
                    (loop for txt in text
                       for new-args = (copy-list args)
-                      do (setf (getf (cdr new-args) :text) txt)
+                      do (setf (getf (cdr new-args) :text) txt
+                               (getf (cdr new-args) :source) (funcall (getf (cdr new-args) :source) txt))
                          (push new-args (gethash txt *counter-cache* nil)))
                    (push args (gethash text *counter-cache* nil)))))
       (add-args "" 'number-text)
@@ -282,7 +289,10 @@
            (lambda (,readings-var)
              (flet ((args (,class-var ,text-var ,kana-var &rest ,keys-var &key &allow-other-keys)
                       (apply 'list ,text-var ,class-var :text ,text-var :kana ,kana-var
-                             :source (find ,text-var ,readings-var :key 'text :test 'equal)
+                             :source (if (listp ,text-var)
+                                         (lambda (,text-var)
+                                           (find ,text-var ,readings-var :key 'text :test 'equal))
+                                         (find ,text-var ,readings-var :key 'text :test 'equal))
                              ,keys-var)))
                (list ,@body))))))
 
