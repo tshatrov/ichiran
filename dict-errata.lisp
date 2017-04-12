@@ -517,6 +517,7 @@
   (set-common 'kana-text 1312880 "めす" :null)
   (set-common 'kana-text 2061540 "ぶっちゃける" 0)
   (set-common 'kana-text 2034520 "ですら" 0)
+  (set-common 'kana-text 1566210 "いずれ" 9)
 
   (delete-sense-prop 2021030 "misc" "uk") ;; 摂る（とる）
   (delete-sense-prop 1586730 "misc" "uk") ;; 粗 (あら)
