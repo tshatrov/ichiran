@@ -23,13 +23,15 @@
     These options are used in counter-join, if digit is present then the usual rules are ignored.
     Empty options are equivalent to simple concatenation.")
    (common :reader counter-common :initform nil :initarg :common)
+   (allowed :reader counter-allowed :initform nil :initarg :allowed)
    ))
 
 (defgeneric verify (counter unique)
   (:documentation "Verify if counter is valid")
   (:method (counter unique)
-    (declare (ignore counter))
-    unique))
+    (and (or (not (counter-allowed counter))
+             (find (number-value counter) (counter-allowed counter)))
+         unique)))
 
 (defun ordinal-str (n)
   (let* ((digit (mod n 10))
@@ -97,7 +99,9 @@
   (when (or off digit-opts)
     (loop for opt in (cdr digit-opts)
        if (stringp opt)
-       do (let ((stem (length (getf ichiran/numbers::*digit-to-kana* digit))))
+       do (let ((stem (length (if (< digit 10)
+                                  (getf ichiran/numbers::*digit-to-kana* digit)
+                                  (getf ichiran/numbers::*power-to-kana* (round (log digit 10)))))))
             (setf number-kana
                   (concatenate 'string (subseq number-kana 0 (- (length number-kana) stem)) opt)))
        else do
@@ -119,9 +123,9 @@
     (3 (case head
          ((:ha :hi :fu :he :ho)
           (rendaku counter-kana :handakuten t))))
-    (4 (case head
-         ((:ha :hi :fu :he :ho)
-          (rendaku counter-kana :handakuten t))))
+    (4 #-(and)(case head
+                ((:ha :hi :fu :he :ho)
+                 (rendaku counter-kana :handakuten t))))
     (6 (case head
          ((:ka :ki :ku :ke :ko)
           (geminate number-kana))
@@ -150,8 +154,7 @@
     (100 (case head
          ((:ka :ki :ku :ke :ko)
           (geminate number-kana))
-         ((:ha :hi :fu :he :ho
-           :pa :pi :pu :pe :po)
+         ((:ha :hi :fu :he :ho)
           (geminate number-kana)
           (rendaku counter-kana :handakuten t))))
     (1000 (case head
@@ -323,6 +326,12 @@
 (def-special-counter 1427420 ()
   (args 'counter-text "丁目" "ちょうめ" :ordinalp t))
 
+(def-special-counter 1468380 ()
+  (args 'counter-text "年間" "ねんかん" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
+
+(def-special-counter 1514050 ()
+  (args 'counter-text "舗" "ほ" :digit-opts '((4 :h))))
+
 (defclass counter-tsu (counter-text) ())
 
 (defmethod verify ((counter counter-tsu) unique)
@@ -417,15 +426,21 @@
 (def-special-counter 1445150 ()
   (args 'counter-hifumi "度" "たび" :digit-set '(1 2) :digit-opts '((:off)) :common :null))
 
-(defclass counter-e (counter-hifumi)
-  ((digit-set :initform '(1 2 3 5 7 8 9 10))))
-
-(defmethod verify ((counter counter-e) unique)
-  (and (find (number-value counter) (digit-set counter)) unique))
+(def-special-counter 1448350 ()
+  (args 'counter-hifumi "棟" "むね" :digit-set '(1 2)))
 
 (def-special-counter 1335730 ()
-  (args 'counter-e "重" "え"))
+  (let ((digit-set '(1 2 3 5 7 8 9 10)))
+    (args 'counter-hifumi "重" "え" :digit-set digit-set :allowed digit-set)))
 
 (def-special-counter 2108240 ()
   (args 'counter-text "重" "じゅう" :digit-opts '((4 "し") (7 "しち") (9 "く"))))
 
+(def-special-counter 1482110 ()
+  (args 'counter-hifumi "晩" "ばん" :digit-set '(1 2 3) :allowed '(1 2 3)))
+
+(def-special-counter 1501110 ()
+  (args 'counter-hifumi '("腹" "肚") "はら" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1397450 ()
+  (args 'counter-hifumi "組" "くみ" :digit-set '(1 2 3)))

@@ -570,6 +570,7 @@
   (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
 
   (add-sense-prop 1427420 0 "pos" "ctr") ;; 丁目
+  (add-sense-prop 1397450 0 "pos" "ctr") ;; 組
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい
