@@ -507,3 +507,37 @@
 (def-special-counter 1853450 () ;; uncertain
   (args 'counter-hifumi '("締め" "〆") "しめ" :digit-set '(1 2)))
 
+(defclass counter-days-kun (counter-text)
+  ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
+
+(defmethod get-kana ((obj counter-days-kun))
+  (case (number-value obj)
+    (1 "ついたち")
+    (2 "ふつか")
+    (3 "みっか")
+    (4 "よっか")
+    (5 "いつか")
+    (6 "むいか")
+    (7 "なのか")
+    (8 "ようか")
+    (9 "ここのか")
+    (10 "とうか")
+    (14 "じゅうよっか")
+    (20 "はつか")
+    (24 "にじゅうよっか")
+    (30 "みそか")))
+
+(def-special-counter 2083110 ()
+  (args 'counter-days-kun "日" "か" :common 0))
+
+(defclass counter-days-on (counter-text) ())
+
+(defmethod verify ((counter counter-days-on) unique)
+  (let ((n (number-value counter)))
+    (and (or (> n 10)
+             (= n 1))
+         (/= n 20)
+         (call-next-method))))
+
+(def-special-counter 2083100 ()
+  (args 'counter-days-on "日" "にち"))
