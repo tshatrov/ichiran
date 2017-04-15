@@ -97,18 +97,22 @@
                            (digit-opts (assoc digit (digit-opts obj)))
                            (off (assoc :off (digit-opts obj))))
   (when (or off digit-opts)
-    (loop for opt in (cdr digit-opts)
-       if (stringp opt)
-       do (let ((stem (length (if (< digit 10)
-                                  (getf ichiran/numbers::*digit-to-kana* digit)
-                                  (getf ichiran/numbers::*power-to-kana* (round (log digit 10)))))))
-            (setf number-kana
-                  (concatenate 'string (subseq number-kana 0 (- (length number-kana) stem)) opt)))
+    (loop with mod-counter
+       for opt in (cdr digit-opts)
+       if (stringp opt) do
+         (if mod-counter
+             (setf counter-kana opt)
+             (let ((stem (length (if (< digit 10)
+                                     (getf ichiran/numbers::*digit-to-kana* digit)
+                                     (getf ichiran/numbers::*power-to-kana* (round (log digit 10)))))))
+               (setf number-kana
+                     (concatenate 'string (subseq number-kana 0 (- (length number-kana) stem)) opt))))
        else do
          (case opt
            (:g (geminate number-kana))
            (:r (rendaku counter-kana))
-           (:h (rendaku counter-kana :handakuten t))))
+           (:h (rendaku counter-kana :handakuten t))
+           (:c (setf mod-counter t))))
     (return-from counter-join (call-next-method obj n number-kana counter-kana)))
   
   (case digit
@@ -197,11 +201,11 @@
                       for text = (text kt)
                       do (add-args text 'counter-text
                                    :text text :kana (text (car kana)) :source kt
-                                   :ordinalp (alexandria:ends-with #\目 text)))))
+                                   :ordinalp (and (> (length text) 1) (alexandria:ends-with #\目 text))))))
       (loop for counter in (alexandria:hash-table-keys *counter-cache*)
          for cord = (concatenate 'string counter "目")
          unless (or (alexandria:emptyp counter)
-                    (alexandria:ends-with #\目 counter)
+                    (and (> (length counter) 1) (alexandria:ends-with #\目 counter))
                     (gethash cord *counter-cache*))
          do (loop for old-args in (gethash counter *counter-cache*)
                for (cls . args) = (copy-list old-args)
@@ -314,7 +318,7 @@
   (args 'counter-text "時間" "じかん" :digit-opts '((4 "よ") (9 "く"))))
 
 (def-special-counter 1356740 ()
-  (args 'counter-text "畳" "じょう" :digit-opts '((4 "よ"))))
+  (args 'counter-text "畳" "じょう" :digit-opts '((4 "よ") (7 "しち"))))
 
 (def-special-counter 1396490 ()
   (args 'counter-text "膳" "ぜん" :digit-opts '((4 "よ") (7 "しち"))))
@@ -331,6 +335,45 @@
 
 (def-special-counter 1514050 ()
   (args 'counter-text "舗" "ほ" :digit-opts '((4 :h))))
+
+(def-special-counter 1522150 ()
+  (args 'counter-text "本" "ほん" :digit-opts '((3 :r))))
+
+(def-special-counter 1583370 ()
+  (args 'counter-text '("匹" "疋") "ひき" :digit-opts '((3 :r))))
+
+(def-special-counter 1607310 ()
+  (args 'counter-text "羽" "わ" :digit-opts '((3 :c "ば") (10 :g :c "ぱ"))))
+
+(def-special-counter 1607320 ()
+  (args 'counter-text "把" "わ" :digit-opts '((3 :c "ば") (7 "しち") (10 :g :c "ぱ"))))
+
+(def-special-counter 1633690 ()
+  (args 'counter-text "段" "だん" :digit-opts '((7 "しち"))))
+
+(def-special-counter 1901390 ()
+  (args 'counter-text "敗" "はい" :digit-opts '((4 :h))))
+
+(def-special-counter 1919550 ()
+  (args 'counter-text "泊" "はく" :digit-opts '((4 :h))))
+
+(def-special-counter 1994890 ()
+  (args 'counter-text "首" "しゅ" :digit-opts '((10))))
+
+(def-special-counter 1351270 ()
+  (args 'counter-text "章" "しょう" :digit-opts '((10))))
+
+(def-special-counter 2019640 ()
+  (args 'counter-text '("杯" "盃") "はい" :digit-opts '((3 :r))))
+
+(def-special-counter 2078550 ()
+  (args 'counter-text "条" "じょう" :digit-opts '((7 "しち"))))
+
+(def-special-counter 2078590 ()
+  (args 'counter-text "軒" "けん" :digit-opts '((3 :r))))
+
+(def-special-counter 2081610 ()
+  (args 'counter-text '("立て" "たて" "タテ") "たて" :digit-opts '((:off))))
 
 (defclass counter-tsu (counter-text) ())
 
@@ -379,7 +422,7 @@
   (args 'counter-hifumi "株" "かぶ" :digit-set '(1 2)))
 
 (def-special-counter 1214060 ()
-  (args 'counter-hifumi '("竿" "棹") "さお" :digit-set '(1 2 3 4 5)))
+  (args 'counter-hifumi '("竿" "棹") "さお" :digit-set '(1 2 3 4 5) :digit-opts '((10))))
 
 (def-special-counter 1260670 ()  ;; uncertain
   (args 'counter-hifumi "本" "もと" :digit-set '(1 2 3)))
@@ -444,3 +487,23 @@
 
 (def-special-counter 1397450 ()
   (args 'counter-hifumi "組" "くみ" :digit-set '(1 2 3)))
+
+(def-special-counter 1519300 ()
+  (args 'counter-hifumi '("房" "総") "ふさ" :digit-set '(1 2) :digit-opts '((:off))))
+
+(def-special-counter 1552890 ()
+  (args 'counter-hifumi "粒" "つぶ" :digit-set '(1 2 3) :digit-opts '((6 :g))))
+
+(def-special-counter 1564410 ()
+  (args 'counter-hifumi "一刎" "はね" :digit-set '(1 2 3) :digit-opts '((:off))))
+
+(def-special-counter 1585650 ()
+  (args 'counter-hifumi '("箱" "函" "匣" "筥" "筐" "凾") "はこ" :digit-set '(1 2)
+        :digit-opts '((4 "よ") (1000) (10000))))
+
+(def-special-counter 1602800 () ;; uncertain, 三舟 can be さんしゅう in some context
+  (args 'counter-hifumi '("船" "舟") "ふね" :digit-set '(1 2 3) :digit-opts '((:off))))
+
+(def-special-counter 1853450 () ;; uncertain
+  (args 'counter-hifumi '("締め" "〆") "しめ" :digit-set '(1 2)))
+

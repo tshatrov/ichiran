@@ -569,8 +569,12 @@
   (delete-reading 1299960 "さんかい")
   (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
 
+  (add-reading 2081610 "タテ")
+  
   (add-sense-prop 1427420 0 "pos" "ctr") ;; 丁目
   (add-sense-prop 1397450 0 "pos" "ctr") ;; 組
+  (add-sense-prop 1351270 0 "pos" "ctr") ;; 章
+  (add-sense-prop 1351270 1 "pos" "n") ;; 章
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい
@@ -592,6 +596,7 @@
                              2822130 ;; て良い
                              2568000 ;; れる/られる
                              2537250 ;; しようとする
+                             2760890 ;; 三箱
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
