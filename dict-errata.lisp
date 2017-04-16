@@ -575,6 +575,17 @@
   (add-sense-prop 1397450 0 "pos" "ctr") ;; 組
   (add-sense-prop 1351270 0 "pos" "ctr") ;; 章
   (add-sense-prop 1351270 1 "pos" "n") ;; 章
+  (add-sense-prop 1490430 0 "pos" "ctr") ;; 秒
+  (add-sense-prop 2020680 0 "pos" "ctr") ;; 時
+  (add-sense-prop 1502840 0 "pos" "ctr") ;; 分
+  (add-sense-prop 2104230 0 "pos" "ctr") ;; 月
+  (add-sense-prop 1215240 0 "pos" "ctr") ;; 間
+  (add-sense-prop 1373990 0 "pos" "ctr") ;; 世紀
+  (add-sense-prop 1281690 0 "pos" "ctr") ;; 行
+  (add-sense-prop 1281690 1 "pos" "n")
+  (add-sense-prop 1042610 1 "pos" "ctr") ;; キロ
+  (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
+  (add-sense-prop 1100380 3 "pos" "ctr") ;; パー
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい

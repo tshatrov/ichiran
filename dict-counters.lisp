@@ -17,6 +17,9 @@
    (ordinalp :reader ordinalp :initform nil :initarg :ordinalp)
    (suffix :reader counter-suffix :initarg :suffix :initform nil
            :documentation "Kana suffix (i.e. め for 目)")
+   (accepts-suffixes :reader counter-suffix-accepts :initarg :accepts :initform nil
+                     :documentation "which suffixes this counter accepts")
+   (suffix-descriptions :reader counter-suffix-descriptions :initarg :suffix-descriptions :initform nil)
    (digit-opts :reader digit-opts :initform nil :initarg :digit-opts
                :documentation "alist of form (digit opt1 opt2 ...)
     where opt can be :g (geminate) :d (dakuten) :h (handakuten) (only one of :d and :h is meaningful)
@@ -24,6 +27,7 @@
     Empty options are equivalent to simple concatenation.")
    (common :reader counter-common :initform nil :initarg :common)
    (allowed :reader counter-allowed :initform nil :initarg :allowed)
+   (foreign :reader counter-foreign :initform nil :initarg :foreign)
    ))
 
 (defgeneric verify (counter unique)
@@ -42,7 +46,9 @@
 (defgeneric value-string (counter)
   (:documentation "Value to be presented as string")
   (:method ((counter counter-text) &aux (value (number-value counter)))
-    (format nil "Value: ~a" (if (ordinalp counter) (ordinal-str value) value))))
+    (format nil "Value: ~a~{ ~a~}"
+            (if (ordinalp counter) (ordinal-str value) value)
+            (reverse (counter-suffix-descriptions counter)))))
 
 (defmethod initialize-instance :after ((obj counter-text) &key)
   (setf (slot-value obj 'number) (parse-number (number-text obj))))
@@ -114,6 +120,29 @@
            (:h (rendaku counter-kana :handakuten t))
            (:c (setf mod-counter t))))
     (return-from counter-join (call-next-method obj n number-kana counter-kana)))
+
+  (when (counter-foreign obj)
+    (case digit
+      (6 (case head
+           ((:ka :ki :ku :ke :ko
+             :pa :pi :pu :pe :po)
+            (geminate number-kana))))
+      (8 (case head
+           ((:ka :ki :ku :ke :ko
+             :sa :shi :su :se :so
+             :ta :chi :tsu :te :to
+             :pa :pi :pu :pe :po)
+            (geminate number-kana))))
+      (10 (case head
+           ((:ka :ki :ku :ke :ko
+             :sa :shi :su :se :so
+             :ta :chi :tsu :te :to
+             :pa :pi :pu :pe :po)
+            (geminate number-kana))))
+      (100 (case head
+             ((:ka :ki :ku :ke :ko)
+              (geminate number-kana)))))
+    (return-from counter-join (call-next-method)))
   
   (case digit
     (1 (case head
@@ -131,10 +160,10 @@
                 ((:ha :hi :fu :he :ho)
                  (rendaku counter-kana :handakuten t))))
     (6 (case head
-         ((:ka :ki :ku :ke :ko)
-          (geminate number-kana))
-         ((:ha :hi :fu :he :ho
+         ((:ka :ki :ku :ke :ko
            :pa :pi :pu :pe :po)
+          (geminate number-kana))
+         ((:ha :hi :fu :he :ho)
           (geminate number-kana)
           (rendaku counter-kana :handakuten t))))
     (8 (case head
@@ -180,28 +209,44 @@
 
 (defparameter *special-counters* (make-hash-table))
 
+(defparameter *counter-suffixes* '((:kan "間" "かん" "[duration]")))
+
+(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan)))
+
 (defun init-counters (&optional reset)
   (when (or reset (not *counter-cache*))
     (setf *counter-cache* (make-hash-table :test 'equal))
-    (labels ((add-args (text &rest args)
+    (labels ((add-args* (text args)
+               (push args (gethash text *counter-cache* nil))
+               (loop for suf in (getf (cdr args) :accepts)
+                  for (suf-text suf-kana suf-desc) = (cdr (assoc suf *counter-suffixes*))
+                  for (cls . new-args) = (copy-list args)
+                  for new-text = (concatenate 'string text suf-text)
+                  do (setf (getf new-args :text) new-text
+                           (getf new-args :suffix) (format nil "~@[~a~]~a" (getf new-args :suffix) suf-kana))
+                    (push suf-desc (getf new-args :suffix-descriptions))
+                    (push (cons cls new-args) (gethash new-text *counter-cache* nil))))
+             (add-args (text &rest args)
                (if (listp text)
                    (loop for txt in text
                       for new-args = (copy-list args)
                       do (setf (getf (cdr new-args) :text) txt
                                (getf (cdr new-args) :source) (funcall (getf (cdr new-args) :source) txt))
-                         (push new-args (gethash txt *counter-cache* nil)))
-                   (push args (gethash text *counter-cache* nil)))))
+                         (add-args* txt new-args))
+                   (add-args* text args))))
       (add-args "" 'number-text)
       (let ((readings-hash (get-counter-readings)))
         (loop for seq being each hash-key of readings-hash using (hash-value readings)
            for (kanji . kana) = readings
            for special = (gethash seq *special-counters*)
            if special do (mapcar (lambda (args) (apply #'add-args args)) (funcall special (append kanji kana)))
-           else do (loop for kt in kanji
+           else do (loop for kt in (or kanji (remove-if-not (lambda (x) (test-word (text x) :katakana)) kana))
                       for text = (text kt)
                       do (add-args text 'counter-text
                                    :text text :kana (text (car kana)) :source kt
-                                   :ordinalp (and (> (length text) 1) (alexandria:ends-with #\目 text))))))
+                                   :ordinalp (and (> (length text) 1) (alexandria:ends-with #\目 text))
+                                   :accepts (cdr (assoc (seq kt) *counter-accepts*))
+                                   :foreign (not kanji)))))
       (loop for counter in (alexandria:hash-table-keys *counter-cache*)
          for cord = (concatenate 'string counter "目")
          unless (or (alexandria:emptyp counter)
@@ -255,11 +300,17 @@
          do (push text (gethash seq stagrs nil)))
       (cons stagks stagrs))))
 
-(defparameter *extra-counter-ids* '())
+(defparameter *extra-counter-ids*
+  '(2104230 ;; 月
+    ))
 
 (defparameter *skip-counter-ids*
   '(2426510 ;; 一個当り
     1241750 ;; 筋 条
+    2220370 ;; 歳 （とせ）
+    2248360 ;; 入 （しお）
+    2249290 ;; 荘
+    2423450 ;; 差し
     ))
 
 (defun get-counter-readings ()
@@ -314,11 +365,17 @@
 (def-special-counter 1203020 ()
   (args 'counter-text "階" "かい" :digit-opts '((3 :r))))
 
+(def-special-counter 2020680 ()
+  (args 'counter-text "時" "とき" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
+
 (def-special-counter 1315920 ()
   (args 'counter-text "時間" "じかん" :digit-opts '((4 "よ") (9 "く"))))
 
 (def-special-counter 1356740 ()
   (args 'counter-text "畳" "じょう" :digit-opts '((4 "よ") (7 "しち"))))
+
+(def-special-counter 2258110 ()
+  (args 'counter-text "帖" "じょう" :digit-opts '((4 "よ") (7 "しち"))))
 
 (def-special-counter 1396490 ()
   (args 'counter-text "膳" "ぜん" :digit-opts '((4 "よ") (7 "しち"))))
@@ -330,9 +387,6 @@
 (def-special-counter 1427420 ()
   (args 'counter-text "丁目" "ちょうめ" :ordinalp t))
 
-(def-special-counter 1468380 ()
-  (args 'counter-text "年間" "ねんかん" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
-
 (def-special-counter 1514050 ()
   (args 'counter-text "舗" "ほ" :digit-opts '((4 :h))))
 
@@ -343,7 +397,8 @@
   (args 'counter-text '("匹" "疋") "ひき" :digit-opts '((3 :r))))
 
 (def-special-counter 1607310 ()
-  (args 'counter-text "羽" "わ" :digit-opts '((3 :c "ば") (10 :g :c "ぱ"))))
+  (args 'counter-text "羽" "わ" :digit-opts '((3 :c "ば") (6 :g :c "ぱ") (10 :g :c "ぱ")
+                                              (100 :g :c "ぱ") (1000 :c "ば") (10000 :c "ば"))))
 
 (def-special-counter 1607320 ()
   (args 'counter-text "把" "わ" :digit-opts '((3 :c "ば") (7 "しち") (10 :g :c "ぱ"))))
@@ -375,6 +430,30 @@
 (def-special-counter 2081610 ()
   (args 'counter-text '("立て" "たて" "タテ") "たて" :digit-opts '((:off))))
 
+(def-special-counter 2084840 ()
+  (args 'counter-text "年" "ねん" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
+
+(def-special-counter 1468380 ()
+  (args 'counter-text "年間" "ねんかん" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
+
+(def-special-counter 1502840 ()
+  (args 'counter-text "分" "ふん" :digit-opts '((4 :h))))
+
+(def-special-counter 2386360 ()
+  (args 'counter-text "分間" "ふんかん" :digit-opts '((4 :h))))
+
+(def-special-counter 1373990 ()
+  (args 'counter-text "世紀" "せいき" :digit-opts '((10 "じっ"))))
+
+(def-special-counter 2208060 ()
+  (args 'counter-text "遍" "へん" :digit-opts '((3 :r))))
+
+(def-special-counter 2271620 ()
+  (args 'counter-text "口" "こう"))
+
+(def-special-counter 2412230 ()
+  (args 'counter-text "足" "そく" :digit-opts '((3 :r))))
+ 
 (defclass counter-tsu (counter-text) ())
 
 (defmethod verify ((counter counter-tsu) unique)
@@ -486,7 +565,9 @@
   (args 'counter-hifumi '("腹" "肚") "はら" :digit-set '(1 2) :digit-opts '((:off))))
 
 (def-special-counter 1397450 ()
-  (args 'counter-hifumi "組" "くみ" :digit-set '(1 2 3)))
+  (args 'counter-hifumi "組" "くみ" :digit-set '(1 2 3) :allowed '(1 2 3)
+        :suffix-descriptions '("(sets or pairs only)"))
+  (args 'counter-text "組" "くみ" :digit-opts '((1))))
 
 (def-special-counter 1519300 ()
   (args 'counter-hifumi '("房" "総") "ふさ" :digit-set '(1 2) :digit-opts '((:off))))
@@ -506,6 +587,15 @@
 
 (def-special-counter 1853450 () ;; uncertain
   (args 'counter-hifumi '("締め" "〆") "しめ" :digit-set '(1 2)))
+
+(def-special-counter 1215240 ()
+  (args 'counter-hifumi "間" "ま" :digit-set '(1 2 3 4 9)))
+
+(def-special-counter 2243700 ()
+  (args 'counter-hifumi "咫" "あた" :digit-set '(1 2 3)))
+
+(def-special-counter 2414730 ()
+  (args 'counter-hifumi "梱" "こり" :digit-set '(1 2)))
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
@@ -528,7 +618,7 @@
     (30 "みそか")))
 
 (def-special-counter 2083110 ()
-  (args 'counter-days-kun "日" "か" :common 0))
+  (args 'counter-days-kun "日" "か" :common 0 :accepts '(:kan)))
 
 (defclass counter-days-on (counter-text) ())
 
@@ -541,3 +631,28 @@
 
 (def-special-counter 2083100 ()
   (args 'counter-days-on "日" "にち"))
+
+(defclass counter-months (counter-text)
+  ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 11 12))
+   (digit-opts :initform '((4 "し") (7 "しち") (9 "く")))))
+
+(defmethod value-string ((counter counter-months))
+  (aref #("January" "February" "March"
+          "April" "May" "June"
+          "July" "August" "September"
+          "October" "November" "December")
+        (1- (number-value counter))))
+
+(def-special-counter 2104230 ()
+  (args 'counter-months "月" "がつ"))
+
+(defclass counter-people (counter-text) ())
+
+(defmethod get-kana ((obj counter-people))
+  (case (number-value obj)
+    (1 "ひとり")
+    (2 "ふたり")
+    (t (call-next-method))))
+
+(def-special-counter 2149890 ()
+  (args 'counter-people "人" "にん" :digit-opts '((4 "よ") (7 "しち"))))
