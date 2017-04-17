@@ -529,6 +529,7 @@
   (set-primary-nokanji 1374550 nil) ;; すごい
   (set-primary-nokanji 1591900 nil) ;; きれい
   (set-primary-nokanji 1000230 nil) ;; あかん
+  (set-primary-nokanji 1517810 nil) ;; もやし
 
   (add-reading 1029150 "えっち")
 
