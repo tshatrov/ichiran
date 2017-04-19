@@ -455,7 +455,13 @@
 
 (def-special-counter 2412230 ()
   (args 'counter-text "足" "そく" :digit-opts '((3 :r))))
- 
+
+(def-special-counter 1175570 ()
+  (args 'counter-text "円" "えん" :digit-opts '((4 "よ"))))
+
+(def-special-counter 1315130 ()
+  (args 'counter-text "字" "じ" :digit-opts '((4 "よ"))))
+
 (defclass counter-tsu (counter-text) ())
 
 (defmethod verify ((counter counter-tsu) unique)
@@ -530,10 +536,10 @@
   (args 'counter-hifumi '("盛り" "盛") "もり" :digit-set '(1 2)))
 
 (def-special-counter 1383800 ()
-  (args 'counter-hifumi '("切り" "限り" "限") "きり" :digit-set '(1 2) :digit-opts '((:off))))
+  (args 'counter-hifumi '("切り" "限り" "限") "きり" :digit-set '(1 2 3) :digit-opts '((4 "よ") (8))))
 
 (def-special-counter 1384840 ()
-  (args 'counter-hifumi "切れ" "きれ" :digit-set '(1 2) :digit-opts '((:off))))
+  (args 'counter-hifumi "切れ" "きれ" :digit-set '(1 2 3) :digit-opts '((4 "よ") (8))))
 
 (def-special-counter 1385780 ()
   (args 'counter-hifumi "折" "おり" :digit-set '(1 2)))
@@ -610,6 +616,12 @@
 
 (def-special-counter 2800530 ()
   (args 'counter-hifumi '("回り" "廻り") "まわり" :digit-set '(1 2)))
+
+(def-special-counter 1047880 ()
+  (args 'counter-hifumi "ケース" "ケース" :digit-set '(1 2) :foreign t))
+
+(def-special-counter 1214540 ()
+  (args 'counter-hifumi "缶" "かん" :digit-set '(1 2) :foreign t))
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
