@@ -586,6 +586,18 @@
   (add-sense-prop 1042610 1 "pos" "ctr") ;; キロ
   (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
   (add-sense-prop 1100380 3 "pos" "ctr") ;; パー
+
+  (add-sense 1583470 3 "counter for dishes") ;; 品（しな）
+  (add-sense-prop 1583470 3 "pos" "ctr")
+
+  (add-sense-prop 1411070 0 "pos" "ctr") ;; 袋
+  (add-sense-prop 1411070 1 "pos" "n")
+
+  (add-sense-prop 1328810 0 "pos" "ctr") ;; 種
+
+  (add-sense 1220540 5 "season (of a TV show)")
+  (add-sense-prop 1220540 5 "pos" "n")
+  (add-sense-prop 1220540 5 "pos" "ctr") ;; 期
   )
 
 (defparameter *skip-words* '(2458040  ;; てもいい

@@ -311,6 +311,8 @@
     2248360 ;; 入 （しお）
     2249290 ;; 荘
     2423450 ;; 差し
+    2671670 ;; 幅 （の）
+    2735690 ;; 種 （くさ）
     ))
 
 (defun get-counter-readings ()
@@ -501,7 +503,7 @@
   (args 'counter-hifumi "株" "かぶ" :digit-set '(1 2)))
 
 (def-special-counter 1214060 ()
-  (args 'counter-hifumi '("竿" "棹") "さお" :digit-set '(1 2 3 4 5) :digit-opts '((10))))
+  (args 'counter-hifumi '("竿" "棹") "さお" :digit-set '(1 2 3 4 5) :digit-opts '((4 "よ") (10))))
 
 (def-special-counter 1260670 ()  ;; uncertain
   (args 'counter-hifumi "本" "もと" :digit-set '(1 2 3)))
@@ -589,13 +591,25 @@
   (args 'counter-hifumi '("締め" "〆") "しめ" :digit-set '(1 2)))
 
 (def-special-counter 1215240 ()
-  (args 'counter-hifumi "間" "ま" :digit-set '(1 2 3 4 9)))
+  (args 'counter-hifumi "間" "ま" :digit-set '(1 2 3 4 9) :digit-opts '((4 "よ"))))
 
 (def-special-counter 2243700 ()
   (args 'counter-hifumi "咫" "あた" :digit-set '(1 2 3)))
 
 (def-special-counter 2414730 ()
   (args 'counter-hifumi "梱" "こり" :digit-set '(1 2)))
+
+(def-special-counter 1583470 ()
+  (args 'counter-hifumi "品" "しな" :digit-set '(1 2 3) :digit-opts '((4 "よ"))))
+
+(def-special-counter 1411070 ()
+  (args 'counter-hifumi "袋" "ふくろ" :digit-set '(1 2 3) :digit-opts '((4 "よ") (10 "じっ" :h))))
+
+(def-special-counter 2707020 ()
+  (args 'counter-text "袋" "たい" :digit-opts '((10 "じっ"))))
+
+(def-special-counter 2800530 ()
+  (args 'counter-hifumi '("回り" "廻り") "まわり" :digit-set '(1 2)))
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
