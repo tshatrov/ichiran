@@ -1535,6 +1535,7 @@
                       (jsown:extend-js js ("counter" (jsown:new-js ("value" value) ("ordinal" ordinal)))))
                     (let ((seq (word-info-seq word-info)))
                       (when seq
+                        (jsown:extend-js js ("seq" seq))
                         (let* ((reading-getter (lambda () (word-info-reading word-info)))
                                (gloss (get-senses-json seq :pos-list '("ctr") :reading-getter reading-getter)))
                           (when gloss
@@ -1544,6 +1545,8 @@
                            (conjs (word-info-conjugations word-info))
                            (reading-getter (lambda () (word-info-reading word-info)))
                            desc has-gloss)
+                       (when seq
+                         (jsown:extend-js js ("seq" seq)))
                        (cond (root-only
                               (return-from inner
                                 (jsown:extend-js js ("gloss" (get-senses-json seq :reading-getter reading-getter)))))
