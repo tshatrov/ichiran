@@ -104,16 +104,21 @@
 
 (defparameter *katakana-regex* "[ァ-ヺヽヾー]")
 (defparameter *katakana-uniq-regex* "[ァ-ヺヽヾ]")
-
 (defparameter *hiragana-regex* "[ぁ-ゔゝゞー]")
-
 (defparameter *kanji-regex* "[々ヶ〆一-龯]")
-
 (defparameter *kanji-char-regex* "[一-龯]")
 
 (defparameter *nonword-regex* "[^々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
-
 (defparameter *numeric-regex* "[0-9０-９〇一二三四五六七八九零壱弐参拾十百千万億兆京]")
+(defparameter *num-word-regex* "[0-9０-９〇々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
+(defparameter *word-regex* "[々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
+(defparameter *digit-regex* "[0-9０-９〇]")
+(defparameter *decimal-point-regex* "[.,]")
+
+(defparameter *basic-split-regex*
+  (format nil "((?:(?<!~a|~a)~a+|~a)~a*~a|~a)"
+          *decimal-point-regex* *digit-regex* *digit-regex*
+          *word-regex* *num-word-regex* *word-regex* *word-regex*))
 
 (defparameter *char-class-regex-mapping* 
   `((:katakana ,*katakana-regex*)
@@ -216,7 +221,7 @@
 
 (defun basic-split (str)
   "splits string into segments of japanese and misc characters"
-  (let ((split1 (split-by-regex (format nil "(~a+)" *nonword-regex*) str)))
+  (let* ((split1 (split-by-regex *basic-split-regex* str)))
     (loop for segment in split1
          for misc = (test-word segment :nonword) then (not misc)
          collect (cons (if misc :misc :word) segment))))

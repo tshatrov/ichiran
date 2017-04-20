@@ -780,6 +780,8 @@
       (setf score (max 5 score))
       (when (and long-p (or (> n-kanji 1) (> len 4)))
         (incf score 2)))
+    (when ctr-mode
+      (setf score (max 5 score)))
     (setf prop-score score)
     (setf score (* prop-score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
                                  (if (> n-kanji 1) (* (1- n-kanji) 5) 0))))
@@ -920,7 +922,8 @@
                                                 :as-hiragana (and katakana-group-end (= end katakana-group-end))
                                                 :counter (and number-group-end
                                                               (<= number-group-end end)
-                                                              (- number-group-end start)))))))
+                                                              (let ((d (- number-group-end start)))
+                                                                (and (<= d 20) d))))))))
               (when segments
                 (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break))
                 (list (list start end segments)))))

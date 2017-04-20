@@ -88,6 +88,9 @@
 
 (defmethod word-conj-data ((obj counter-text)) nil)
 
+(defmethod nokanji ((obj counter-text))
+  (and (source obj) (nokanji (source obj))))
+
 (defmethod root-p ((obj counter-text)) t)
 
 (defun get-digit (n)
