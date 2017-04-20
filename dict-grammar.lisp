@@ -571,11 +571,13 @@
                           (make-segment-list-from ,segment-list-left ,left))))))))))
 
 (defun filter-is-noun (segment)
-  (destructuring-bind (k p c l) (getf (segment-info segment) :kpcl)
-    (and (or l (and k (or p c)) (and p c))
-         (intersection '("n" "n-adv" "n-t" "adj-na" "n-suf" "pn")
-                       (getf (segment-info segment) :posi)
-                       :test 'equal))))
+  (or (destructuring-bind (k p c l) (getf (segment-info segment) :kpcl)
+        (and (or l (and k (or p c)) (and p c))
+             (intersection '("n" "n-adv" "n-t" "adj-na" "n-suf" "pn")
+                           (getf (segment-info segment) :posi)
+                           :test 'equal)))
+      (and (typep (segment-word segment) 'counter-text)
+           (getf (segment-info segment) :seq-set))))
 
 (defmacro filter-is-pos (pos-list (segment &rest kpcl-vars) &body kpcl-test)
   `(lambda (,segment)
