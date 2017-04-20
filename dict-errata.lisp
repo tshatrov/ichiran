@@ -621,7 +621,37 @@
   (add-sense-prop 1214540 0 "pos" "ctr") ;; 缶
   (add-sense-prop 1244080 0 "pos" "ctr") ;; 区
   (add-sense-prop 1239700 0 "pos" "ctr") ;; 曲
+
+  (add-sense-prop 1294940 0 "pos" "ctr") ;; 才 歳
+  (add-sense-prop 1294940 1 "pos" "suf")
+
+  (add-sense-prop 1575510 0 "pos" "ctr") ;; コマ
+  (add-sense-prop 1575510 1 "pos" "n")
+
+  (add-sense-prop 1505390 0 "pos" "ctr") ;; 文字
+
+  (add-sense-prop 1101700 0 "pos" "ctr") ;; パック
+  (add-sense-prop 1101700 1 "pos" "n")
+  (add-sense-prop 1101700 1 "pos" "vs")
+
+  (add-sense-prop 1120410 0 "pos" "ctr") ;; ページ
+  (add-sense-prop 1138570 0 "pos" "ctr") ;; ラウンド
+  (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
+  (add-sense-prop 1333450 0 "pos" "ctr") ;; 週
+
+  (load-entry "
+<entry>
+<ent_seq>99000010</ent_seq>
+<k_ele><keb>滴</keb></k_ele>
+<r_ele><reb>てき</reb></r_ele>
+<sense>
+<pos>ctr</pos>
+<gloss xml:lang=\"eng\">counter for drops</gloss>
+</sense>
+</entry>" :if-exists :overwrite) ;; replace with 2831955 for update
+  (recalc-entry-stats 99000010)
   )
+
 
 (defparameter *skip-words* '(2458040  ;; てもいい
                              2822120  ;; ても良い

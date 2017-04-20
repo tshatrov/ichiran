@@ -216,6 +216,8 @@
 
 (defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan)))
 
+(defparameter *counter-foreign* '(1120410))
+
 (defun init-counters (&optional reset)
   (when (or reset (not *counter-cache*))
     (setf *counter-cache* (make-hash-table :test 'equal))
@@ -243,13 +245,16 @@
            for (kanji . kana) = readings
            for special = (gethash seq *special-counters*)
            if special do (mapcar (lambda (args) (apply #'add-args args)) (funcall special (append kanji kana)))
-           else do (loop for kt in (or kanji (remove-if-not (lambda (x) (test-word (text x) :katakana)) kana))
+           else do (loop with foreign = (or (not kanji) (find seq *counter-foreign*))
+                      for kt in (if foreign
+                                    (append kanji (remove-if-not (lambda (x) (test-word (text x) :katakana)) kana))
+                                    kanji)
                       for text = (text kt)
                       do (add-args text 'counter-text
                                    :text text :kana (text (car kana)) :source kt
                                    :ordinalp (and (> (length text) 1) (alexandria:ends-with #\目 text))
                                    :accepts (cdr (assoc (seq kt) *counter-accepts*))
-                                   :foreign (not kanji)))))
+                                   :foreign foreign))))
       (loop for counter in (alexandria:hash-table-keys *counter-cache*)
          for cord = (concatenate 'string counter "目")
          unless (or (alexandria:emptyp counter)
@@ -624,7 +629,10 @@
   (args 'counter-hifumi "ケース" "ケース" :digit-set '(1 2) :foreign t))
 
 (def-special-counter 1214540 ()
-  (args 'counter-hifumi "缶" "かん" :digit-set '(1 2) :foreign t))
+  (args 'counter-hifumi "缶" "かん" :digit-set '(1 2)))
+
+(def-special-counter 1575510 ()
+  (args 'counter-hifumi '("齣" "コマ") "こま" :digit-set '(1 2)))
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
