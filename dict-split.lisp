@@ -325,6 +325,10 @@
   (1524640 (position #\に txt))
   (2028990 1))
 
+(def-simple-split split-osagari 1693800 50 () ;; お下がり
+  (2826528 1)
+  (1609810))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)

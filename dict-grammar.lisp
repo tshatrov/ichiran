@@ -813,7 +813,7 @@
      finally (return (values yep nope))))
 
 (defmacro def-segfilter-must-follow (name (segment-list-left segment-list-right)
-                                     filter-left filter-right)
+                                     filter-left filter-right &key allow-first)
   "This segfilter is for when segments that satisfy filter-right MUST follow segments that
    satisfy filter-left"
   (alexandria:with-gensyms (satisfies-left satisfies-right contradicts-right result)
@@ -821,7 +821,7 @@
        (multiple-value-bind (,satisfies-right ,contradicts-right)
            (classify ,filter-right (segment-list-segments ,segment-list-right))
          (cond
-           ((not ,satisfies-right)
+           ((or (not ,satisfies-right) (and ,allow-first (not ,segment-list-left)))
             (list (list ,segment-list-left ,segment-list-right)))
            ((or (not ,segment-list-left)
                 (/= (segment-list-end ,segment-list-left) (segment-list-start ,segment-list-right)))
@@ -851,7 +851,8 @@
 
 (def-segfilter-must-follow segfilter-tsu-iru (l r) ;; TODO: remove this, or make more generic
   (complement (filter-in-seq-set 2221640))
-  (filter-in-seq-set 1577980))
+  (filter-in-seq-set 1577980)
+  :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
