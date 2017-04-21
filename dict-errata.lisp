@@ -580,8 +580,6 @@
   (add-sense-prop 1490430 0 "pos" "ctr") ;; 秒
   (add-sense-prop 2020680 0 "pos" "ctr") ;; 時
   (add-sense-prop 1502840 0 "pos" "ctr") ;; 分
-  (add-sense-prop 2104230 0 "pos" "ctr") ;; 月
-  (add-sense-prop 1215240 0 "pos" "ctr") ;; 間
   (add-sense-prop 1373990 0 "pos" "ctr") ;; 世紀
   (add-sense-prop 1281690 0 "pos" "ctr") ;; 行
   (add-sense-prop 1281690 1 "pos" "n")
@@ -589,6 +587,8 @@
   (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
   (add-sense-prop 1100380 3 "pos" "ctr") ;; パー
 
+  (add-sense 1215240 1 "counter for rooms") ;; 間 
+  (add-sense-prop 1215240 1 "pos" "ctr")
   (add-sense 1583470 3 "counter for dishes") ;; 品（しな）
   (add-sense-prop 1583470 3 "pos" "ctr")
 
@@ -640,7 +640,14 @@
   (add-sense-prop 1138570 0 "pos" "ctr") ;; ラウンド
   (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
   (add-sense-prop 1333450 0 "pos" "ctr") ;; 週
+  (add-sense-prop 1480050 0 "pos" "ctr") ;; 反
+  (add-sense-prop 1558330 0 "pos" "ctr") ;; 列
 
+  (add-sense-prop 1956530 0 "pos" "ctr") ;; 寸
+  (add-sense-prop 1324110 0 "pos" "ctr") ;; 尺
+  (add-sense-prop 1324110 1 "pos" "n")
+  (add-sense-prop 1382450 0 "pos" "ctr") ;; 石
+  
   (load-entry "
 <entry>
 <ent_seq>99000010</ent_seq>
@@ -648,9 +655,9 @@
 <r_ele><reb>てき</reb></r_ele>
 <sense>
 <pos>ctr</pos>
-<gloss xml:lang=\"eng\">counter for drops</gloss>
+<gloss xml:lang=\"eng\">counter for drops of liquid</gloss>
 </sense>
-</entry>" :if-exists :overwrite) ;; replace with 2831955 for update
+</entry>" :if-exists :overwrite :upstream '(2831955 "滴"))
   (recalc-entry-stats 99000010)
   )
 

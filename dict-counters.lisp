@@ -310,6 +310,7 @@
 
 (defparameter *extra-counter-ids*
   '(2104230 ;; 月
+    1606800 ;; 割
     ))
 
 (defparameter *skip-counter-ids*
@@ -458,6 +459,9 @@
 (def-special-counter 2208060 ()
   (args 'counter-text "遍" "へん" :digit-opts '((3 :r))))
 
+(def-special-counter 1511870 ()
+  (args 'counter-text '("編" "篇") "へん" :digit-opts '((3 :r))))
+
 (def-special-counter 2271620 ()
   (args 'counter-text "口" "こう"))
 
@@ -575,7 +579,7 @@
   (args 'counter-text "重" "じゅう" :digit-opts '((4 "し") (7 "しち") (9 "く"))))
 
 (def-special-counter 1482110 ()
-  (args 'counter-hifumi "晩" "ばん" :digit-set '(1 2 3) :allowed '(1 2 3)))
+  (args 'counter-hifumi "晩" "ばん" :digit-set '(1 2 3) :digit-opts '((4 "よ"))))
 
 (def-special-counter 1501110 ()
   (args 'counter-hifumi '("腹" "肚") "はら" :digit-set '(1 2) :digit-opts '((:off))))
@@ -693,3 +697,11 @@
 
 (def-special-counter 2149890 ()
   (args 'counter-people "人" "にん" :digit-opts '((4 "よ") (7 "しち"))))
+
+(defclass counter-wari (counter-text) ())
+
+(defmethod value-string ((counter counter-wari))
+  (format nil "~a%" (* 10 (number-value counter))))
+
+(def-special-counter 1606800 ()
+  (args 'counter-wari "割" "わり"))
