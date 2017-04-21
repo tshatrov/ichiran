@@ -567,7 +567,7 @@
   (recalc-entry-stats 1613860 99000000)
   )
 
-(defun def-errata-counters ()
+(defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
   (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
 
@@ -647,6 +647,9 @@
   (add-sense-prop 1324110 0 "pos" "ctr") ;; 尺
   (add-sense-prop 1324110 1 "pos" "n")
   (add-sense-prop 1382450 0 "pos" "ctr") ;; 石
+
+  (add-sense-prop 1253800 1 "pos" "ctr") ;; 桁
+  (add-sense-prop 1253800 1 "pos" "n")
   
   (load-entry "
 <entry>

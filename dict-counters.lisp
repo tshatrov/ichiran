@@ -315,7 +315,6 @@
 
 (defparameter *skip-counter-ids*
   '(2426510 ;; 一個当り
-    1241750 ;; 筋 条
     2220370 ;; 歳 （とせ）
     2248360 ;; 入 （しお）
     2249290 ;; 荘
@@ -637,6 +636,12 @@
 
 (def-special-counter 1575510 ()
   (args 'counter-hifumi '("齣" "コマ") "こま" :digit-set '(1 2)))
+
+(def-special-counter 1253800 ()
+  (args 'counter-hifumi "桁" "けた" :digit-set '(1 2 3)))
+
+(def-special-counter 1241750 ()
+  (args 'counter-hifumi "筋" "すじ" :digit-set '(1 2 3)))
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
