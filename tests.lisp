@@ -1,7 +1,7 @@
 (in-package :ichiran/test)
 
 (defmacro assert-segment (str &rest segmentation)
-  `(assert-equal ',segmentation
+  `(assert-equal (list ,@segmentation)
                  (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
                                           (word-info-text wi)))
                          (simple-segment ,str))
@@ -309,6 +309,7 @@
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
                       "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる" 
                       "どおりで" "十万三" "5万100" "1234"
+                      "1日" "2期" "三羽" "1万500円"
                       )
        for word-info = (word-info-from-text word)
        for word-info-json = (word-info-json word-info)
@@ -337,9 +338,20 @@
   (assert-eql (parse-number "100万") 1000000)
   (assert-eql (parse-number "100万500") 1000500))
 
+(define-test counter-test
+  (dolist (ctr '("倍" "晩" "秒" "着" "挺" "丁" "台" "段" "度" "円" "服" "幅" "分" "杯" "発" "遍" "篇" "匹" "本"
+                 "時" "畳" "帖" "条" "課" "日" "回" "ヵ月" "階" "軒" "機" "個" "脚" "間" "枚" "巻" "名" "年" "人"
+                 "列" "輪" "輌" "才" "歳" "棹" "冊" "隻" "章" "首" "足" "艘" "反" "滴" "点" "頭" "つ" "通" "対"
+                 "羽" "把" "割" "膳"))
+    (dolist (n '("1" "三" "十一"))
+      (let ((s (format nil "~a~a" n ctr)))
+        (unless (and (equal ctr "つ") (equal n "十一"))
+          (assert-segment s s))))))
+
 ;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-all-tests ()
+  (init-counters)
   (init-suffixes t)
   (let ((res (run-tests :all :ichiran/test)))
     (print-failures res)
