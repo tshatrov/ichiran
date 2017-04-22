@@ -52,7 +52,8 @@
            :find-word-info
            :find-word-info-json
            :simple-word-info
-           :process-hints))
+           :process-hints
+           :init-counters))
 
 (defpackage :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
