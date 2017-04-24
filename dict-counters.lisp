@@ -376,7 +376,7 @@
   (args 'counter-text "階" "かい" :digit-opts '((3 :r))))
 
 (def-special-counter 2020680 ()
-  (args 'counter-text "時" "とき" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
+  (args 'counter-text "時" "じ" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
 
 (def-special-counter 1315920 ()
   (args 'counter-text "時間" "じかん" :digit-opts '((4 "よ") (9 "く"))))
