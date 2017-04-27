@@ -650,6 +650,8 @@
 
   (add-sense-prop 1253800 1 "pos" "ctr") ;; 桁
   (add-sense-prop 1253800 1 "pos" "n")
+
+  (add-sense-prop 1297240 0 "pos" "ctr") ;; 作
   
   (load-entry "
 <entry>
