@@ -277,7 +277,7 @@
   (!foreign 'conjugation 'conj-id 'id :on-delete :cascade))
 
 (defun conj-info-short (obj)
-  (format nil "[~a] ~a~[ Affirmative~; Negative~]~[ Plain~; Formal~]"
+  (format nil "[~a] ~a~@[~[ Affirmative~; Negative~]~]~@[~[ Plain~; Formal~]~]"
           (pos obj) 
           (get-conj-description (conj-type obj))
           (case (conj-neg obj) ((nil) 0) ((t) 1))
