@@ -533,6 +533,8 @@
   (set-primary-nokanji 1517810 nil) ;; もやし
 
   (add-reading 1029150 "えっち")
+  (add-reading 1363740 "マネ")
+  (set-common 'kana-text 1363740 "マネ" 9)
 
   (load-entry "
 <entry>
@@ -564,7 +566,7 @@
 </sense>
 </entry>" :if-exists :overwrite)
 
-  (recalc-entry-stats 1613860 99000000)
+  (recalc-entry-stats 1029150 1363740 1613860 99000000)
   )
 
 (defun add-errata-counters ()
