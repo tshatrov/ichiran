@@ -654,6 +654,9 @@
   (add-sense-prop 1253800 1 "pos" "n")
 
   (add-sense-prop 1297240 0 "pos" "ctr") ;; 作
+
+  (add-sense 2262420 4 "counter for strings") ;; 弦
+  (add-sense-prop 2262420 4 "pos" "ctr")
   
   (load-entry "
 <entry>
