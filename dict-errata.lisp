@@ -536,6 +536,8 @@
   (add-reading 1363740 "マネ")
   (set-common 'kana-text 1363740 "マネ" 9)
 
+  (set-common 'kanji-text 1000420 "彼の" :null)
+
   (load-entry "
 <entry>
 <ent_seq>1613860</ent_seq>
