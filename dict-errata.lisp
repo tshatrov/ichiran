@@ -537,6 +537,8 @@
   (set-common 'kana-text 1363740 "マネ" 9)
 
   (set-common 'kanji-text 1000420 "彼の" :null)
+  (set-common 'kanji-text 2219590 "元" 10)
+  (set-common 'kana-text 2219590 "もと" 10)
 
   (load-entry "
 <entry>
