@@ -741,6 +741,16 @@
   :score 50
   :connector " ")
 
+(def-generic-synergy synergy-shika-negative (l r)
+  (filter-in-seq-set 1005460) ;; しか
+  (lambda (segment)
+    (some (lambda (cdata)
+            (conj-neg (conj-data-prop cdata)))
+          (getf (segment-info segment) :conj)))
+  :description "shika+neg"
+  :score 50
+  :connector " ")
+
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))
