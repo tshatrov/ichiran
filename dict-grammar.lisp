@@ -230,6 +230,8 @@
 
         (load-conjs :garu 1631750) ;; がる
 
+        (load-kf :ren (get-kana-form 2016470 "がち") :class :gachi)
+
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")

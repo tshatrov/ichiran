@@ -305,6 +305,8 @@
   (assert-segment "でも1000台とか1桁はあんまりだよな" "でも" "1000台" "とか" "1桁" "は" "あんまり" "だ" "よ" "な")
   (assert-segment "みんなにうらやましがられている" "みんな" "に" "うらやましがられている")
   (assert-segment "悪がられて" "悪がられて")
+  (assert-segment "期待されがちなので男女" "期待されがち" "なので" "男女")
+  (assert-segment "とぎれがちに話す" "とぎれがち" "に" "話す")
   )
 
 (define-test json-consistency-test
