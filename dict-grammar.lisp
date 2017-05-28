@@ -108,6 +108,7 @@
     (:desu "formal copula")
     (:desho "it seems/perhaps/don't you think?")
     (:tosuru "to try to .../to be about to...")
+    (:garu "to feel .../have a ... impression of someone")
     ))
 
 (defun get-suffix-description (seq)
@@ -226,6 +227,8 @@
 
         (load-kf :kurai (get-kana-form 1154340 "くらい"))
         (load-kf :kurai (get-kana-form 1154340 "ぐらい"))
+
+        (load-conjs :garu 1631750) ;; がる
 
         ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
@@ -381,6 +384,9 @@
   (nconc
    (find-word-with-conj-type root +conj-adjective-stem+)
    (find-word-with-pos root "adj-na")))
+
+(def-simple-suffix suffix-garu :garu (:connector "" :score 1) (root)
+  (find-word-with-conj-type root +conj-adjective-stem+))
 
 (def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
   (find-word-seq root 1002290 1457730 1445640 1580640))

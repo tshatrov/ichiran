@@ -303,6 +303,8 @@
   (assert-segment "はいずれ" "は" "いずれ")
   (assert-segment "お下がり" "お下がり")
   (assert-segment "でも1000台とか1桁はあんまりだよな" "でも" "1000台" "とか" "1桁" "は" "あんまり" "だ" "よ" "な")
+  (assert-segment "みんなにうらやましがられている" "みんな" "に" "うらやましがられている")
+  (assert-segment "悪がられて" "悪がられて")
   )
 
 (define-test json-consistency-test
