@@ -307,6 +307,9 @@
   (assert-segment "悪がられて" "悪がられて")
   (assert-segment "期待されがちなので男女" "期待されがち" "なので" "男女")
   (assert-segment "とぎれがちに話す" "とぎれがち" "に" "話す")
+  (assert-segment "手にとっていただきやすくなる" "手にとって" "いただき" "やすく" "なる")
+  (assert-segment "さほど" "さほど")
+  (assert-segment "大きさほどもある" "大きさ" "ほど" "も" "ある")
   )
 
 (define-test json-consistency-test

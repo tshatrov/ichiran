@@ -526,6 +526,7 @@
 
   (add-sense-prop 1569590 0 "misc" "uk") ;; 痙攣 けいれん
   (add-sense-prop 1590540 0 "misc" "uk") ;; 仮名 かな
+  (add-sense-prop 1430200 0 "misc" "uk") ;; いただき
 
   (set-primary-nokanji 1374550 nil) ;; すごい
   (set-primary-nokanji 1591900 nil) ;; きれい
@@ -539,6 +540,8 @@
   (set-common 'kanji-text 1000420 "彼の" :null)
   (set-common 'kanji-text 2219590 "元" 10)
   (set-common 'kana-text 2219590 "もと" 10)
+  (set-common 'kana-text 1394760 "さほど" 0)
+  (set-common 'kana-text 1529560 "なし" 10)
 
   (load-entry "
 <entry>
