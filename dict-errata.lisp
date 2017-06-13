@@ -45,7 +45,8 @@
          (table (if is-kana 'kana-text 'kanji-text))
          (entry (get-dao 'entry seq)))
     (when (not (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
-      (let ((ord (1+ (query (:select (:max 'ord) :from table :where (:= 'seq seq)) :single))))
+      (let* ((maxord (query (:select (:max 'ord) :from table :where (:= 'seq seq)) :single))
+             (ord (if (eql maxord :null) 0 (1+ maxord))))
         (make-dao table :text reading :seq seq :ord ord :common common :conjugate-p conjugate-p)
         (if is-kana
             (incf (n-kana entry))
@@ -207,13 +208,14 @@
             '(("ございます" "ございません")))
 
   ;; きみ / キミ
-  (add-reading 1247250 "キミ")
+  (delete-reading 1247250 "キミ")
   (add-reading 2015370 "ワシ")
   (add-reading 1202410 "カニ")
-  (add-reading 1521960 "ボツ")
+  (delete-reading 1521960 "ボツ")
   (add-reading 2145800 "イラ")
   (add-reading 1517840 "ハチ")
-   
+  (set-common 'kana-text 1517840 "ハチ" 34)
+  
   (add-reading 2029080 "ねぇ")
   (add-reading 2089020 "じゃ" :common 0)
 
