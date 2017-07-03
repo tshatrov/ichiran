@@ -613,7 +613,8 @@
 (defparameter *length-coeff-sequences*
   '((:strong 1 8 24 40 60)
     (:weak 1 4 9 16 25 36)
-    (:tail 4 9 16 24)))
+    (:tail 4 9 16 24)
+    (:ltail 4 12 18 24)))
 
 (defun length-multiplier-coeff (length class)
   (let ((coeffs (assoc class *length-coeff-sequences*)))
@@ -787,7 +788,8 @@
                                  (if (> n-kanji 1) (* (1- n-kanji) 5) 0))))
     
     (when use-length
-      (incf score (* prop-score (length-multiplier-coeff (- use-length len) :tail)))
+      (incf score (* prop-score (length-multiplier-coeff (- use-length len)
+                                                         (if (and (> len 3) (or kanji-p katakana-p)) :ltail :tail))))
       (incf score (apply-score-mod score-mod prop-score (- use-length len))))
 
     (unless ctr-mode
