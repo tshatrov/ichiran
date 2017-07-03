@@ -544,6 +544,7 @@
   (set-common 'kana-text 2219590 "もと" 10)
   (set-common 'kana-text 1394760 "さほど" 0)
   (set-common 'kana-text 1529560 "なし" 10)
+  (set-common 'kana-text 1436830 "ていない" :null)
 
   (load-entry "
 <entry>

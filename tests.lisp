@@ -311,6 +311,7 @@
   (assert-segment "さほど" "さほど")
   (assert-segment "大きさほどもある" "大きさ" "ほど" "も" "ある")
   (assert-segment "しかいない" "しか" "いない")
+  (assert-segment "掴めていない" "掴めていない")
   )
 
 (define-test json-consistency-test
