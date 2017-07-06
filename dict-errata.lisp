@@ -96,6 +96,16 @@
            for gloss in glosses
            do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord)))))
 
+(defun add-gloss (seq ord &rest texts)
+  (let* ((sense-id (query (:select 'id :from 'sense :where (:and (:= 'seq seq) (:= 'ord ord))) :single))
+         (glosses (select-dao 'gloss (:= 'sense-id sense-id) (:desc :ord)))
+         (glosses-text (mapcar 'text glosses))
+         (max-ord (if glosses (1+ (ord (car glosses))) 0)))
+    (loop for new-text in texts
+       unless (find new-text glosses-text :test 'equal)
+       do (make-dao 'gloss :sense-id sense-id :text new-text :ord max-ord)
+         (incf max-ord))))
+
 (defun set-common (table seq text common)
   (loop for kt in (select-dao table (:and (:= 'seq seq) (:= 'text text)))
      do (setf (slot-value kt 'common) common)
@@ -667,6 +677,12 @@
 
   (add-sense 2262420 4 "counter for strings") ;; 弦
   (add-sense-prop 2262420 4 "pos" "ctr")
+
+  (add-sense-prop 1368480 0 "pos" "ctr") ;; 人前
+  (add-gloss 1368480 0 "for N people")
+
+  (add-sense-prop 1732510 1 "pos" "ctr") ;; 番手
+  (add-sense-prop 2086480 1 "pos" "ctr") ;; 頭身
   
   (load-entry "
 <entry>
