@@ -212,7 +212,8 @@
 
 (defparameter *special-counters* (make-hash-table))
 
-(defparameter *counter-suffixes* '((:kan "間" "かん" "[duration]")))
+(defparameter *counter-suffixes* '((:kan "間" "かん" "[duration]")
+                                   (:chuu "中" "ちゅう" "[among/out of ...]")))
 
 (defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan)))
 
@@ -701,7 +702,7 @@
     (t (call-next-method))))
 
 (def-special-counter 2149890 ()
-  (args 'counter-people "人" "にん" :digit-opts '((4 "よ") (7 "しち"))))
+  (args 'counter-people "人" "にん" :digit-opts '((4 "よ") (7 "しち")) :accepts '(:chuu)))
 
 (defclass counter-wari (counter-text) ())
 
