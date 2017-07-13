@@ -544,6 +544,7 @@
   (set-primary-nokanji 1591900 nil) ;; きれい
   (set-primary-nokanji 1000230 nil) ;; あかん
   (set-primary-nokanji 1517810 nil) ;; もやし
+  (set-primary-nokanji 1585410 nil) ;; まま
 
   (add-reading 1029150 "えっち")
   (add-reading 1363740 "マネ")
@@ -555,6 +556,9 @@
   (set-common 'kana-text 1394760 "さほど" 0)
   (set-common 'kana-text 1529560 "なし" 10)
   (set-common 'kana-text 1436830 "ていない" :null)
+  (set-common 'kana-text 1057580 "さぼる" 0)
+  (set-common 'kanji-text 1402420 "走り" :null)
+  (set-common 'kana-text 1402420 "はしり" :null)
 
   (load-entry "
 <entry>
@@ -683,7 +687,7 @@
 
   (add-sense-prop 1732510 1 "pos" "ctr") ;; 番手
   (add-sense-prop 2086480 1 "pos" "ctr") ;; 頭身
-  
+
   (load-entry "
 <entry>
 <ent_seq>99000010</ent_seq>

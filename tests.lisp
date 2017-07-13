@@ -313,6 +313,8 @@
   (assert-segment "しかいない" "しか" "いない")
   (assert-segment "掴めていない" "掴めていない")
   (assert-segment "振り回れたいな" "振り回れたい" "な")
+  (assert-segment "さぼっている" "さぼっている")
+  (assert-segment "のままで来る" "の" "まま" "で" "来る")
   )
 
 (define-test json-consistency-test
