@@ -315,6 +315,9 @@
   (assert-segment "振り回れたいな" "振り回れたい" "な")
   (assert-segment "さぼっている" "さぼっている")
   (assert-segment "のままで来る" "の" "まま" "で" "来る")
+  (assert-segment "5人中4人" "5人中" "4人")
+  (assert-segment "彼はどなりすぎて声をからした" "彼" "は" "どなり" "すぎて" "声" "を" "からした")
+  (assert-segment "そうしたいからしただけだ" "そう" "したい" "から" "した" "だけ" "だ")
   )
 
 (define-test json-consistency-test

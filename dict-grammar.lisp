@@ -875,6 +875,10 @@
   (filter-in-seq-set 1577980)
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-wokarasu (l r)
+  (filter-in-seq-set 2029010)
+  (filter-in-seq-set 2087020))
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*

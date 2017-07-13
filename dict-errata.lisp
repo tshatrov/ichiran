@@ -559,6 +559,8 @@
   (set-common 'kana-text 1057580 "さぼる" 0)
   (set-common 'kanji-text 1402420 "走り" :null)
   (set-common 'kana-text 1402420 "はしり" :null)
+  (set-common 'kana-text 1209540 "かる" :null)
+  (set-common 'kana-text 1244840 "かる" :null)
 
   (load-entry "
 <entry>
