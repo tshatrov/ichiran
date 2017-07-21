@@ -197,6 +197,37 @@
 
 (def-do-split 2523480 1442750) ;; ど田舎
 
+
+;; (query (:select 'kt.seq 'kt.text
+;;                 :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
+;;                 :where (:and (:like 'kt.text "し%")
+;;                              (:= 'sp.seq 'kt.seq) (:= 'sp.tag "pos")
+;;                              (:in 'sp.text (:set *pos-with-conj-rules*)))))
+
+(defmacro def-shi-split (seq seq-b &key (score 30) (seq-a '("し" 1157170)))
+  (let ((name (intern (format nil "~a~a" :split-shi- seq))))
+    `(def-simple-split ,name ,seq ,score (len txt r)
+       (,seq-a 1)
+       (,seq-b nil t))))
+
+(def-shi-split 1005700 1156990) ;; し易い
+(def-shi-split 1005830 1370760) ;; し吹く
+(def-shi-split 1157200 2772730) ;; し難い
+(def-shi-split 1157220 1195970) ;; し過ぎる
+(def-shi-split 1157230 1284430) ;; し合う
+(def-shi-split 1157280 1370090) ;; し尽す
+(def-shi-split 1157310 1405800) ;; し続ける
+(def-shi-split 1304890 1256520) ;; し兼ねる
+(def-shi-split 1304960 1307550) ;; し始める
+(def-shi-split 1305110 1338180) ;; し出す
+(def-shi-split 1305280 1599390) ;; し直す
+(def-shi-split 1305290 1212670) ;; し慣れる
+(def-shi-split 1594300 1596510) ;; し損なう
+(def-shi-split 1594310 1406680) ;; し損じる
+(def-shi-split 1594460 1372620) ;; し遂げる
+(def-shi-split 1594580 1277100) ;; し向ける
+(def-shi-split 2518250 1332760) ;; し終える
+
 ;; nakunaru split: because naku often attaches to previous word
 
 (def-simple-split split-nakunaru 1529550 30 (len) ;; 無くなる

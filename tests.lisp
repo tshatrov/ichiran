@@ -318,6 +318,8 @@
   (assert-segment "5人中4人" "5人中" "4人")
   (assert-segment "彼はどなりすぎて声をからした" "彼" "は" "どなり" "すぎて" "声" "を" "からした")
   (assert-segment "そうしたいからしただけだ" "そう" "したい" "から" "した" "だけ" "だ")
+  (assert-segment "推し続けている" "推し" "続けている")
+  (assert-segment "少し直せたら" "少し" "直せたら")
   )
 
 (define-test json-consistency-test
