@@ -561,6 +561,7 @@
   (set-common 'kana-text 1402420 "はしり" :null)
   (set-common 'kana-text 1209540 "かる" :null)
   (set-common 'kana-text 1244840 "かる" :null)
+  (set-common 'kana-text 1280640 "こうは" 0)
 
   (load-entry "
 <entry>
