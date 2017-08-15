@@ -564,6 +564,8 @@
   (set-common 'kana-text 1280640 "こうは" 0)
   (set-common 'kana-text 1158960 "いほう" 0)
 
+  (delete-sense-prop 2122310 "pos" "prt") ;; え
+  
   (load-entry "
 <entry>
 <ent_seq>1613860</ent_seq>
