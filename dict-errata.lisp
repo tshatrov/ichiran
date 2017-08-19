@@ -728,6 +728,7 @@
                              2568000 ;; れる/られる
                              2537250 ;; しようとする
                              2760890 ;; 三箱
+                             2831062 ;; てる
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
