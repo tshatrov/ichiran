@@ -65,3 +65,29 @@
     (ichiran/dict:init-suffixes t reset))
   (switch-conn-vars conn))
   
+
+(defun regex-file (filename regex)
+  (let ((contents (uiop:read-file-string filename)))
+    (ppcre:all-matches-as-strings regex contents)))
+
+
+(defun get-hardcoded-constants ()
+  (loop with regex = "\\b\\d{7,}\\b"
+     for component in (asdf:component-children (asdf:find-system :ichiran))
+     for name = (asdf:component-name component)
+     for filename = (asdf:component-pathname component)
+     unless (equal name "tests")
+     nconcing (remove-duplicates (mapcar 'parse-integer (regex-file filename regex)))))
+
+
+(defun collect-entries (seq-set &key (conn ichiran/conn:*connection*))
+  (with-db conn
+    (let ((hash (make-hash-table)))
+      (loop for entry in (select-dao 'ichiran/dict::entry (:in 'seq (:set seq-set)))
+         do (setf (gethash (ichiran/dict::seq entry) hash) entry))
+      (values
+       (loop for seq in seq-set unless (gethash seq hash) collect seq)
+       hash))))
+         
+         
+    
