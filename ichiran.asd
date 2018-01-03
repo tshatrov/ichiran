@@ -21,7 +21,6 @@
   :components ((:file "package")
                (:file "characters")
                (:file "numbers")
-               (:file "tokenize")
                (:file "romanize")
                (:file "conn")
                (:file "dict-errata")

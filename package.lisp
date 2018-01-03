@@ -25,10 +25,6 @@
    #:number-to-kana
    #:not-a-number))
 
-(defpackage :ichiran/tokenize
-  (:use :cl)
-  (:export :segment))
-
 (defpackage :ichiran/conn
   (:use :cl :postmodern)
   (:export :get-spec :with-db :let-db
