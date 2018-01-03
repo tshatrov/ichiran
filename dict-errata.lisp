@@ -693,18 +693,6 @@
 
   (add-sense-prop 1732510 1 "pos" "ctr") ;; 番手
   (add-sense-prop 2086480 1 "pos" "ctr") ;; 頭身
-
-  (load-entry "
-<entry>
-<ent_seq>99000010</ent_seq>
-<k_ele><keb>滴</keb></k_ele>
-<r_ele><reb>てき</reb></r_ele>
-<sense>
-<pos>ctr</pos>
-<gloss xml:lang=\"eng\">counter for drops of liquid</gloss>
-</sense>
-</entry>" :if-exists :overwrite :upstream '(2831955 "滴"))
-  (recalc-entry-stats 99000010)
   )
 
 
