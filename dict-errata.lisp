@@ -487,6 +487,7 @@
   (delete-conjugation 2086640 2684620) ;; しい
   
   (add-errata-feb17)
+  (add-errata-jan18)
   (add-errata-counters)
   )
 
@@ -598,6 +599,10 @@
 
   (recalc-entry-stats 1029150 1363740 1613860 99000000)
   )
+
+(defun add-errata-jan18 ()
+  (set-common 'kanji-text 2067770 "等" :null)
+  (set-common 'kana-text 2067770 "ら" :null))
 
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
