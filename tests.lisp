@@ -326,6 +326,7 @@
   (assert-segment "綺麗だけど近よりがたいよね" "綺麗" "だけど" "近よりがたい" "よね")
   (assert-segment "そうなんじゃない" "そう" "な" "ん" "じゃない")
   (assert-segment "なんというかすみません" "なんという" "か" "すみません")
+  (assert-segment "めんどくそがる" "めんどくそがる")
   )
 
 (define-test json-consistency-test

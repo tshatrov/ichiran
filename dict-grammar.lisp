@@ -74,6 +74,12 @@
                               :where (:and (:= 'kt.text word)
                                            (:in 'sp.text (:set posi)))))))
 
+(defun find-word-with-suffix (wordstr &rest suffix-classes)
+  (loop for word in (find-word-full wordstr)
+     for seq = (seq word)
+     for suffix-class = (and (listp seq) (gethash (car (last seq)) *suffix-class*))
+     when (and suffix-class (find suffix-class suffix-classes)) collect word))
+
 (defun get-suffix-class-description (class)
   (case class
     (:chau "indicates completion (to finish ...)")
@@ -363,7 +369,7 @@
            (find-word-with-conj-prop root (lambda (cdata)
                                             (conj-neg (conj-data-prop cdata))))))
         ((not (member root '("な" "い" "よ" "よさ" "に" "き") :test 'equal))
-         (find-word-with-conj-type root 13 +conj-adjective-stem+))))
+         (find-word-with-conj-type root 13 +conj-adjective-stem+ +conj-adverbial+))))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
   (find-word-with-conj-type root 2))
@@ -387,9 +393,14 @@
    (find-word-with-conj-type root +conj-adjective-stem+)
    (find-word-with-pos root "adj-na")))
 
-(def-simple-suffix suffix-garu :garu (:connector "" :score 0) (root)
+(def-simple-suffix suffix-garu :garu (:connector "" :score 0) (root suf patch)
   (unless (member root '("な" "い" "よ") :test 'equal)
-    (find-word-with-conj-type root +conj-adjective-stem+)))
+    (or (find-word-with-conj-type root +conj-adjective-stem+)
+        (when (alexandria:ends-with-subseq "そ" root)
+          (setf patch '("う" . ""))
+          (let ((root (apply-patch root patch))
+                (*suffix-map-temp* nil))
+            (find-word-with-suffix root :sou))))))
 
 (def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
   (find-word-seq root 1002290 1457730 1445640 1580640))
