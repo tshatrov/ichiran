@@ -52,7 +52,7 @@
 
 (defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/conn:*connection*))
   `(with-db ,conn
-     (dolist (,entry-var (select-dao 'ichiran/dict::entry (:in 'seq (:set (car ,seq-set)))))
+     (dolist (,entry-var (select-dao 'ichiran/dict::entry (:in 'seq (:set ,seq-set))))
        (when ,(or test t)
          (print (ichiran/dict::entry-digest ,entry-var))))))
 

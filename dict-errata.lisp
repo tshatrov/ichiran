@@ -602,7 +602,14 @@
 
 (defun add-errata-jan18 ()
   (set-common 'kanji-text 2067770 "等" :null)
-  (set-common 'kana-text 2067770 "ら" :null))
+  (set-common 'kana-text 2067770 "ら" :null)
+  (set-common 'kanji-text 1242230 "近よる" 38)
+  
+  (delete-sense-prop 1303400 "misc" "uk") ;; 撒く/まく
+  (delete-sense-prop 1434020 "misc" "uk") ;; 吊る/つる
+  (delete-sense-prop 1196520 "misc" "uk") ;; かすむ
+
+  )
 
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
@@ -722,6 +729,7 @@
                              2537250 ;; しようとする
                              2760890 ;; 三箱
                              2831062 ;; てる
+                             2831063 ;; てく
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
