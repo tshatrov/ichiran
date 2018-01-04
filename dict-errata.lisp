@@ -604,11 +604,23 @@
   (set-common 'kanji-text 2067770 "等" :null)
   (set-common 'kana-text 2067770 "ら" :null)
   (set-common 'kanji-text 1242230 "近よる" 38)
+  (set-common 'kanji-text 1315120 "字" 0)
+  (set-common 'kana-text 1315120 "あざ" 0)
+  (set-common 'kanji-text 1315130 "字" 5)
+  (set-common 'kana-text 1315130 "じ" 0)
+  (set-common 'kana-text 1005530 "しっくり" 0)
+  (set-common 'kana-text 1554850 "りきむ" :null)
+  (set-common 'kana-text 2812650 "ゲー" 0)
+  (set-common 'kana-text 2083340 "やろう" 0)
+  (set-common 'kana-text 2083340 "やろ" 0)
+  (set-common 'kana-text 2122590 "てか" 0)
+  (set-common 'kana-text 1008730 "とろ" :null)
   
   (delete-sense-prop 1303400 "misc" "uk") ;; 撒く/まく
   (delete-sense-prop 1434020 "misc" "uk") ;; 吊る/つる
   (delete-sense-prop 1196520 "misc" "uk") ;; かすむ
 
+  (add-sense-prop 1188380 0 "misc" "uk") ;; なんでもかんでも
   )
 
 (defun add-errata-counters ()
@@ -740,6 +752,7 @@
                             ;; 2780660 ;; もの
                             2130430 ;; け っけ
                             2029130 ;; ぞ / ぜ
+                            2718360 ;; がな
                             )
   "Words that only have meaning when they're final")
 
