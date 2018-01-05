@@ -68,6 +68,14 @@
 
 ;; -de expressions (need to be split otherwise -desune parses as -de sune)
 
+#|
+(:select 'kt.seq 'kt.text
+                :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
+                :where (:and (:like 'kt.text "%で")
+                             (:= 'sp.seq 'kt.seq) (:= 'sp.tag "pos")
+                             (:= 'sp.text "exp")))
+|#
+
 (defmacro def-de-split (seq seq-a &key (score 15))
   (let ((name (intern (format nil "~a~a" :split-de- seq))))
     `(def-simple-split ,name ,seq ,score (len)
@@ -193,12 +201,13 @@
 
 (def-do-split 2523480 1442750) ;; ど田舎
 
-
-;; (query (:select 'kt.seq 'kt.text
-;;                 :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
-;;                 :where (:and (:like 'kt.text "し%")
-;;                              (:= 'sp.seq 'kt.seq) (:= 'sp.tag "pos")
-;;                              (:in 'sp.text (:set *pos-with-conj-rules*)))))
+#|
+(query (:select 'kt.seq 'kt.text
+                :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
+                :where (:and (:like 'kt.text "し%")
+                             (:= 'sp.seq 'kt.seq) (:= 'sp.tag "pos")
+                             (:in 'sp.text (:set *pos-with-conj-rules*)))))
+|#
 
 (defmacro def-shi-split (seq seq-b &key (score 30) (seq-a '("し" 1157170)))
   (let ((name (intern (format nil "~a~a" :split-shi- seq))))
@@ -441,6 +450,13 @@
                                            (:= 'sp.tag "pos")
                                            (:= 'sp.text "exp")
                                            (:like 'kt.text "%は"))))
+
+
+(:select 'kt.seq 'kt.text :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
+                              :where (:and (:= 'kt.seq 'sp.seq)
+                                           (:= 'sp.tag "pos")
+                                           (:= 'sp.text "exp")
+                                           (:like 'kt.text "%は%")))
 |#
 
 ;; TODO pos=int, pos=adv
@@ -598,6 +614,7 @@
      2057560 ;; わけではない
      2088970 ;; しないのではないか
      2088970 ;; ないのではないか
+     2833095 ;; 吝かではない
      )
     (l k)
   (deha (search "では" k :from-end t))
@@ -611,6 +628,7 @@
      2111220 ;; ひとすじなわではいかない
      2694360 ;; ころんでもただではおきぬ
      2182700 ;; ないではいられない
+     2142010 ;; 口では大阪の城も建つ
      )
     (l k)
   (deha (search "では" k :from-end t))
@@ -662,10 +680,19 @@
   (:mod 1)
   (:space 2))
 
+(def-simple-hint
+    (2832044 ;; 目には目を
+     )
+    (l k)
+  (niha (search "には" k :from-end t))
+  (:space niha)
+  (:mod (1+ niha))
+  (:space (+ 2 niha))
+  (:space (- l 1)))
+
 ;; は in the middle
 (def-simple-hint
     (2101500 ;; 無い袖は振れぬ
-     2142010 ;; 口では大阪の城も建つ
      2118440 ;; なにはなくとも
      2118430 ;; なにはともあれ
      2152710 ;; わたるせけんにおにはない
@@ -829,6 +856,11 @@
      2797740 ;; いちえんをわらうものはいちえんになく
      2827424 ;; きはさらさらない
      2827754 ;; おとこはだまって
+     2833986 ;; あくにつよいはぜんにもつよい
+     2833961 ;; 梅は食うとも核食うな中に天神寝てござる
+     2833957 ;; 老兵は死なず只消え去るのみ
+     2833956 ;; 山より大きな猪は出ぬ
+     2833597 ;; 君子は豹変す
      )
     (l k)
   (ha (search "は" k :from-end t))
@@ -875,6 +907,11 @@
      2719710 ;; フグは食いたし命は惜しし
      2790690 ;; 弓は袋に太刀は鞘
      2828900 ;; 山中の賊を破るは易く心中の賊を破るは難し
+     2833976 ;; 君子は周して比せず小人は比して周せず
+     2833959 ;; 知る者は言わず言う者は知らず
+     2833900 ;; 虎は死して皮を留め人は死して名を残す
+     2570040 ;; 朝焼けは雨夕焼けは晴れ
+     2424520 ;; 去る者は追わず、来たる者は拒まず
      )
     (l k)
   (ha1 (search "は" k))
@@ -920,6 +957,7 @@
 
 (def-simple-hint
     (2422970 ;; 人には添うて見よ馬には乗って見よ
+     2833500 ;; 馬には乗って見よ人には添うて見よ
      )
     (l k)
   (niha1 (search "には" k))
@@ -985,6 +1023,9 @@
      2591070 ;; 火事と喧嘩は江戸の華
      2716860 ;; そうはイカの金玉
      2796370 ;; 禍福は糾える縄のごとし
+     2833968 ;; 人間は万物の尺度である
+     2833958 ;; 言葉は身の文
+     2832652 ;; 挨拶は時の氏神
      )
     (l k)
   (no (search "の" k :from-end t))
@@ -1011,6 +1052,9 @@
      2520680 ;; 義を見てせざるは勇なきなり
      2627320 ;; 急いては事を仕損じる
      2686140 ;; 大人は赤子の心を失わず
+     2833952 ;; 足るを知る者は富む
+     2832631 ;; 井蛙は以って海を語る可からず
+     2832604 ;; 良禽は木を択んで棲む
      )
     (l k)
   (ha (search "は" k))
@@ -1068,6 +1112,7 @@
      2419080 ;; 鉄は熱いうちに鍛えよ
      2420150 ;; 老いては子に従え
      2566010 ;; 秋茄子は嫁に食わすな
+     2832573 ;; 巧詐は拙誠に如かず
      )
     (l k)
   (ha (search "は" k))
@@ -1091,3 +1136,23 @@
   (:space (1+ ha))
   (:space ni)
   (:space (1+ ni)))
+
+(def-simple-hint
+    (2832738 ;; 身体髪膚これを父母に受くあえて毀傷せざるは孝の始なり
+     )
+    (l k)
+  (ruha (search "るは" k :from-end t))
+  (no (search "の" k :from-end t))
+  (wo (search "を" k))
+  (ni (search "に" k))
+  (:space wo)
+  (:space (1+ wo))
+  (:space ni)
+  (:space (1+ ni))
+  (:space (1+ ruha))
+  (:mod (1+ ruha))
+  (:space (+ 2 ruha))
+  (:space no)
+  (:space (1+ no))
+  )
+
