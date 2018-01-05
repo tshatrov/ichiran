@@ -215,7 +215,7 @@
 (defparameter *counter-suffixes* '((:kan "間" "かん" "[duration]")
                                    (:chuu "中" "ちゅう" "[among/out of ...]")))
 
-(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan)))
+(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan) (1333450 :kan)))
 
 (defparameter *counter-foreign* '(1120410))
 
@@ -318,10 +318,16 @@
   '(2426510 ;; 一個当り
     2220370 ;; 歳 （とせ）
     2248360 ;; 入 （しお）
-    2249290 ;; 荘
     2423450 ;; 差し
     2671670 ;; 幅 （の）
     2735690 ;; 種 （くさ）
+
+    ;; mahjong stuff - need some research on how to say these
+    2249290 ;; 荘
+    2833260 ;; 翻
+    2833465 ;; 萬
+    2833466 ;; 索 
+    2833467 ;; 筒
     ))
 
 (defun get-counter-readings ()
@@ -442,10 +448,7 @@
   (args 'counter-text '("立て" "たて" "タテ") "たて" :digit-opts '((:off))))
 
 (def-special-counter 2084840 ()
-  (args 'counter-text "年" "ねん" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
-
-(def-special-counter 1468380 ()
-  (args 'counter-text "年間" "ねんかん" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
+  (args 'counter-text "年" "ねん" :digit-opts '((4 "よ") (7 "しち") (9 "く")) :accepts '(:kan)))
 
 (def-special-counter 1502840 ()
   (args 'counter-text "分" "ふん" :digit-opts '((4 :h))))
@@ -643,6 +646,9 @@
 
 (def-special-counter 1241750 ()
   (args 'counter-hifumi "筋" "すじ" :digit-set '(1 2 3)))
+
+(def-special-counter 1515340 ()
+  (args 'counter-hifumi "包み" "つつみ" :digit-set '(1 2 3)))
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))

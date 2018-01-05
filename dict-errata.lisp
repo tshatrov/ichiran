@@ -621,6 +621,10 @@
   (delete-sense-prop 1196520 "misc" "uk") ;; かすむ
 
   (add-sense-prop 1188380 0 "misc" "uk") ;; なんでもかんでも
+
+  (add-sense 1315920 2 "hours (period of)") ;; 時間
+  (add-sense-prop 1315920 2 "pos" "ctr")
+  
   )
 
 (defun add-errata-counters ()
