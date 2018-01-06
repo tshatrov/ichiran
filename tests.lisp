@@ -333,6 +333,7 @@
                   "そいつら" "から" "金" "とる" "ってのは" "無謀")
   (assert-segment "とろいな" "とろい" "な")
   (assert-segment "なんでもかんでも" "なんでもかんでも")
+  (assert-segment "しないかい" "しない" "かい")
   )
 
 (define-test json-consistency-test
