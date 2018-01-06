@@ -388,8 +388,10 @@
 
 ;;;;
 
-(defun best-kana-conj (obj)
-  (cond ((not (eql (best-kana obj) :null)) (best-kana obj))
+(defun best-kana-conj (obj &aux (wc (word-conjugations obj)))
+  (cond ((and (or (not wc) (eql wc :root))
+              (not (eql (best-kana obj) :null)))
+         (best-kana obj))
         (t (let* ((parents (query (:select 'kt.id 'conj.id
                                            :from (:as 'kanji-text 'kt)
                                            (:as 'conj-source-reading 'csr)
@@ -404,7 +406,7 @@
              (loop for (pid cid) in parents
                   for parent-kt = (get-dao 'kanji-text pid)
                   for parent-bk = (best-kana-conj parent-kt)
-                  unless (eql parent-bk :null)
+                  unless (or (eql parent-bk :null) (and wc (or (eql wc :root) (not (find cid wc)))))
                   do (let ((readings (query (:select 'text :from 'conj-source-reading
                                                      :where (:and (:= 'conj-id cid)
                                                                   (:= 'source-text parent-bk)))
@@ -422,8 +424,10 @@
                   finally (return :null))))))
 
 
-(defun best-kanji-conj (obj)
-  (cond ((not (eql (best-kanji obj) :null)) (best-kanji obj))
+(defun best-kanji-conj (obj &aux (wc (word-conjugations obj)))
+  (cond ((and (or (not wc) (eql wc :root))
+              (not (eql (best-kanji obj) :null)))
+         (best-kanji obj))
         ((or (nokanji obj) (= (n-kanji (get-dao 'entry (seq obj))) 0))
          :null)
         (t (let* ((parents (query (:select 'kt.id 'conj.id
@@ -439,7 +443,7 @@
                                                    (:= 'kt.text 'csr.source-text))))))
              (loop for (pid cid) in parents
                   for parent-bk = (best-kanji-conj (get-dao 'kana-text pid))
-                  unless (eql parent-bk :null)
+                  unless (or (eql parent-bk :null) (and wc (or (eql wc :root) (not (find cid wc)))))
                   do (let* ((readings (query (:select 'text :from 'conj-source-reading
                                                      :where (:and (:= 'conj-id cid)
                                                                   (:= 'source-text parent-bk)))
