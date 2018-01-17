@@ -623,13 +623,21 @@
     (member conj-type (getf (segment-info segment) :conj)
             :key (lambda (cdata) (conj-type (conj-data-prop cdata))))))
 
-(declaim (inline filter-is-compound))
+(declaim (inline filter-is-compound-end))
 (defun filter-is-compound-end (&rest seqs)
   (lambda (segment)
-    (let ((word (segment-word segment)))
-      (and (listp (seq word))
-           (member (car (last (seq word))) seqs)))))
+    (let* ((word (segment-word segment))
+           (seq (seq word)))
+      (and seq (listp seq)
+           (member (car (last seq)) seqs)))))
 
+(declaim (inline filter-is-compound-end-text))
+(defun filter-is-compound-end-text (&rest texts)
+  (lambda (segment)
+    (let* ((word (segment-word segment))
+           (seq (seq word)))
+      (and seq (listp (seq word))
+           (find (get-text (car (last (words word)))) texts :test 'equal)))))
 
 (defparameter *noun-particles*
   '(2028920 ;; は
@@ -750,7 +758,7 @@
 
 (def-generic-synergy synergy-shicha-ikenai (l r)
   (filter-is-compound-end 2028920) ;; は
-  (filter-in-seq-set 1000730 1612750 1409110) ;; いけない いけません だめ
+  (filter-in-seq-set 1000730 1612750 1409110 2829697 1587610) ;; いけない いけません だめ いかん いや
   :description "shicha ikenai"
   :score 50
   :connector " ")
@@ -892,6 +900,10 @@
 (def-segfilter-must-follow segfilter-wokarasu (l r)
   (filter-in-seq-set 2029010)
   (filter-in-seq-set 2087020))
+
+(def-segfilter-must-follow segfilter-shichai (l r)
+  (constantly nil)
+  (filter-is-compound-end-text "ちゃい"))
 
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))

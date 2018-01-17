@@ -334,6 +334,10 @@
   (assert-segment "とろいな" "とろい" "な")
   (assert-segment "なんでもかんでも" "なんでもかんでも")
   (assert-segment "しないかい" "しない" "かい")
+  (assert-segment "参拝しちゃいかんという人がいます"
+                  "参拝しちゃ" "いかん" "という" "人" "が" "います")
+  (assert-segment "人をひやかしちゃいやよ" "人" "を" "ひやかしちゃ" "いや" "よ")
+  (assert-segment "しちゃいたい" "しちゃいたい")
   )
 
 (define-test json-consistency-test
