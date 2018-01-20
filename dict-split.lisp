@@ -365,6 +365,15 @@
   (2826528 1)
   (1609810))
 
+(def-simple-split split-kaisasae 1752860 50 () ;; 買い支え
+  (1636070 2)
+  (("支え" 1310090)))
+
+(def-simple-split split-toiukotoda 2612990 30 (len) ;; ということだ
+  (1922760 3)
+  (1313580 (- len 4))
+  (2089020))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)

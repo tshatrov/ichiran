@@ -617,6 +617,12 @@
   (set-common 'kana-text 1008730 "とろ" :null)
   (set-common 'kana-text 1457840 "ないかい" :null)
   (set-common 'kana-text 2829697 "いかん" 0)
+  (set-common 'kana-text 2157330 "おじゃま" 9)
+  (set-common 'kana-text 1199800 "かいらん" :null)
+  (set-common 'kana-text 2719580 "いらん" 0)
+  (set-common 'kana-text 1808040 "めちゃ" 0)
+
+  (add-reading 1384840 "キレ" :common 0)
   
   (delete-sense-prop 1303400 "misc" "uk") ;; 撒く/まく
   (delete-sense-prop 1434020 "misc" "uk") ;; 吊る/つる

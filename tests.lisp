@@ -338,6 +338,13 @@
                   "参拝しちゃ" "いかん" "という" "人" "が" "います")
   (assert-segment "人をひやかしちゃいやよ" "人" "を" "ひやかしちゃ" "いや" "よ")
   (assert-segment "しちゃいたい" "しちゃいたい")
+  (assert-segment "けがなどをしないように" "けが" "など" "を" "しない" "ように")
+  (assert-segment "買い支えたいと思う" "買い" "支えたい" "と" "思う")
+  (assert-segment "おじゃましています" "おじゃましています")
+  (assert-segment "とかいらんから" "とか" "いらん" "から")
+  (assert-segment "ということだろうけど" "という" "こと" "だろう" "けど")
+  (assert-segment "のはわからなくもない" "の" "は" "わからなく" "も" "ない")
+  (assert-segment "変わっていくだろう" "変わっていく" "だろう")
   )
 
 (define-test json-consistency-test
