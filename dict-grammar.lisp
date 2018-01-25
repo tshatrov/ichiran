@@ -238,11 +238,13 @@
 
         (load-kf :ren (get-kana-form 2016470 "がち") :class :gachi)
 
-        ;;(load-abbr :nee "ねぇ")
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
         (load-abbr :nai "ぬ")
-
+        (load-abbr :nai-n "ん")
+        (load-abbr :nai-n "ねぇ")
+        (load-abbr :nai-n "ねー")
+        
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
 
@@ -465,8 +467,19 @@
                         pw))))
                  ,primary-words)))))
 
+
 (def-abbr-suffix abbr-nee :nai 2 (root)
   (find-word-full (concatenate 'string root "ない")))
+
+(def-abbr-suffix abbr-n :nai-n 2 (root)
+  (and
+   (find (char root (1- (length root))) "わたらなまばかがされ")
+   (find-word-with-conj-prop
+    (concatenate 'string root "ない")
+    (lambda (cdata)
+       (conj-neg (conj-data-prop cdata))))))
+
+(pushnew :nai-n *suffix-unique-only*)
 
 (def-abbr-suffix abbr-nakereba :nakereba 4 (root)
   (find-word-full (concatenate 'string root "なければ")))

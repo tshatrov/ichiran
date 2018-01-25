@@ -345,6 +345,8 @@
   (assert-segment "ということだろうけど" "という" "こと" "だろう" "けど")
   (assert-segment "のはわからなくもない" "の" "は" "わからなく" "も" "ない")
   (assert-segment "変わっていくだろう" "変わっていく" "だろう")
+  (assert-segment "待ってねぇ" "待って" "ねぇ")
+  (assert-segment "おかしいと思わんですか" "おかしい" "と" "思わん" "です" "か")
   )
 
 (define-test json-consistency-test
