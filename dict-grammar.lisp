@@ -472,12 +472,11 @@
   (find-word-full (concatenate 'string root "ない")))
 
 (def-abbr-suffix abbr-n :nai-n 2 (root)
-  (and
-   (find (char root (1- (length root))) "わたらなまばかがされ")
-   (find-word-with-conj-prop
-    (concatenate 'string root "ない")
-    (lambda (cdata)
-       (conj-neg (conj-data-prop cdata))))))
+  (find-word-with-conj-prop
+   (concatenate 'string root "ない")
+   (lambda (cdata)
+     (and (not (eql (conj-data-from cdata) 1577980))
+          (conj-neg (conj-data-prop cdata))))))
 
 (pushnew :nai-n *suffix-unique-only*)
 
