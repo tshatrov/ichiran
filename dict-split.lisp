@@ -284,6 +284,11 @@
   (1469800 1)
   (1610040 2))
 
+(def-simple-split split-kigatsuku 1591050 100 ()
+  (1221520 1)
+  (2028930 1)
+  (1495740 nil t))
+
 (def-simple-split split-nanimokamo 1599590 20 (len) ;; なにもかも
   (1188490 (- len 2))
   (2143350 2))

@@ -913,9 +913,9 @@
   (filter-in-seq-set 2029010)
   (filter-in-seq-set 2087020))
 
-(def-segfilter-must-follow segfilter-shichai (l r)
+(def-segfilter-must-follow segfilter-badend (l r)
   (constantly nil)
-  (filter-is-compound-end-text "ちゃい"))
+  (filter-is-compound-end-text "ちゃい" "いか"))
 
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))

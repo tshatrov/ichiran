@@ -347,6 +347,12 @@
   (assert-segment "変わっていくだろう" "変わっていく" "だろう")
   (assert-segment "待ってねぇ" "待って" "ねぇ")
   (assert-segment "おかしいと思わんですか" "おかしい" "と" "思わん" "です" "か")
+  (assert-segment "ズレてる" "ズレてる")
+  (assert-segment "紅茶飲みたい" "紅茶" "飲みたい")
+  (assert-segment "電気がついた" "電気" "が" "ついた")
+  (assert-segment "脚本会議" "脚本" "会議")
+  (assert-segment "見せなきゃいけなくなって" "見せなきゃ" "いけなく" "なって")
+  (assert-segment "効いててかなりぬくい" "効いてて" "かなり" "ぬくい")
   )
 
 (define-test json-consistency-test

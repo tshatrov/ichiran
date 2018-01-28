@@ -632,7 +632,9 @@
                    (t :end)))
         (bonus 0))
     (when info
-      (cond ((and (eql end :beg) (member "num" (getf info :posi) :test 'equal))
+      (cond ((intersection (getf info :seq-set) *no-kanji-break-penalty*)
+             (return-from kanji-break-penalty score))
+            ((and (eql end :beg) (member "num" (getf info :posi) :test 'equal))
              (incf bonus 5))
             ))
     (if (>= score *score-cutoff*)

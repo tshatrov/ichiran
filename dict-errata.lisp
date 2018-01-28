@@ -621,7 +621,11 @@
   (set-common 'kana-text 1199800 "かいらん" :null)
   (set-common 'kana-text 2719580 "いらん" 0)
   (set-common 'kana-text 1808040 "めちゃ" 0)
-
+  (set-common 'kana-text 1277450 "すき" 9)
+  (set-common 'kana-text 1006460 "ズレる" 0)
+  (set-common 'kanji-text 1522290 "本会議" 0)
+  (set-common 'kana-text 1522290 "ほんかいぎ" 0)
+  
   (add-reading 1384840 "キレ" :common 0)
   
   (delete-sense-prop 1303400 "misc" "uk") ;; 撒く/まく
@@ -629,7 +633,10 @@
   (delete-sense-prop 1196520 "misc" "uk") ;; かすむ
 
   (add-sense-prop 1188380 0 "misc" "uk") ;; なんでもかんでも
+  (add-sense-prop 1258330 0 "misc" "uk") ;; いぬ
 
+  (set-primary-nokanji 1258330 nil) ;; いぬ
+  
   (add-sense 1315920 2 "hours (period of)") ;; 時間
   (add-sense-prop 1315920 2 "pos" "ctr")
   
@@ -781,6 +788,12 @@
   '(2139720 ;; ん
     )
   "Particles that don't get final bonus")
+
+(defparameter *no-kanji-break-penalty*
+  '(1169870 ;; 飲む
+    1198360 ;; 会議
+    )
+  "Words that get no kanji break penalty")
 
 ;; Additional conjugations
 
