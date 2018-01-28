@@ -1408,13 +1408,29 @@
        (select-dao 'conjugation (:and (:= 'seq seq) (:is-null 'via)))
        (select-dao 'conjugation (:= 'seq seq)))))
 
+(defun conj-type-order (conj-type)
+  ;; swaps Continuative and Imperative so that the former is shown first
+  (case conj-type
+    (10 13)
+    (13 10)
+    (t conj-type)))
+
+(defun select-conjs-and-props (seq &optional conj-ids)
+  (sort
+   (loop for conj in (select-conjs seq conj-ids)
+      for props = (select-dao 'conj-prop (:= 'conj-id (id conj)))
+      for val = (loop for prop in props minimizing (conj-type-order (conj-type prop)))
+      collect (list conj props (list (if (eql (seq-via conj) :null) 0 1) val)))
+   (lex-compare '<)
+   :key 'third))
+
 (defun print-conj-info (seq &key conjugations (out *standard-output*))
   (loop with via-used = nil
-     for conj in (select-conjs seq conjugations)
+     for (conj props) in (select-conjs-and-props seq conjugations)
      for via = (seq-via conj)
      unless (member via via-used)
-     do (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
-             for first = t then nil
+     do (loop for conj-prop in props
+           for first = t then nil
            do (format out "~%~:[ ~;[~] Conjugation: ~a" first (conj-info-short conj-prop)))
        (if (eql via :null)
            (format out "~%  ~a" (entry-info-short (seq-from conj)))
@@ -1426,14 +1442,14 @@
 
 (defun conj-info-json* (seq &key conjugations text has-gloss)
   (loop with via-used = nil
-     for conj in (select-conjs seq conjugations)
+     for (conj props) in (select-conjs-and-props seq conjugations)
      for via = (seq-via conj)
      unless (member via via-used)
      nconc (block outer
              (let* ((conj-pos nil)
                     (orig-text (get-original-text-once (get-conj-data seq (list (id conj))) text))
                     (js (jsown:new-js 
-                          ("prop" (loop for conj-prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+                          ("prop" (loop for conj-prop in props
                                      do (push (pos conj-prop) conj-pos)
                                      collect (conj-prop-json conj-prop))))))
                (if (eql via :null)
