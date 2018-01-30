@@ -353,6 +353,9 @@
   (assert-segment "脚本会議" "脚本" "会議")
   (assert-segment "見せなきゃいけなくなって" "見せなきゃ" "いけなく" "なって")
   (assert-segment "効いててかなりぬくい" "効いてて" "かなり" "ぬくい")
+  (assert-segment "撮影してていつもは" "撮影してて" "いつも" "は")
+  (assert-segment "むしろいないほうが珍しい" "むしろ" "いない" "ほう" "が" "珍しい")
+  (assert-segment "旅行にいきたい" "旅行" "に" "いきたい")
   )
 
 (define-test json-consistency-test

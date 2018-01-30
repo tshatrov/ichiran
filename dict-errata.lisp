@@ -625,6 +625,8 @@
   (set-common 'kana-text 1006460 "ズレる" 0)
   (set-common 'kanji-text 1522290 "本会議" 0)
   (set-common 'kana-text 1522290 "ほんかいぎ" 0)
+  (set-common 'kana-text 1220570 "きたい" 10)
+  (set-common 'kana-text 1221020 "きたい" 11)
   
   (add-reading 1384840 "キレ" :common 0)
   

@@ -917,6 +917,11 @@
   (constantly nil)
   (filter-is-compound-end-text "ちゃい" "いか"))
 
+(def-segfilter-must-follow segfilter-itsu (l r)
+  (complement (filter-is-compound-end-text "い"))
+  (filter-in-seq-set 2221640)
+  :allow-first t)
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*
