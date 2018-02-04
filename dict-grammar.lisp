@@ -475,7 +475,8 @@
   (find-word-with-conj-prop
    (concatenate 'string root "ない")
    (lambda (cdata)
-     (and (not (eql (conj-data-from cdata) 1577980))
+     ;; 居ない 来ない create problems so they are blocked
+     (and (not (find (conj-data-from cdata) '(1577980 1547720)))
           (conj-neg (conj-data-prop cdata))))))
 
 (pushnew :nai-n *suffix-unique-only*)
