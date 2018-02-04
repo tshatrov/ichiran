@@ -916,7 +916,7 @@
 
 (def-segfilter-must-follow segfilter-badend (l r)
   (constantly nil)
-  (filter-is-compound-end-text "ちゃい" "いか"))
+  (filter-is-compound-end-text "ちゃい" "いか" "とか"))
 
 (def-segfilter-must-follow segfilter-itsu (l r)
   (complement (filter-is-compound-end-text "い"))

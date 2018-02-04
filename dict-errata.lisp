@@ -627,6 +627,7 @@
   (set-common 'kana-text 1522290 "ほんかいぎ" 0)
   (set-common 'kana-text 1220570 "きたい" 10)
   (set-common 'kana-text 1221020 "きたい" 11)
+  (set-common 'kana-text 2083990 "ならん" 0)
   
   (add-reading 1384840 "キレ" :common 0)
   

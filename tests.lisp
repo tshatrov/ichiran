@@ -357,6 +357,7 @@
   (assert-segment "むしろいないほうが珍しい" "むしろ" "いない" "ほう" "が" "珍しい")
   (assert-segment "旅行にいきたい" "旅行" "に" "いきたい")
   (assert-segment "見ててこんな話あったっけ" "見てて" "こんな" "話" "あった" "っけ")
+  (assert-segment "いじめとかある" "いじめ" "とか" "ある")
   )
 
 (define-test json-consistency-test
