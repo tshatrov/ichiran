@@ -628,6 +628,7 @@
   (set-common 'kana-text 1220570 "きたい" 10)
   (set-common 'kana-text 1221020 "きたい" 11)
   (set-common 'kana-text 2083990 "ならん" 0)
+  (set-common 'kanji-text 2518850 "切れ" 0)
   
   (add-reading 1384840 "キレ" :common 0)
   
@@ -639,6 +640,7 @@
   (add-sense-prop 1258330 0 "misc" "uk") ;; いぬ
 
   (set-primary-nokanji 1258330 nil) ;; いぬ
+  (set-primary-nokanji 1588930 nil) ;; おかず
   
   (add-sense 1315920 2 "hours (period of)") ;; 時間
   (add-sense-prop 1315920 2 "pos" "ctr")
