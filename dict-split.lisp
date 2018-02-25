@@ -379,6 +379,14 @@
   (1313580 (- len 4))
   (2089020))
 
+(def-simple-split split-tonattara 2100770 50 (len) ;; となったら
+  (1008490 1)
+  (("なったら" 1375610)))
+
+(def-simple-split split-tonaru 2100900 10 (len) ;; となる
+  (1008490 1)
+  (1375610 nil t))
+
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
 (defparameter *kana-hint-mod* #\u200c)
