@@ -889,7 +889,7 @@
 (defun find-word-full (word &key as-hiragana counter)
   (let ((simple-words (find-word word)))
     (nconc simple-words
-           (find-word-suffix word :unique (not simple-words))
+           (find-word-suffix word :matches simple-words)
            (when as-hiragana
              (find-word-as-hiragana word :exclude (mapcar 'seq simple-words)))
            (when counter

@@ -395,6 +395,11 @@
    (find-word-with-conj-type root +conj-adjective-stem+)
    (find-word-with-pos root "adj-na")))
 
+(pushnew (cons :sa
+               (lambda (match &aux (seq (seq match)))
+                 (and seq (query (:select 'root-p :from 'entry :where (:= 'seq seq)) :single))))            
+         *suffix-unique-only*)
+
 (def-simple-suffix suffix-garu :garu (:connector "" :score 0) (root suf patch)
   (unless (member root '("な" "い" "よ") :test 'equal)
     (or (find-word-with-conj-type root +conj-adjective-stem+)
@@ -431,7 +436,6 @@
 (def-simple-suffix suffix-kurai :kurai (:connector " " :score 3) (root)
   (find-word-with-conj-type root 2))
 
-(pushnew :sa *suffix-unique-only*)
 (pushnew :mo *suffix-unique-only*)
 (pushnew :nikui *suffix-unique-only*)
 (pushnew :desu *suffix-unique-only*)
@@ -554,7 +558,13 @@
      for val = (gethash substr *suffix-cache*)
      nconc (parse-suffix-val substr val)))
 
-(defun find-word-suffix (word &key unique)
+(defun match-unique (suffix-class matches)
+  (let ((uniq (find suffix-class *suffix-unique-only* :key (lambda (x) (if (consp x) (car x) x)))))
+    (cond ((consp uniq)
+           (remove-if-not (cdr uniq) matches))
+          (t uniq))))
+
+(defun find-word-suffix (word &key matches)
   (loop with suffixes = (if *suffix-map-temp* 
                             (gethash *suffix-next-end* *suffix-map-temp*)
                             (get-suffixes word))
@@ -564,7 +574,7 @@
      for suffix-class = (if kf (gethash (seq kf) *suffix-class*) keyword)
      for offset = (- (length word) (length suffix))
      when (and suffix-fn (> offset 0)
-               (or unique (not (member suffix-class *suffix-unique-only*))))
+               (not (and matches (match-unique suffix-class matches))))
      nconc (let ((*suffix-next-end* (and *suffix-next-end* (- *suffix-next-end* (length suffix)))))
              (funcall suffix-fn (subseq-slice slice word 0 offset) suffix kf))))
 
