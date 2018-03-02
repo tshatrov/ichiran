@@ -644,7 +644,8 @@
   
   (add-sense 1315920 2 "hours (period of)") ;; 時間
   (add-sense-prop 1315920 2 "pos" "ctr")
-  
+
+  (add-sense-prop 1445160 0 "pos" "ctr") ;; 度
   )
 
 (defun add-errata-counters ()
