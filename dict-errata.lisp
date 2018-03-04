@@ -629,6 +629,8 @@
   (set-common 'kana-text 1221020 "きたい" 11)
   (set-common 'kana-text 2083990 "ならん" 0)
   (set-common 'kanji-text 2518850 "切れ" 0)
+  (set-common 'kanji-text 1221900 "基地外" 0)
+  (set-common 'kana-text 1379380 "せいと" 10)
   
   (add-reading 1384840 "キレ" :common 0)
   

@@ -359,6 +359,8 @@
   (assert-segment "見ててこんな話あったっけ" "見てて" "こんな" "話" "あった" "っけ")
   (assert-segment "いじめとかある" "いじめ" "とか" "ある")
   (assert-segment "となったらしい" "となったらしい")
+  (assert-segment "基地外が必死過ぎ" "基地外" "が" "必死" "過ぎ")
+  (assert-segment "調整のせいとか" "調整" "の" "せい" "とか")
   )
 
 (define-test json-consistency-test
