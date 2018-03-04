@@ -607,7 +607,11 @@
   (setf (word-conjugations (car (last (words word)))) value))
 
 (defstruct segment
-  start end word (score nil) (info nil) (top nil)) ;; (accum 0) (path nil)
+  start end word (score nil) (info nil) (top nil) (text nil))
+
+(defmethod get-text ((segment segment))
+  (or (segment-text segment)
+      (setf (segment-text segment) (text (segment-word segment)))))
 
 (defun length-multiplier (length power len-lim)
   "len^power until len-lim, goes linear after"
@@ -1137,7 +1141,7 @@
 (defun word-info-from-segment (segment &aux (word (segment-word segment)))
   (make-instance 'word-info
                  :type (word-type word)
-                 :text (get-text word)
+                 :text (get-text segment)
                  :kana (get-kana word)
                  :seq (seq word)
                  :conjugations (when (typep word 'simple-text) (word-conjugations word))
@@ -1192,7 +1196,7 @@
 (defun word-info-from-text (text)
   (with-connection *connection*
     (let* ((readings (find-word-full text :counter :auto))
-           (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r))))
+           (segments (loop for r in readings collect (gen-score (make-segment :start 0 :end (length text) :word r :text text))))
            (segment-list (make-segment-list :segments segments :start 0 :end (length text)
                                             :matches (length segments))))
       (word-info-from-segment-list segment-list))))
@@ -1614,7 +1618,7 @@
                           (find-word text :root-only t)
                           (find-word-full text :as-hiragana (test-word text :katakana) :counter :auto)))
            (segments (loop for word in all-words
-                        collect (gen-score (make-segment :start 0 :end end :word word))))
+                        collect (gen-score (make-segment :start 0 :end end :word word :text text))))
            (segments (sort segments #'> :key #'segment-score))
            (wis (mapcar #'word-info-from-segment segments)))
       (when reading

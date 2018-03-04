@@ -361,6 +361,8 @@
   (assert-segment "となったらしい" "となったらしい")
   (assert-segment "基地外が必死過ぎ" "基地外" "が" "必死" "過ぎ")
   (assert-segment "調整のせいとか" "調整" "の" "せい" "とか")
+  (assert-segment "はっしていない" "はっしていない")
+  (assert-segment "無理さえしなければ" "無理" "さえ" "しなければ")
   )
 
 (define-test json-consistency-test

@@ -833,7 +833,7 @@
            (<= (- (segment-list-end segment-list)
                   (segment-list-start segment-list)) len)
            (not (car (getf (segment-info seg) :kpcl)))
-           (not (and except (member (get-text (segment-word seg)) except :test 'equal)))))))
+           (not (and except (member (get-text seg) except :test 'equal)))))))
          
 (def-generic-penalty penalty-short (l r)
   (filter-short-kana 1)
@@ -931,6 +931,11 @@
 (def-segfilter-must-follow segfilter-itsu (l r)
   (complement (filter-is-compound-end-text "い"))
   (filter-in-seq-set 2221640)
+  :allow-first t)
+
+(def-segfilter-must-follow segfilter-sae (l r)
+  (complement (filter-is-compound-end 2029120))
+  (lambda (segment) (alexandria:starts-with #\え (get-text segment)))
   :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)
