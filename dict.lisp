@@ -1164,8 +1164,18 @@
 
 (defparameter *segment-score-cutoff* 2/3)
 
+(defun expand-segment-list (segment-list)
+  (setf (segment-list-segments segment-list)
+        (stable-sort
+         (loop for segment in (segment-list-segments segment-list)
+            for segsplit = (get-segsplit segment)
+            collect segment
+            when segsplit
+            collect segsplit and do (incf (segment-list-matches segment-list)))
+         #'> :key #'segment-score)))
+
 (defun word-info-from-segment-list (segment-list)
-  (let* ((segments (segment-list-segments segment-list))
+  (let* ((segments (expand-segment-list segment-list))
          (wi-list* (mapcar #'word-info-from-segment segments))
          (wi1 (car wi-list*))
          (max-score (word-info-score wi1))

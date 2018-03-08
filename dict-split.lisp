@@ -39,7 +39,7 @@
                                ,(if conj-p
                                    ''find-word-conj-of
                                    ''find-word-seq)
-                                (let ((part-txt (subseq ,text-var ,offset 
+                                (let ((part-txt (subseq ,text-var ,offset
                                                        (and ,part-length (+ ,offset ,part-length)))))
                                   ,(if rendaku-p
                                       '(unrendaku part-txt)
@@ -76,7 +76,7 @@
                              (:= 'sp.text "exp")))
 |#
 
-(defmacro def-de-split (seq seq-a &key (score 15))
+(defmacro def-de-split (seq seq-a &key (score 20))
   (let ((name (intern (format nil "~a~a" :split-de- seq))))
     `(def-simple-split ,name ,seq ,score (len)
        (,seq-a (- len 1))
@@ -250,7 +250,7 @@
   (1327190 1) ;; 手
   (2028930 1) ;; が
   (1207590 nil t))
-  
+
 
 (def-simple-split split-kawaribae 1411570 10 (len txt) ;; 代わり映え
   ((1590770 1510720) (1+ (position #\り txt)))
@@ -386,6 +386,45 @@
 (def-simple-split split-tonaru 2100900 10 (len) ;; となる
   (1008490 1)
   (1375610 nil t))
+
+;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
+
+(defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
+
+(let ((*split-map* *segsplit-map*))
+  (def-simple-split split-tokoroga 1008570 '(-10) (len) ;; ところが
+    (1343100 (- len 1))
+    (2028930 1))
+
+  (def-simple-split split-tokorode 1343110 '(-10) (len) ;; ところで
+    (1343100 (- len 1))
+    (2028980 1))
+
+  (def-simple-split split-omise 2409240 '(20 :primary 1 :connector "") (len) ;; お店
+    (2826528 1)
+    (1582120))
+
+  )
+
+(defun get-segsplit (segment &aux (word (segment-word segment)))
+  (when (typep word 'simple-text)
+    (let ((*split-map* *segsplit-map*))
+      (multiple-value-bind (split attrs) (get-split word)
+        (when split
+          (destructuring-bind (score &key (primary 0) (connector " ")) attrs
+            (let* ((word
+                    (make-instance 'compound-text
+                                   :text (str:join "" (mapcar 'get-text split))
+                                   :kana (str:join connector (mapcar 'get-kana split))
+                                   :primary (elt split primary)
+                                   :words split
+                                   :score-mod score))
+                   (new-seg (copy-segment segment)))
+              (setf (segment-word new-seg) word
+                    (segment-text new-seg) (get-text word)
+                    (segment-score new-seg) (+ (segment-score segment) score))
+              new-seg)))))))
+
 
 ;; KANA HINTS (indicate when to romanize は as わ etc.)
 
@@ -1196,4 +1235,3 @@
   (:space no)
   (:space (1+ no))
   )
-

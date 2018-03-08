@@ -363,6 +363,7 @@
   (assert-segment "調整のせいとか" "調整" "の" "せい" "とか")
   (assert-segment "はっしていない" "はっしていない")
   (assert-segment "無理さえしなければ" "無理" "さえ" "しなければ")
+  (assert-segment "ところで" "ところで")
   )
 
 (define-test json-consistency-test

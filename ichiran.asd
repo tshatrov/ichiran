@@ -17,6 +17,7 @@
                #:lisp-unit
                #:bordeaux-threads
                #:jsown
+               #:str
                )
   :components ((:file "package")
                (:file "characters")
