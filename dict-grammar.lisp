@@ -14,10 +14,10 @@
     (loop for cd in conj-data
        for prop = (conj-data-prop cd)
        unless (test-conj-prop prop *weak-conj-forms*)
-       collect (conj-id prop)))) 
+       collect (conj-id prop))))
 
 (defun get-kana-forms* (seq)
-  (loop for kt in 
+  (loop for kt in
        (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
                                       :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
                                       :where (:or (:= 'kt.seq seq)
@@ -65,10 +65,10 @@
                                             (:in 'conj.from (:set seqs))
                                             (:= 'kt.text word)))))
    :key #'id))
-                               
+
 (defun find-word-with-pos (word &rest posi)
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
-    (query-dao table (:select 'kt.* :distinct :from (:as table 'kt) 
+    (query-dao table (:select 'kt.* :distinct :from (:as table 'kt)
                               :inner-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.seq 'kt.seq)
                                                                           (:= 'sp.tag "pos"))
                               :where (:and (:= 'kt.text word)
@@ -80,45 +80,48 @@
      for suffix-class = (and (listp seq) (gethash (car (last seq)) *suffix-class*))
      when (and suffix-class (find suffix-class suffix-classes)) collect word))
 
-(defun get-suffix-class-description (class)
-  (case class
-    (:chau "indicates completion (to finish ...)")
-    (:ha "topic marker particle")
-    (:tai "want to... / would like to...")
-    (:iru "indicates continuing action (to be ...ing)")
-    (:oru "indicates continuing action (to be ...ing) (humble)")
-    (:aru "indicates completion / finished action")
-    (:kuru "indicates action that had been continuing up till now / came to be ")
-    (:oku "to do in advance / to leave in the current state expecting a later change")
-    (:kureru "(asking) to let do something")
-    (:iku "is becoming / action starting now and continuing")
-    (:suru "makes a verb from a noun")
-    (:itasu "makes a verb from a noun (humble)")
-    (:sareru "makes a verb from a noun (honorific or passive)")
-    (:saseru "let/make someone/something do ...")
-    (:rou "probably / it seems that... / I guess ...")
-    (:ii "it's ok if ... / is it ok if ...?")
-    (:mo "even if ...")
-    (:sugiru "to be too (much) ...")
-    (:nikui "difficult to...")
-    (:kara "because/why")
-    (:sa "-ness (degree or condition of adjective)")
-    (:tsutsu "while ... / in the process of ...")
-    (:tsutsuaru "to be doing ... / to be in the process of doing ...")
-    (:uru "can ... / to be able to ...")
-    (:sou "looking like ... / seeming ...")
-    (:nai "negative suffix")
-    (:ra "pluralizing suffix (not polite)")
-    (:kudasai "please do ...")
-    (:yagaru "indicates disdain or contempt")
-    (:desu "formal copula")
-    (:desho "it seems/perhaps/don't you think?")
-    (:tosuru "to try to .../to be about to...")
-    (:garu "to feel .../have a ... impression of someone")
-    ))
+(hash-from-list
+ *suffix-description*
+ '(:chau "indicates completion (to finish ...)"
+   :ha "topic marker particle"
+   :tai "want to... / would like to..."
+   :iru "indicates continuing action (to be ...ing)"
+   :oru "indicates continuing action (to be ...ing) (humble)"
+   :aru "indicates completion / finished action"
+   :kuru "indicates action that had been continuing up till now / came to be "
+   :oku "to do in advance / to leave in the current state expecting a later change"
+   :kureru "(asking) to let do something"
+   :iku "is becoming / action starting now and continuing"
+   :suru "makes a verb from a noun"
+   :itasu "makes a verb from a noun (humble)"
+   :sareru "makes a verb from a noun (honorific or passive)"
+   :saseru "let/make someone/something do ..."
+   :rou "probably / it seems that... / I guess ..."
+   :ii "it's ok if ... / is it ok if ...?"
+   :mo "even if ..."
+   :sugiru "to be too (much) ..."
+   :nikui "difficult to..."
+   :kara "because/why"
+   :sa "-ness (degree or condition of adjective)"
+   :tsutsu "while ... / in the process of ..."
+   :tsutsuaru "to be doing ... / to be in the process of doing ..."
+   :uru "can ... / to be able to ..."
+   :sou "looking like ... / seeming ..."
+   :nai "negative suffix"
+   :ra "pluralizing suffix (not polite)"
+   :kudasai "please do ..."
+   :yagaru "indicates disdain or contempt"
+   :desu "formal copula"
+   :desho "it seems/perhaps/don't you think?"
+   :tosuru "to try to .../to be about to..."
+   :garu "to feel .../have a ... impression of someone"
+   ;; these are used for splitsegs
+   2826528 "polite prefix" ;; お
+   2028980 "at / in / by" ;; で
+   ))
 
 (defun get-suffix-description (seq)
-  (get-suffix-class-description (gethash seq *suffix-class*)))
+  (gethash (or (gethash seq *suffix-class*) seq) *suffix-description*))
 
 (defvar *init-suffixes-lock* (sb-thread:make-mutex :name "init-suffixes-lock"))
 
@@ -197,11 +200,11 @@
         (load-kf :kudasai (get-kana-form 1184270 "ください" :conj :root))
 
         (load-conjs :suru 1157170) ;; する
-        (load-conjs :suru 1421900 :itasu) ;; いたす  
+        (load-conjs :suru 1421900 :itasu) ;; いたす
         ;; because suru isn't conjugated twice, this is added separately
         (load-conjs :suru 2269820 :sareru) ;; される
         (load-conjs :suru 1005160 :saseru) ;; させる
-        
+
         (load-conjs :kara 1002980) ;; から
 
         (load-conjs :sou 1006610) ;; そう
@@ -217,18 +220,18 @@
 
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
         (load-kf :ren (car (find-word-conj-of "なく" 1529520)) :class :nai)
-        
+
         (load-conjs :teren 1012740 :yagaru)
-        
+
         (load-kf :ra (get-kana-form 2067770 "ら"))
-        
+
         (load-conjs :rashii 1013240) ;; らしい
 
         (load-kf :desu (get-kana-form 1628500 "です"))
 
         (load-kf :desho (get-kana-form 1008420 "でしょう"))
         (load-kf :desho (get-kana-form 1008420 "でしょ"))
-        
+
         (load-conjs :tosuru 2136890) ;; とする
 
         (load-kf :kurai (get-kana-form 1154340 "くらい"))
@@ -244,7 +247,7 @@
         (load-abbr :nai-n "ん")
         (load-abbr :nai-n "ねぇ")
         (load-abbr :nai-n "ねー")
-        
+
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
 
@@ -305,7 +308,7 @@
                                                      ,suf-var))
                                 :score-mod ,score))
                  ,primary-words)))))
-  
+
 (def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
   (find-word-with-conj-type root 13))
 
@@ -314,19 +317,19 @@
   (find-word-with-conj-type root 13))
 
 (defun te-check (root)
-  (and (not (equal root "で")) 
+  (and (not (equal root "で"))
        (find (char root (1- (length root))) "てで")
        (find-word-with-conj-type root 3)))
-  
+
 (def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
   (te-check root))
 
 (def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
   (te-check root))
-  
+
 (def-simple-suffix suffix-kudasai :kudasai (:connector " " :score (constantly 360)) (root)
   (te-check root))
-    
+
 (def-simple-suffix suffix-te-ren :teren (:connector "" :score 4) (root)
   (and (not (equal root "で"))
        (if (find (char root (1- (length root))) "てで")
@@ -397,7 +400,7 @@
 
 (pushnew (cons :sa
                (lambda (match &aux (seq (seq match)))
-                 (and seq (query (:select 'root-p :from 'entry :where (:= 'seq seq)) :single))))            
+                 (and seq (query (:select 'root-p :from 'entry :where (:= 'seq seq)) :single))))
          *suffix-unique-only*)
 
 (def-simple-suffix suffix-garu :garu (:connector "" :score 0) (root suf patch)
@@ -565,7 +568,7 @@
           (t uniq))))
 
 (defun find-word-suffix (word &key matches)
-  (loop with suffixes = (if *suffix-map-temp* 
+  (loop with suffixes = (if *suffix-map-temp*
                             (gethash *suffix-next-end* *suffix-map-temp*)
                             (get-suffixes word))
        and slice = (make-slice)
@@ -703,13 +706,13 @@
 
 (def-generic-synergy synergy-noun-da (l r)
   #'filter-is-noun
-  (filter-in-seq-set 2089020) ;; だ 
+  (filter-in-seq-set 2089020) ;; だ
   :description "noun+da"
   :score 10
   :connector " ")
 
 (def-generic-synergy synergy-no-da (l r)
-  (filter-in-seq-set 1469800 2139720) 
+  (filter-in-seq-set 1469800 2139720)
   (filter-in-seq-set 2089020 1007370 1007420)
   :description "no da/desu"
   :score 15
@@ -732,7 +735,7 @@
 
 (def-generic-synergy synergy-na-adjectives (l r)
   (filter-is-pos ("adj-na") (segment k p c l) (or k l (and p c)))
-  (filter-in-seq-set 2029110 2028990) ;; な ; に 
+  (filter-in-seq-set 2029110 2028990) ;; な ; に
   :description "na-adjective"
   :score 15
   :connector " ")
@@ -810,7 +813,7 @@
      (defun ,name (,left-var ,right-var)
        ,@body)
      (pushnew ',name *penalty-list*)))
-  
+
 (defmacro def-generic-penalty (name (segment-list-left segment-list-right)
                                test-left test-right &key (serial t) description score (connector " "))
   (alexandria:with-gensyms (start end)
@@ -834,7 +837,7 @@
                   (segment-list-start segment-list)) len)
            (not (car (getf (segment-info seg) :kpcl)))
            (not (and except (member (get-text seg) except :test 'equal)))))))
-         
+
 (def-generic-penalty penalty-short (l r)
   (filter-short-kana 1)
   (filter-short-kana 1 :except '("と"))
@@ -849,7 +852,7 @@
   (constantly t)
   :description "semi-final not final"
   :score -15)
-    
+
 (defun get-penalties (seg-left seg-right)
   (loop for fn in *penalty-list*
      for penalty = (funcall fn seg-left seg-right)
