@@ -400,6 +400,10 @@
     (1343100 (- len 1))
     (2028980 1))
 
+  (def-simple-split split-dokoroka 2009220 '(-10) (len) ;; 所か
+    (1343100 (- len 1))
+    (2028970 1))
+
   (def-simple-split split-omise 2409240 '(20 :primary 1 :connector "") (len) ;; お店
     (2826528 1)
     (1582120))

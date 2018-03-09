@@ -118,6 +118,7 @@
    ;; these are used for splitsegs
    2826528 "polite prefix" ;; お
    2028980 "at / in / by" ;; で
+   2028970 "or / questioning particle" ;; か
    ))
 
 (defun get-suffix-description (seq)
