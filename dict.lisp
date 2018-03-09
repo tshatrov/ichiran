@@ -68,7 +68,7 @@
 (defun entry-digest (entry)
   (list (seq entry) (get-text entry) (get-kana entry)))
 
-(defclass simple-text () 
+(defclass simple-text ()
   ((conjugations :accessor word-conjugations :initform nil)
    (hintedp :accessor hintedp :initarg :hintedp :initform nil)
    ))
@@ -207,7 +207,7 @@
   (:documentation "sense properties")
   (:metaclass dao-class)
   (:keys id))
-  
+
 (defmethod print-object ((obj sense-prop) stream)
   (print-unreadable-object (obj stream :type t :identity nil)
     (format stream "~a:~a" (tag obj) (text obj))))
@@ -278,7 +278,7 @@
 
 (defun conj-info-short (obj)
   (format nil "[~a] ~a~@[~[ Affirmative~; Negative~]~]~@[~[ Plain~; Formal~]~]"
-          (pos obj) 
+          (pos obj)
           (get-conj-description (conj-type obj))
           (case (conj-neg obj) ((nil) 0) ((t) 1))
           (case (conj-fml obj) ((nil) 0) ((t) 1))
@@ -363,7 +363,7 @@
   (loop for conj-data in conj-datas
        nconc (loop for (txt src-txt) in (conj-data-src-map conj-data)
                 if (find txt texts :test 'equal) collect src-txt)))
-  
+
 (defun get-original-text* (conj-datas texts)
   (unless (listp texts)
     (setf texts (list texts)))
@@ -454,7 +454,7 @@
                        (when matching-readings
                          (return matching-readings)))
                   finally (return :null))))))
-                    
+
 
 ;;;
 
@@ -488,7 +488,7 @@
           (if kana-seq (list word)
               (let* ((kanji-seq (query (:select 'seq :from 'kanji-text
                                                 :where (:= 'text word)) :column)))
-                (query (:order-by 
+                (query (:order-by
                         (:select 'text :from 'kana-text :where
                                  (:in 'seq (:set kanji-seq)))
                         'id) :column)))))
@@ -659,7 +659,7 @@
 
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break &aux ctr-mode)
   (typecase reading
-    (compound-text 
+    (compound-text
      (multiple-value-bind (score info) (calc-score (primary reading)
                                                    :use-length (mora-length (text reading))
                                                    :score-mod (score-mod reading))
@@ -796,7 +796,7 @@
     (setf prop-score score)
     (setf score (* prop-score (+ (length-multiplier-coeff len (if (or kanji-p katakana-p) :strong :weak))
                                  (if (> n-kanji 1) (* (1- n-kanji) 5) 0))))
-    
+
     (when use-length
       (incf score (* prop-score (length-multiplier-coeff (- use-length len)
                                                          (if (and (> len 3) (or kanji-p katakana-p)) :ltail :tail))))
@@ -839,7 +839,7 @@
      for pos from 0 below str-len
      for char = (char str pos)
      for char-class = (gethash char *char-class-hash* char)
-     if (and (eql char-class :sokuon) 
+     if (and (eql char-class :sokuon)
              (not (= pos (1- str-len)))
              (let ((char (char str (1+ pos))))
                (member (gethash char *char-class-hash* char) *kana-characters*))) collect (1+ pos)
@@ -920,7 +920,7 @@
        for katakana-group-end = (cdr (assoc start katakana-groups))
        for number-group-end = (cdr (assoc start number-groups))
        unless (member start sticky)
-       nconcing 
+       nconcing
        (loop for end from (1+ start) upto (length str)
             unless (member end sticky)
             nconcing
@@ -1147,9 +1147,9 @@
                  :conjugations (when (typep word 'simple-text) (word-conjugations word))
                  :true-text (when (typep word 'simple-text) (true-text word))
                  :components (when (typep word 'compound-text)
-                               (loop with primary-id = (id (primary word)) 
+                               (loop with primary-id = (id (primary word))
                                   for wrd in (words word)
-                                  collect (make-instance 'word-info 
+                                  collect (make-instance 'word-info
                                                          :type (word-type wrd)
                                                          :text (get-text wrd)
                                                          :true-text (true-text wrd)
@@ -1237,7 +1237,7 @@
      if (funcall test-fn wi) nconc (list (cons wi wi-next))
      nconc (loop for (wf . wf-next) in (word-info-rec-find components test-fn)
               collect (cons wf (or wf-next wi-next)))))
-       
+
 (defun process-word-info (wi-list)
   "Process readings such as nani/nan (hardcoded so far)"
   (loop for (wi wi-next) on wi-list
@@ -1378,13 +1378,13 @@
                js)))
 
 (defun short-sense-str (seq &key with-pos)
-  (query 
+  (query
    (sql-compile
-    `(:limit 
+    `(:limit
       (:order-by
        (:select (:select (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
                          :from gloss :where (:= gloss.sense-id sense.id))
-                :from sense 
+                :from sense
                 ,@(if with-pos
                       `(:inner-join (:as sense-prop pos) :on (:and (:= pos.sense-id sense.id)
                                                                    (:= pos.tag "pos")
@@ -1464,7 +1464,7 @@
      nconc (block outer
              (let* ((conj-pos nil)
                     (orig-text (get-original-text-once (get-conj-data seq (list (id conj))) text))
-                    (js (jsown:new-js 
+                    (js (jsown:new-js
                           ("prop" (loop for conj-prop in props
                                      do (push (pos conj-prop) conj-pos)
                                      collect (conj-prop-json conj-prop))))))
@@ -1495,11 +1495,35 @@
          (fcij (remove-if-not (lambda (c) (jsown:val c "readok")) cij)))
     (or fcij cij)))
 
+(defun simplify-reading-list (reading-list)
+  ;; I'm sure there's a simpler way to do this...
+  (loop with assoc
+     for reading in reading-list
+     for (can spos) = (loop with off = 0
+                         for char across reading
+                         for i from 0
+                         if (char= char #\Space) collect (- i off) into spos and do (incf off)
+                         else collect char into can
+                         finally (return (list (coerce can 'string) (remove-duplicates spos))))
+     for a = (assoc can assoc :test 'equal)
+     if a do (setf (cddr a) (nconc spos (cddr a))) (incf (cadr a))
+     else do (push (list* can 1 spos) assoc)
+     finally (return
+               (loop for (can cnt . spos) in (nreverse assoc)
+                  for sspos = (sort (remove-duplicates spos) '<)
+                  collect (with-output-to-string (s)
+                            (loop for i from 0
+                               for char across can
+                               if (eql (car sspos) i)
+                               do (write-char (if (= (count (car sspos) spos) cnt) #\Space #\MIDDLE_DOT) s)
+                                 (pop sspos)
+                               do (write-char char s)))))))
+
 (defun map-word-info-kana (fn word-info &key (separator "/")
                            &aux (wkana (word-info-kana word-info)))
   (if (listp wkana)
       (with-output-to-string (s)
-        (loop for str in (remove-duplicates (mapcar fn wkana) :test 'equal)
+        (loop for str in (simplify-reading-list (mapcar fn wkana))
              for first = t then nil
              unless first do (princ separator s)
              do (princ str s)))
@@ -1516,7 +1540,7 @@
 
 (defmethod reading-str ((word-info list))
   (word-info-reading-str word-info))
-  
+
 (defun word-info-str (word-info)
   (with-connection *connection*
     (with-output-to-string (s)
@@ -1596,7 +1620,7 @@
                                   (setf has-gloss t)
                                   (jsown:extend-js js ("gloss" gloss))))))
                        (when seq
-                         (jsown:extend-js js 
+                         (jsown:extend-js js
                            ("conj" (conj-info-json seq :conjugations (word-info-conjugations word-info)
                                                    :text (word-info-true-text word-info)
                                                    :has-gloss has-gloss)))))))
@@ -1619,7 +1643,7 @@
 
 (defun exists-reading (seq reading)
   (query (:select 'seq :from 'kana-text :where (:and (:= 'seq seq) (:= 'text reading)))))
-         
+
 (defun find-word-info (text &key reading root-only &aux (end (length text)))
   (with-connection *connection*
     (let* ((*suffix-map-temp* (get-suffix-map text))
@@ -1645,4 +1669,3 @@
 (defun find-word-info-json (text &key reading root-only)
   (mapcar (lambda (wi) (word-info-gloss-json wi :root-only root-only))
           (find-word-info text :reading reading :root-only root-only)))
-
