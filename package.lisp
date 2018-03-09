@@ -49,6 +49,7 @@
            :find-word-info-json
            :simple-word-info
            :process-hints
+           :strip-hints
            :init-counters))
 
 (defpackage :ichiran
@@ -79,4 +80,3 @@
 (defpackage :ichiran/test
   (:use :cl :ichiran/all :lisp-unit)
   (:export :run-all-tests))
-  

@@ -404,6 +404,10 @@
     (1343100 (- len 1))
     (2028970 1))
 
+  (def-simple-split split-tokoroe 2097010 '(-10) (len) ;; ところへ
+    (1343100 (- len 1))
+    (2029000 1))
+
   (def-simple-split split-omise 2409240 '(20 :primary 1 :connector "") (len) ;; お店
     (2826528 1)
     (1582120))
@@ -447,6 +451,9 @@
 
 (defun process-hints (word)
   (simplify-ngrams word *hint-simplify-map*))
+
+(defun strip-hints (word)
+  (remove-if (lambda (c) (find c *hint-char-map*)) word))
 
 (defparameter *kana-hint-map* (make-hash-table)) ;; seq -> split function
 
@@ -528,6 +535,13 @@
 
 ;; TODO pos=int, pos=adv
 
+(def-simple-hint
+    (2028920 ;; は
+     2029000 ;; へ
+     )
+    (l)
+  (:mod (- l 1)))
+
 (def-simple-hint ;; no space
     (1289480 ;; こんばんは
      1289400 ;; こんにちは
@@ -602,6 +616,12 @@
     (l k)
   (:test (alexandria:ends-with #\は k))
   (:space (- l 1))
+  (:mod (- l 1)))
+
+(def-simple-hint
+    (2097010 ;; ところへ
+     )
+    (l)
   (:mod (- l 1)))
 
 (def-simple-hint

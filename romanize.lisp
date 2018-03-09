@@ -31,11 +31,11 @@
 (defun romanize-core (method cc-tree)
   (with-output-to-string (out)
     (dolist (item cc-tree)
-      (cond ((null item)) 
+      (cond ((null item))
             ((characterp item) (princ item out))
             ((atom item) (princ (r-base method item) out))
             ((listp item) (princ (r-apply (car item) method (cdr item)) out))))))
-  
+
 (defgeneric r-base (method item)
   (:documentation "Process atomic char class")
   (:method (method item)
@@ -70,7 +70,7 @@
   (let ((yoon (gethash modifier (kana-table method))))
     (if yoon
         (case (car cc-tree)
-          (:u (format nil "w~a" yoon)) 
+          (:u (format nil "w~a" yoon))
           ((:a :i :e :o) (format nil "~a~a" (gethash (car cc-tree) (kana-table method)) yoon))
           (t (let ((inner (romanize-core method cc-tree)))
                (format nil "~a~a" (subseq inner 0 (max 0 (1- (length inner)))) yoon))))
@@ -146,7 +146,7 @@
 (defparameter *hepburn-simple* (make-instance 'simplified-hepburn
                                               :simplifications '("oo" "o" "ou" "o" "uu" "u")))
 
-(defparameter *hepburn-passport* (make-instance 'simplified-hepburn 
+(defparameter *hepburn-passport* (make-instance 'simplified-hepburn
                                                 :simplifications '("oo" "oh" "ou" "oh" "uu" "u")))
 
 (defclass traditional-hepburn (simplified-hepburn)
@@ -210,16 +210,16 @@
 (defgeneric r-special (method word)
   (:documentation "Romanize words that are exceptions, return nil otherwise")
   (:method-combination or)
-  (:method or (method word) 
+  (:method or (method word)
            (cond ((equal word "っ") "!")
                  ((equal word "ー") "~"))))
 
-(defmethod r-special or ((method generic-hepburn) word)
-  (cond ((equal word "は") "wa")
-        ((equal word "へ") "e")))
+;; (defmethod r-special or ((method generic-hepburn) word)
+;;   (cond ((equal word "は") "wa")
+;;         ((equal word "へ") "e")))
 
-(defmethod r-special or ((method modified-hepburn) word)
-  (when (equal word "を") "o"))
+;; (defmethod r-special or ((method modified-hepburn) word)
+;;   (when (equal word "を") "o"))
 
 (defun romanize-word (word &key (method *default-romanization-method*) original-spelling)
   "Romanize a word according to method"
@@ -231,7 +231,7 @@
   (with-output-to-string (s)
     (loop with last-space = t
          for part in parts
-         for len = (length part) do 
+         for len = (length part) do
          (when (and (not (zerop len))
                     (not last-space)
                     (alphanumericp (char part 0)))
@@ -245,14 +245,14 @@
   (let* ((orig-text (word-info-text word-info)))
     (map-word-info-kana
      (if (eql method :kana)
-         #'identity
+         (lambda (wk) (strip-hints wk))
          (lambda (wk) (romanize-word wk :method method :original-spelling orig-text)))
      word-info)))
 
 (defun romanize (input &key (method *default-romanization-method*) (with-info nil))
   "Romanize a sentence according to method"
   (setf input (normalize input))
-  (loop with definitions = nil 
+  (loop with definitions = nil
      for (split-type . split-text) in (basic-split input)
      nconc
        (if (eql split-type :word)
