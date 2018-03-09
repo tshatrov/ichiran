@@ -396,7 +396,7 @@
     (1343100 (- len 1))
     (2028930 1))
 
-  (def-simple-split split-tokorode 1343110 '(-10) (len) ;; ところで
+  (def-simple-split split-tokorode 1343110 '(-10 :root (1)) (len) ;; ところで
     (1343100 (- len 1))
     (2028980 1))
 
@@ -419,7 +419,7 @@
     (let ((*split-map* *segsplit-map*))
       (multiple-value-bind (split attrs) (get-split word)
         (when split
-          (destructuring-bind (score &key (primary 0) (connector " ")) attrs
+          (destructuring-bind (score &key (primary 0) (connector " ") root) attrs
             (let* ((word
                     (make-instance 'compound-text
                                    :text (str:join "" (mapcar 'get-text split))
@@ -428,6 +428,9 @@
                                    :words split
                                    :score-mod score))
                    (new-seg (copy-segment segment)))
+              (when root
+                (loop for i from 0 for word in split
+                   if (find i root) do (setf (word-conjugations word) :root)))
               (setf (segment-word new-seg) word
                     (segment-text new-seg) (get-text word)
                     (segment-score new-seg) (+ (segment-score segment) score))
