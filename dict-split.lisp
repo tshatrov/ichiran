@@ -13,6 +13,7 @@
 (defmacro def-simple-split (name seq score (&optional length-var text-var reading-var) &body parts-def)
   "each part is (seq length-form)"
   (alexandria:with-gensyms (offset parts pseq part-length)
+    (unless name (setf name (intern (format nil "~a~a" :split- seq))))
     (unless reading-var (setf reading-var (gensym "RV")))
     (unless length-var (setf length-var (gensym "LV")))
     (unless text-var (setf text-var (gensym "TV")))
