@@ -1,11 +1,17 @@
 (in-package :ichiran/test)
 
 (defvar *delays* nil)
+(defvar *msg-lock* (sb-thread:make-mutex :name "test-msg-lock"))
+
+(defun test-progress ()
+  (sb-thread:with-mutex (*msg-lock*)
+    (princ ".")
+    (force-output)))
 
 (defun assert-segment (str &rest segmentation)
   (push
    (let ((future (lparallel:future
-                   (princ ".")
+                   (test-progress)
                    (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
                                             (word-info-text wi)))
                            (simple-segment str)))))
@@ -430,7 +436,7 @@
 (defun run-all-tests ()
   (init-counters)
   (init-suffixes t)
-  (let* ((lparallel:*kernel* (lparallel:make-kernel 8))
+  (let* ((lparallel:*kernel* (lparallel:make-kernel 4))
          (res (unwind-protect
                    (run-tests :all :ichiran/test)
                 (lparallel:end-kernel))))
