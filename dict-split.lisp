@@ -412,6 +412,14 @@
     (2826528 1)
     (1582120))
 
+  (def-simple-split split-hitorashii 1366490 '(-10 :connector "") (len) ;; 人らしい
+    (1580640 (- len 3))
+    (1013240))
+
+  (def-simple-split split-toha 2028950 '(-5 :connector "") (len) ;; とは
+    (1008490 1)
+    (2028920 1))
+
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))
