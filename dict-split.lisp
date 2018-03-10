@@ -388,6 +388,11 @@
   (1008490 1)
   (1375610 nil t))
 
+(def-simple-split nil 1327220 50 (len) ;; 手に入る
+  (1327190 1)
+  (2028990 1)
+  (1465590 nil t))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
@@ -420,7 +425,6 @@
   (def-simple-split split-toha 2028950 '(-5 :connector "") (len) ;; とは
     (1008490 1)
     (2028920 1))
-
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))

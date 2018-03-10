@@ -236,7 +236,7 @@
   (assert-segment "間違えておられたようですね" "間違えておられた" "ようです" "ね")
   (assert-segment "人気のせいな" "人気" "の" "せい" "な")
   (assert-segment "コレはアレ" "コレ" "は" "アレ")
-  (assert-segment "アレハレ" :gap) 
+  (assert-segment "アレハレ" :gap)
   (assert-segment "上に文字があったり" "上" "に" "文字" "が" "あったり")
   (assert-segment "言っただろ" "言った" "だろ")
   (assert-segment "嵐が起ころうとしている" "嵐" "が" "起ころうとしている")
@@ -364,11 +364,15 @@
   (assert-segment "はっしていない" "はっしていない")
   (assert-segment "無理さえしなければ" "無理" "さえ" "しなければ")
   (assert-segment "ところで" "ところで")
+  (assert-segment "外に出て" "外" "に" "出て")
+  (assert-segment "大人しそうな顔" "大人しそう" "な" "顔")
+  (assert-segment "おとなしそうなようすにだまされた" "おとなしそう" "な" "ようす" "に" "だまされた")
+  (assert-segment "勝手に入る" "勝手に" "入る")
   )
 
 (define-test json-consistency-test
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
-                      "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる" 
+                      "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる"
                       "どおりで" "十万三" "5万100" "1234"
                       "1日" "2期" "三羽" "1万500円"
                       )

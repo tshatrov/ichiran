@@ -7,9 +7,9 @@
 
 (defun find-conj (seq-from options)
   (destructuring-bind (conj-type pos neg fml) options
-    (query 
+    (query
      (sql-compile
-      `(:select conj.id 
+      `(:select conj.id
                 :from (:as conjugation conj)
                 :inner-join (:as conj-prop prop)
                 :on (:= prop.conj-id conj.id)
@@ -19,7 +19,7 @@
                              ,(sql-eql-or-null 'prop.neg neg)
                              ,(sql-eql-or-null 'prop.fml fml))))
      :column)))
-  
+
 (defun add-conj (seq-from options reading-map)
   (unless (find-conj seq-from options)
     (destructuring-bind (conj-type pos neg fml) options
@@ -137,7 +137,7 @@
                                        source-text)))))
 
 (defun delete-conjugation (seq from &optional (via :null))
-  (let ((conj (query-dao 'conjugation 
+  (let ((conj (query-dao 'conjugation
                          (sql-compile
                           `(:select * :from conjugation
                                     :where (:and (:= seq ,seq)
@@ -207,7 +207,7 @@
 
   (add-primary-nokanji 1415510 "タカ")
 
-  ;;; add sense for な 
+  ;;; add sense for な
   (add-sense 2029110 4 "(used with nouns) な-adjective")
   ;;; gozaimashita / gozaimashitara
   (add-conj 1612690 '(2 "exp" :null :null)
@@ -225,7 +225,7 @@
   (add-reading 2145800 "イラ")
   (add-reading 1517840 "ハチ")
   (set-common 'kana-text 1517840 "ハチ" 34)
-  
+
   (add-reading 2029080 "ねぇ")
   (add-reading 2089020 "じゃ" :common 0)
 
@@ -235,10 +235,10 @@
 
   (delete-reading 2423450 "サシ")
   (delete-reading 2574600 "どうなん")
-  
+
   ;;; delete sense-prop uk for 生る
   (delete-sense-prop 1611000 "misc" "uk")
-  ;; 仕手 (して) 
+  ;; 仕手 (して)
   (delete-sense-prop 1305070 "misc" "uk")
   ;; 品 ( しな)
   (delete-sense-prop 1583470 "misc" "uk")
@@ -267,7 +267,7 @@
   ;; 人
   (delete-sense-prop 1580640 "misc" "uk")
   ;; かし
-  (delete-sense-prop 1569440 "misc" "uk") 
+  (delete-sense-prop 1569440 "misc" "uk")
   ;; さし
   (delete-sense-prop 2423450 "misc" "uk")
   ;; 行く
@@ -311,7 +311,7 @@
   (delete-sense-prop 1610400 "misc" "uk")
   ;; つく
   (delete-sense-prop 2097190 "misc" "uk")
-  
+
   ;; こころ
   ;; (add-sense-prop 1360480 0 "misc" "uk")
   ;; そういう
@@ -334,14 +334,14 @@
   (add-sense-prop 1509350 0 "misc" "uk")
   ;; はやる
   (add-sense-prop 1637460 0 "misc" "uk")
-  
+
   ;; なの
   (add-sense-prop 2425930 0 "pos" "prt")
   ;; わね
   (add-sense-prop 2457930 0 "pos" "prt")
   ;; とん
   (delete-sense-prop 2629920 "pos" "adv-to")
-  
+
   ;; set/unset common flag for choice kana readings
   (set-common 'kana-text 1310920 "したい" :null)
   (set-common 'kana-text 1159430 "いたい" :null)
@@ -462,7 +462,7 @@
   (set-common 'kana-text 1610400 "つける" 12)
   (set-common 'kana-text 1495740 "つく" 11)
   (set-common 'kanji-text 1495740 "付く" 11)
-  
+
   ;; remove sense for なり and make it not root
   (delete-senses 2611370 (constantly t))
   (let ((entry (get-dao 'entry 2611370)))
@@ -485,7 +485,7 @@
   ;; delete adj stem conjugation for ない
   (delete-conjugation 2029110 2257550)
   (delete-conjugation 2086640 2684620) ;; しい
-  
+
   (add-errata-feb17)
   (add-errata-jan18)
   (add-errata-counters)
@@ -566,7 +566,7 @@
   (set-common 'kana-text 1158960 "いほう" 0)
 
   (delete-sense-prop 2122310 "pos" "prt") ;; え
-  
+
   (load-entry "
 <entry>
 <ent_seq>1613860</ent_seq>
@@ -631,19 +631,21 @@
   (set-common 'kanji-text 2518850 "切れ" 0)
   (set-common 'kanji-text 1221900 "基地外" 0)
   (set-common 'kana-text 1379380 "せいと" 10)
-  
+  (set-common 'kanji-text 1203280 "外に" :null)
+
   (add-reading 1384840 "キレ" :common 0)
-  
+
   (delete-sense-prop 1303400 "misc" "uk") ;; 撒く/まく
   (delete-sense-prop 1434020 "misc" "uk") ;; 吊る/つる
   (delete-sense-prop 1196520 "misc" "uk") ;; かすむ
+  (delete-sense-prop 1414190 "misc" "uk") ;; 大人しい
 
   (add-sense-prop 1188380 0 "misc" "uk") ;; なんでもかんでも
   (add-sense-prop 1258330 0 "misc" "uk") ;; いぬ
 
   (set-primary-nokanji 1258330 nil) ;; いぬ
   (set-primary-nokanji 1588930 nil) ;; おかず
-  
+
   (add-sense 1315920 2 "hours (period of)") ;; 時間
   (add-sense-prop 1315920 2 "pos" "ctr")
 
@@ -655,7 +657,7 @@
   (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
 
   (add-reading 2081610 "タテ")
-  
+
   (add-sense-prop 1427420 0 "pos" "ctr") ;; 丁目
   (add-sense-prop 1397450 0 "pos" "ctr") ;; 組
   (add-sense-prop 1351270 0 "pos" "ctr") ;; 章
@@ -670,7 +672,7 @@
   (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
   (add-sense-prop 1100380 3 "pos" "ctr") ;; パー
 
-  (add-sense 1215240 1 "counter for rooms") ;; 間 
+  (add-sense 1215240 1 "counter for rooms") ;; 間
   (add-sense-prop 1215240 1 "pos" "ctr")
   (add-sense 1583470 3 "counter for dishes") ;; 品（しな）
   (add-sense-prop 1583470 3 "pos" "ctr")
@@ -783,7 +785,7 @@
                             )
   "Words that only have meaning when they're final")
 
-(defparameter *semi-final-prt* (append *final-prt* 
+(defparameter *semi-final-prt* (append *final-prt*
                                        '(2029120 ;; さ
                                          2086640 ;; し
                                          2029110 ;; な
@@ -814,7 +816,7 @@
 
 (defun errata-conj-rules-hook (hash)
   (let* ((pos (get-pos-index "adj-i"))
-         (rules (list (make-conjugation-rule pos +conj-adverbial+ nil nil 1 
+         (rules (list (make-conjugation-rule pos +conj-adverbial+ nil nil 1
                                              1 "く" "" "")
                       (make-conjugation-rule pos +conj-adjective-stem+ nil nil 1
                                              1 "" "" ""))))

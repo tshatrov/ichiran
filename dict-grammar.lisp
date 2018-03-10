@@ -119,6 +119,7 @@
    2826528 "polite prefix" ;; お
    2028980 "at / in / by" ;; で
    2028970 "or / questioning particle" ;; か
+   2028990 "to / at / in" ;; に
    ))
 
 (defun get-suffix-description (seq)
