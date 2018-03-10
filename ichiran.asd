@@ -18,6 +18,7 @@
                #:bordeaux-threads
                #:jsown
                #:str
+               #:lparallel
                )
   :components ((:file "package")
                (:file "characters")
@@ -33,7 +34,6 @@
                (:file "kanji")
                (:file "ichiran")
                (:file "tests"))
-  :perform (test-op 
+  :perform (test-op
             (o s)
             (uiop:symbol-call :ichiran/test :run-all-tests)))
-

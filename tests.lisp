@@ -1,13 +1,25 @@
 (in-package :ichiran/test)
 
-(defmacro assert-segment (str &rest segmentation)
-  `(assert-equal (list ,@segmentation)
-                 (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
-                                          (word-info-text wi)))
-                         (simple-segment ,str))
-                 ))
+(defvar *delays* nil)
 
-(define-test segmentation-test
+(defun assert-segment (str &rest segmentation)
+  (push
+   (let ((future (lparallel:future
+                   (princ ".")
+                   (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
+                                            (word-info-text wi)))
+                           (simple-segment str)))))
+     (lparallel:delay
+       (assert-equal segmentation (lparallel:force future))))
+   *delays*))
+
+(defmacro define-parallel-test (name &body body)
+  `(define-test ,name
+     (let ((*delays* nil))
+       ,@body
+       (map nil 'lparallel:force (reverse *delays*)))))
+
+(define-parallel-test segmentation-test
   (assert-segment "ご注文はうさぎですか" "ご注文" "は" "うさぎ" "です" "か")
   (assert-segment "しませんか" "しません" "か")
   (assert-segment "ドンマイ" "ドンマイ")
@@ -403,7 +415,7 @@
   (assert-eql (parse-number "100万") 1000000)
   (assert-eql (parse-number "100万500") 1000500))
 
-(define-test counter-test
+(define-parallel-test counter-test
   (dolist (ctr '("倍" "晩" "秒" "着" "挺" "丁" "台" "段" "度" "円" "服" "幅" "分" "杯" "発" "遍" "篇" "匹" "本"
                  "時" "畳" "帖" "条" "課" "日" "回" "ヵ月" "階" "軒" "機" "個" "脚" "間" "枚" "巻" "名" "年" "人"
                  "列" "輪" "輌" "才" "歳" "棹" "冊" "隻" "章" "首" "足" "艘" "反" "滴" "点" "頭" "つ" "通" "対"
@@ -418,7 +430,10 @@
 (defun run-all-tests ()
   (init-counters)
   (init-suffixes t)
-  (let ((res (run-tests :all :ichiran/test)))
+  (let* ((lparallel:*kernel* (lparallel:make-kernel 8))
+         (res (unwind-protect
+                   (run-tests :all :ichiran/test)
+                (lparallel:end-kernel))))
     (print-failures res)
     (print-errors res)
     res))
