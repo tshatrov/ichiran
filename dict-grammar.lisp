@@ -269,6 +269,12 @@
 
 (defun init-suffixes (&optional blocking reset)
   (when (or reset (not *suffix-cache*))
+    ;; see https://github.com/marijnh/Postmodern/issues/134
+    (loop for (table) in postmodern::*tables*
+       for class = (find-class table)
+       unless (sb-mop:class-finalized-p class)
+       do (sb-mop:finalize-inheritance class))
+
     (if blocking
         (init-suffixes-thread)
         (sb-thread:make-thread #'init-suffixes-thread)))

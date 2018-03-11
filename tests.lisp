@@ -11,10 +11,11 @@
 (defun assert-segment (str &rest segmentation)
   (push
    (let ((future (lparallel:future
-                   (test-progress)
-                   (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
-                                            (word-info-text wi)))
-                           (simple-segment str)))))
+                   (prog1
+                       (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
+                                                (word-info-text wi)))
+                               (simple-segment str))
+                     (test-progress)))))
      (lparallel:delay
        (assert-equal segmentation (lparallel:force future))))
    *delays*))
