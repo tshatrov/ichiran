@@ -632,6 +632,8 @@
   (set-common 'kanji-text 1221900 "基地外" 0)
   (set-common 'kana-text 1379380 "せいと" 10)
   (set-common 'kanji-text 1203280 "外に" :null)
+  (set-common 'kanji-text 1383690 "後継ぎ" 0)
+  (set-common 'kana-text 2083600 "すまん" 0)
 
   (add-reading 1384840 "キレ" :common 0)
 
@@ -642,6 +644,7 @@
 
   (add-sense-prop 1188380 0 "misc" "uk") ;; なんでもかんでも
   (add-sense-prop 1258330 0 "misc" "uk") ;; いぬ
+  (add-sense-prop 2217330 0 "misc" "uk") ;; わい
 
   (set-primary-nokanji 1258330 nil) ;; いぬ
   (set-primary-nokanji 1588930 nil) ;; おかず
@@ -782,6 +785,7 @@
                             2130430 ;; け っけ
                             2029130 ;; ぞ / ぜ
                             2718360 ;; がな
+                            2201380 ;; わい
                             )
   "Words that only have meaning when they're final")
 
