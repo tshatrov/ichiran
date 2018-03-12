@@ -813,10 +813,12 @@
 
 (defconstant +conj-adverbial+ 50)
 (defconstant +conj-adjective-stem+ 51)
+(defconstant +conj-negative-stem+ 52)
 
 (defun errata-conj-description-hook (hash)
   (setf (gethash +conj-adverbial+ hash) "Adverbial")
-  (setf (gethash +conj-adjective-stem+ hash) "Adjective Stem"))
+  (setf (gethash +conj-adjective-stem+ hash) "Adjective Stem")
+  (setf (gethash +conj-negative-stem+ hash) "Negative Stem"))
 
 (defun errata-conj-rules-hook (hash)
   (let* ((pos (get-pos-index "adj-i"))
@@ -835,6 +837,22 @@
   ;; remove potential forms of vs-s verbs
   (let ((pos (get-pos-index "vs-s")))
     (setf (gethash pos hash) (remove-if (lambda (r) (= (cr-conj r) 5)) (gethash pos hash))))
+  ;; remove 2nd causative form (it's not v1 so it breaks conjugations)
+  ;; and add conj-negative-stem for godan verbs
+  (maphash
+   (lambda (key value)
+     (let ((val (remove-if (lambda (r) (and (= (cr-conj r) 7) (= (cr-onum r) 2))) value))
+           (pos (get-pos key)))
+       (when (alexandria:starts-with-subseq "v5" pos)
+         (let* ((neg-rule (find-if (lambda (r) (and (= (cr-conj r) 1) (cr-neg r) (not (cr-fml r)))) val))
+                (len (length (cr-okuri neg-rule))))
+           (when (and neg-rule (> len 2))
+             (let ((new-rule (copy-conjugation-rule neg-rule)))
+               (setf (cr-conj new-rule) +conj-negative-stem+
+                     (cr-okuri new-rule) (subseq (cr-okuri neg-rule) 0 (- len 2)))
+               (push new-rule val)))))
+       (setf (gethash key hash) val)))
+   hash)
   )
 
 (defparameter *skip-conj-forms* ;; (type neg fml), :any matches whatever
@@ -845,6 +863,7 @@
 
 (defparameter *weak-conj-forms*
   `((,+conj-adjective-stem+ :any :any)
+    (,+conj-negative-stem+ :any :any)
     (9 t :any)))
 
 (defun test-conj-prop (prop forms)
