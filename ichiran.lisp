@@ -49,6 +49,9 @@
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "misc") (:= 'text "uk")))
 ;; find common kana changes
 ;; (:select 'seq 'text :distinct :from 'kana-text :where (:not (:is-null 'common)))
+;; find counters
+;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "pos") (:= 'text "ctr")))
+
 
 (defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/conn:*connection*))
   `(with-db ,conn
@@ -64,7 +67,7 @@
   (with-db conn
     (ichiran/dict:init-suffixes t reset))
   (switch-conn-vars conn))
-  
+
 
 (defun regex-file (filename regex)
   (let ((contents (uiop:read-file-string filename)))
@@ -88,6 +91,3 @@
       (values
        (loop for seq in seq-set unless (gethash seq hash) collect seq)
        hash))))
-         
-         
-    
