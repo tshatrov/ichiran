@@ -221,7 +221,7 @@
         (load-conjs :ren 2027910 :tsutsuaru)
 
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
-        (load-kf :ren (car (find-word-conj-of "なく" 1529520)) :class :nai)
+        (load-kf :neg (car (find-word-conj-of "なく" 1529520)) :class :nai)
 
         (load-conjs :teren 1012740 :yagaru)
 
@@ -323,6 +323,9 @@
 (def-simple-suffix suffix-ren :ren (:connector "" :score 5) (root)
   ;; generic ren'youkei suffix
   (find-word-with-conj-type root 13))
+
+(def-simple-suffix suffix-neg :neg (:connector "" :score 5) (root)
+  (find-word-with-conj-type root 13 +conj-negative-stem+))
 
 (defun te-check (root)
   (and (not (equal root "で"))

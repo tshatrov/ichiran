@@ -488,6 +488,7 @@
 
   (add-errata-feb17)
   (add-errata-jan18)
+  (add-errata-mar18)
   (add-errata-counters)
   )
 
@@ -655,6 +656,10 @@
   (add-sense-prop 1445160 0 "pos" "ctr") ;; 度
   )
 
+(defun add-errata-mar18 ()
+  (set-common 'kana-text 1207610 "かける" 0)
+  )
+
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
   (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
@@ -783,7 +788,8 @@
                             2425930 ;; なの
                             ;; 2780660 ;; もの
                             2130430 ;; け っけ
-                            2029130 ;; ぞ / ぜ
+                            2029130 ;; ぞ
+                            2834812 ;; ぜ
                             2718360 ;; がな
                             2201380 ;; わい
                             )
