@@ -207,8 +207,6 @@
 
   (add-primary-nokanji 1415510 "タカ")
 
-  ;;; add sense for な
-  (add-sense 2029110 4 "(used with nouns) な-adjective")
   ;;; gozaimashita / gozaimashitara
   (add-conj 1612690 '(2 "exp" :null :null)
             '(("ございます" "ございました")))
@@ -658,6 +656,8 @@
 
 (defun add-errata-mar18 ()
   (set-common 'kana-text 1207610 "かける" 0)
+  ;;; add sense for な
+  (add-sense 2029110 5 "indicates な-adjective")
   )
 
 (defun add-errata-counters ()
