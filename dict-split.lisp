@@ -421,6 +421,10 @@
   (def-simple-split split-toha 2028950 '(-5 :connector "") (len) ;; とは
     (1008490 1)
     (2028920 1))
+
+  (def-simple-split split-naito 2394710 '(-5) (len) ;; ないと
+    (1529520 2)
+    (1008490 1))
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))

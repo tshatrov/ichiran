@@ -779,6 +779,8 @@
                              2760890 ;; 三箱
                              2831062 ;; てる
                              2831063 ;; てく
+                             2029030 ;; ものの
+                             2134680 ;; それは
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
