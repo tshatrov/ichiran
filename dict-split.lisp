@@ -410,6 +410,10 @@
     (1343100 (- len 1))
     (2029000 1))
 
+  (def-simple-split split-tokorowo 2136660 '(-10) (len) ;; ところを
+    (1343100 (- len 1))
+    (2029010 1))
+
   (def-simple-split split-omise 2409240 '(20 :primary 1 :connector "") (len) ;; お店
     (2826528 1)
     (1582120))

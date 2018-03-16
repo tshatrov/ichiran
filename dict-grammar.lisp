@@ -120,6 +120,7 @@
    2028980 "at / in / by" ;; で
    2028970 "or / questioning particle" ;; か
    2028990 "to / at / in" ;; に
+   2029010 "indicates direct object of action" ;; を
    ))
 
 (defun get-suffix-description (seq)
