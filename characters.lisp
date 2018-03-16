@@ -49,8 +49,8 @@
          (loop for (,key ,val) on ,list by #'cddr
               do (setf (gethash ,key ,hash) ,val))
          ,hash))))
-       
-(hash-from-list *dakuten-hash* 
+
+(hash-from-list *dakuten-hash*
                 '(:ka :ga :ki :gi :ku :gu :ke :ge :ko :go
                   :sa :za :shi :ji :su :zu :se :ze :so :zo
                   :ta :da :chi :dji :tsu :dzu :te :de :to :do
@@ -120,7 +120,7 @@
           *decimal-point-regex* *digit-regex* *digit-regex*
           *word-regex* *num-word-regex* *word-regex* *word-regex*))
 
-(defparameter *char-class-regex-mapping* 
+(defparameter *char-class-regex-mapping*
   `((:katakana ,*katakana-regex*)
     (:katakana-uniq ,*katakana-uniq-regex*)
     (:hiragana ,*hiragana-regex*)
@@ -197,7 +197,7 @@
 (defun simplify-ngrams (str map)
   (let* ((alist (loop for (from to) on map by #'cddr collect (cons from to)))
          (scanner (ppcre:create-scanner (cons :alternation (mapcar #'car alist)))))
-    (ppcre:regex-replace-all scanner str 
+    (ppcre:regex-replace-all scanner str
                              (lambda (match &rest rest)
                                (declare (ignore rest))
                                (cdr (assoc match alist :test #'equal)))
@@ -214,7 +214,7 @@
        for normal-char = (to-normal-char char)
        if normal-char do (setf (char str i) normal-char))
   (setf str (simplify-ngrams str (append *punctuation-marks* *dakuten-join*))))
-  
+
 (defun split-by-regex (regex str)
   (remove-if (lambda (seg) (= (length seg) 0))
              (ppcre:split regex str :with-registers-p t)))
@@ -242,7 +242,7 @@
                (char (getf *all-characters* class) 0)
                char)))
        str))
-  
+
 (defun consecutive-char-groups (char-class str &key (start 0) (end (length str)))
   (let ((regex (cdr (assoc char-class *char-scanners-inner*)))
         result)
@@ -295,3 +295,36 @@
     (ppcre:do-matches (s e regex word) (push s pos))
     (let ((tail (nthcdr (1- stem) pos)))
       (if tail (subseq word 0 (car tail)) ""))))
+
+(defun match-diff (s1 s2 &aux (l1 (length s1)) (l2 (length s2)))
+  "Match strings s1 and s2 optimally. Similar to ichiran/kanji:match-readings, but works with any strings."
+  (cond
+    ((zerop l1))
+    ((zerop l2))
+    (t (let ((m (mismatch s1 s2)))
+         (cond
+           ((not m) (values (list s1) l1))
+           ((or (= l1 1) (= l2 1)) (values (list (list s1 s2)) 0))
+           ((= m 0)
+            (let ((best-match nil)
+                  (best-match-value nil))
+              (loop for c1 across s1
+                 for i from 0
+                 unless (zerop i)
+                 do (loop for c2 across s2
+                       for j from 0
+                       if (and (not (zerop j)) (char= c1 c2))
+                       do (multiple-value-bind (match value) (match-diff (subseq s1 i) (subseq s2 j))
+                            (when (and match (or (not best-match-value) (> value best-match-value)))
+                              (setf best-match (cons (list (subseq s1 0 i) (subseq s2 0 j)) match)
+                                    best-match-value value)))))
+              (when best-match
+                (values best-match best-match-value))))
+           ((= m l1)
+            (values (list (subseq s1 0 (1- l1)) (list (subseq s1 (1- l1)) (subseq s2 (1- l1)))) (1- l1)))
+           ((= m l2)
+            (values (list (subseq s2 0 (1- l2)) (list (subseq s1 (1- l2)) (subseq s2 (1- l2)))) (1- l2)))
+           (t
+            (multiple-value-bind (match value) (match-diff (subseq s1 m) (subseq s2 m))
+              (when match
+                (values (cons (subseq s1 0 m) match) (+ value m))))))))))
