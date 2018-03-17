@@ -560,7 +560,7 @@
     (alexandria:with-gensyms (match kr rtext)
       `(defhint (,seq) (,reading-var)
          (when (typep ,reading-var 'simple-text)
-           (let* ((,rtext (get-kanji ,reading-var))
+           (let* ((,rtext (true-kanji ,reading-var))
                   (,match (match-diff ,text ,rtext))
                   (,kr (ichiran/kanji:match-readings ,rtext (true-kana ,reading-var))))
              (when (and ,match ,kr)
