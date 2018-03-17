@@ -429,6 +429,10 @@
   (def-simple-split split-naito 2394710 '(-5) (len) ;; ないと
     (1529520 2)
     (1008490 1))
+
+  (def-simple-split split-honno 1011740 '(-5) (len) ;; ほんの
+    (1522150 (- len 1))
+    (1469800 1))
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))

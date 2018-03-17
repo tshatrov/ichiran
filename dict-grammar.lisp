@@ -121,6 +121,7 @@
    2028970 "or / questioning particle" ;; か
    2028990 "to / at / in" ;; に
    2029010 "indicates direct object of action" ;; を
+   1469800 "indicates possessive (...'s)"
    ))
 
 (defun get-suffix-description (seq)
