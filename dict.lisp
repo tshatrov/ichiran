@@ -510,6 +510,12 @@
   (:method (obj) (get-kana obj))
   (:method ((obj proxy-text)) (true-kana (source obj))))
 
+(defmethod get-kana ((obj proxy-text))
+  (get-kana (source obj)))
+
+(defmethod get-kanji ((obj proxy-text))
+  (get-kanji (source obj)))
+
 (defmethod word-conjugations ((obj proxy-text))
   (word-conjugations (source obj)))
 

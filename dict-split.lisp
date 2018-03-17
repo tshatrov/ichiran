@@ -525,6 +525,47 @@
                              when (and (keywordp (car pair)) (not (eql (car pair) :test)))
                              collect `(list ,@pair))))))))
 
+(defun translate-hint-position (match position)
+  (loop with off = 0 and rem = position
+     for part in match
+     do (if (atom part)
+            (let ((len (length part)))
+              (cond
+                ((<= rem len) (return (+ off rem)))
+                (t (decf rem len) (incf off len))))
+            (let ((len (length (first part)))
+                  (clen (length (second part))))
+              (cond
+                ((< rem len)
+                 (return (+ off (min 1 (max clen rem)))))
+                ((= rem len)
+                 (return (+ off clen)))
+                (t (decf rem len) (incf off clen)))))))
+
+(defun translate-hints (match hints)
+  (loop for (hint pos) in hints
+     for new-pos = (translate-hint-position match pos)
+     if new-pos collect (list hint new-pos)))
+
+(defmacro def-easy-hint (seq kanji-split)
+  (let* ((parts (split-sequence #\Space kanji-split))
+         (text (remove #\Space kanji-split))
+         (hints (loop with pos = 0
+                   for part in parts
+                   unless (zerop pos)
+                   collect (list :space pos)
+                   and if (find part '("は" "へ") :test 'equal) collect (list :mod pos)
+                   do (incf pos (length part))))
+         (reading-var (gensym "RV")))
+    (alexandria:with-gensyms (match kr rtext)
+      `(defhint (,seq) (,reading-var)
+         (when (typep ,reading-var 'simple-text)
+           (let* ((,rtext (get-kanji ,reading-var))
+                  (,match (match-diff ,text ,rtext))
+                  (,kr (ichiran/kanji:match-readings ,rtext (true-kana ,reading-var))))
+             (when (and ,match ,kr)
+               (insert-hints (get-kana ,reading-var) (translate-hints ,kr (translate-hints ,match ',hints))))))))))
+
 (defun get-hint (reading)
   (let ((hint-fn (gethash (seq reading) *hint-map*))
         (conj-of (mapcar #'conj-data-from (word-conj-data reading))))
@@ -1026,7 +1067,6 @@
      2424520 ;; 去る者は追わず、来たる者は拒まず
      2419570 ;; 腹が減っては戦は出来ぬ
      2255410 ;; 浜の真砂は尽きるとも世に盗人の種は尽きまじ
-     2834642 ;; 柳は緑花は紅
      )
     (l k)
   (ha1 (search "は" k :start2 1))
@@ -1244,54 +1284,13 @@
   (:space ni)
   (:space (1+ ni)))
 
-(def-simple-hint
-    (2418150 ;; 親に似ぬ子は鬼子
-     2418640 ;; 静かに流れる川は深い
-     2419940 ;; 柳の下に何時も泥鰌は居ない
-     2830412 ;; 他に方法は無い
-     2666530 ;; 墓に布団は着せられぬ
-     )
-    (l k)
-  (ha (search "は" k :from-end t))
-  (ni (search "に" k))
-  (:space ha)
-  (:mod ha)
-  (:space (1+ ha))
-  (:space ni)
-  (:space (1+ ni)))
+;; Easy hints!
 
-(def-simple-hint
-    (2832738 ;; 身体髪膚これを父母に受くあえて毀傷せざるは孝の始なり
-     )
-    (l k)
-  (ruha (search "るは" k :from-end t))
-  (no (search "の" k :from-end t))
-  (wo (search "を" k))
-  (ni (search "に" k))
-  (:space wo)
-  (:space (1+ wo))
-  (:space ni)
-  (:space (1+ ni))
-  (:space (1+ ruha))
-  (:mod (1+ ruha))
-  (:space (+ 2 ruha))
-  (:space no)
-  (:space (1+ no))
-  )
-
-(def-simple-hint
-    (2834655 ;; 親の意見と茄子の花は千に一つも無駄はない
-     )
-    (l k)
-  (to (search "と" k))
-  (ha (search "は" k :from-end t))
-  (ha2 (search "は" k :from-end t :end2 (- l 3)))
-  (:space to)
-  (:space (1+ to))
-  (:space ha)
-  (:mod ha)
-  (:space (1+ ha))
-  (:space ha2)
-  (:mod ha2)
-  (:space (1+ ha2))
-  )
+(def-easy-hint 2834642 "柳 は 緑 花 は 紅")
+(def-easy-hint 2834655 "親 の 意見 と 茄子 の 花 は 千 に 一つ も 無駄 は ない")
+(def-easy-hint 2418150 "親 に 似ぬ 子 は 鬼子")
+(def-easy-hint 2418640 "静かに 流れる 川 は 深い")
+(def-easy-hint 2419940 "柳 の 下 に 何時も 泥鰌 は 居ない")
+(def-easy-hint 2832738 "身体髪膚 これ を 父母 に 受くあえて 毀傷せざる は 孝 の 始めなり")
+(def-easy-hint 2830412 "他 に 方法 は 無い")
+(def-easy-hint 2666530 "墓 に 布団 は 着せられぬ")
