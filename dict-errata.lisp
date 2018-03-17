@@ -658,6 +658,8 @@
   (set-common 'kana-text 1207610 "かける" 0)
   ;;; add sense for な
   (add-sense 2029110 5 "indicates な-adjective")
+
+  (add-reading 2757120 "問うは一度の恥問わぬは末代の恥")
   )
 
 (defun add-errata-counters ()
