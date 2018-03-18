@@ -389,6 +389,7 @@
   (assert-segment "勝手に入る" "勝手に" "入る")
   (assert-segment "後継ぎする" "後継ぎ" "する")
   (assert-segment "なすまん" "な" "すまん")
+  (assert-segment "強いんだね" "強い" "ん" "だ" "ね")
   )
 
 (define-test json-consistency-test

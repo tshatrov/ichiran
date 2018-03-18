@@ -656,6 +656,9 @@
 
 (defun add-errata-mar18 ()
   (set-common 'kana-text 1207610 "かける" 0)
+  (set-common 'kanji-text 1236100 "強いる" :null)
+  (set-common 'kana-text 1236100 "しいる" :null)
+
   ;;; add sense for な
   (add-sense 2029110 5 "indicates な-adjective")
 
