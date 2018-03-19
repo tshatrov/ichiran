@@ -1065,7 +1065,6 @@
 (def-easy-hint 2833959 "知る者 は 言わず 言う者 は 知らず")
 (def-easy-hint 2833900 "虎 は 死して 皮 を 留め 人 は 死して 名 を 残す")
 (def-easy-hint 2570040 "朝焼け は 雨 夕焼け は 晴れ")
-(def-easy-hint 2424520 "去る者は追わず、来たる者は拒まず")
 (def-easy-hint 2419570 "腹 が 減って は 戦 は 出来ぬ")
 (def-easy-hint 2255410 "浜 の 真砂 は 尽きるとも 世 に 盗人 の 種 は 尽きまじ")
 (def-easy-hint 2419720 "聞く は 一時 の 恥 聞かぬ は 末代 の 恥")
@@ -1125,9 +1124,9 @@
 (def-easy-hint 2796370 "禍福 は 糾える 縄 の ごとし")
 (def-easy-hint 2833968 "人間 は 万物 の 尺度 である")
 (def-easy-hint 2833958 "言葉 は 身 の 文")
-(def-easy-hint 2832652 "挨拶は時の氏神")
-(def-easy-hint 2111130 "早起きは三文の徳")
-(def-easy-hint 2417830 "酒は百薬の長")
+(def-easy-hint 2832652 "挨拶 は 時 の 氏神")
+(def-easy-hint 2111130 "早起き は 三文 の 徳")
+(def-easy-hint 2417830 "酒 は 百薬 の 長")
 
 ;; は を
 (def-easy-hint 1213500 "甘言 は 偶人 を 喜ばす")
@@ -1214,38 +1213,17 @@
 (def-easy-hint 2834310 "地獄 は 壁一重")
 (def-easy-hint 2834309 "人 は 死して 名 を 留む")
 (def-easy-hint 2834308 "浮世 は 夢")
-
-;; unprocessed
-
-(def-easy-hint 2834287 "隣の芝は青い")
-(def-easy-hint 2834263 "弱き者汝の名は女なり")
-(def-easy-hint 2834244 "知識は力なり")
-
-(def-easy-hint 2834239 "武士は食わねど高楊枝")
-(def-easy-hint 2834233 "貧は世界の福の神")
-(def-easy-hint 2834232 "光は東から")
-
-(def-easy-hint 2834228 "馬に乗るまでは牛に乗れ")
-(def-easy-hint 2834227 "言わぬは言うにまさる")
-(def-easy-hint 2834227 "言わぬは言うに優る")
-
-(def-easy-hint 2834224 "合わせ物は離れ物")
-(def-easy-hint 2834220 "悪は延べよ")
-(def-easy-hint 2833980 "牛は牛連れ馬は馬連れ")
-
-(def-easy-hint 2833979 "馬鹿と天才は紙一重")
-(def-easy-hint 2833979 "バカと天才は紙一重")
-(def-easy-hint 2833939 "長い物には巻かれよ")
-
-(def-easy-hint 2833938 "長い物には巻かれろ")
-(def-easy-hint 2424520 "去る者は追わず来たる者は拒まず")
-(def-easy-hint 2419620 "ものは相談")
-
-(def-easy-hint 2418970 "知らぬは亭主ばかりなり")
-(def-easy-hint 2418180 "親はなくても子は育つ")
-(def-easy-hint 2417810 "弱き者よ汝の名は女なり")
-
-(def-easy-hint 2209690 "男に二言は無い")
-(def-easy-hint 2141010 "会うは別れの始め")
-(def-easy-hint 1471680 "バカは死ななきゃ治らない")
-)
+(def-easy-hint 2834287 "隣 の 芝 は 青い")
+(def-easy-hint 2834263 "弱き者 汝 の 名 は 女 なり")
+(def-easy-hint 2834244 "知識 は 力 なり")
+(def-easy-hint 2834239 "武士 は 食わねど 高楊枝")
+(def-easy-hint 2834233 "貧 は 世界 の 福 の 神")
+(def-easy-hint 2834232 "光 は 東 から")
+(def-easy-hint 2834228 "馬 に 乗る まで は 牛 に 乗れ")
+(def-easy-hint 2834227 "言わぬ は 言う に 優る")
+(def-easy-hint 2834224 "合わせ物 は 離れ物")
+(def-easy-hint 2834220 "悪 は 延べよ")
+(def-easy-hint 2833980 "牛 は 牛連れ 馬 は 馬連れ")
+(def-easy-hint 2833979 "馬鹿 と 天才 は 紙一重")
+(def-easy-hint 2833939 "長い物 には 巻かれ よ")
+(def-easy-hint 2833938 "長い物 には 巻かれろ")
