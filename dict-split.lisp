@@ -1028,10 +1028,9 @@
 (def-easy-hint 2833957 "老兵は死なずただ消え去るのみ")
 (def-easy-hint 2833961 "梅は食うとも核食うな、中に天神寝てござる")
 (def-easy-hint 2833986 "悪に強いは善にも強い")
-
-
 (def-easy-hint 2108440 "過ちて は 則ち 改むる に 憚る こと 勿れ")
 (def-easy-hint 2417420 "降り懸かる 火の粉 は 払わねば ならぬ")
+(def-easy-hint 2418640 "静かに 流れる 川 は 深い")
 
 ;; は は
 
@@ -1069,10 +1068,11 @@
 (def-easy-hint 2424520 "去る者は追わず、来たる者は拒まず")
 (def-easy-hint 2419570 "腹 が 減って は 戦 は 出来ぬ")
 (def-easy-hint 2255410 "浜 の 真砂 は 尽きるとも 世 に 盗人 の 種 は 尽きまじ")
-
 (def-easy-hint 2419720 "聞く は 一時 の 恥 聞かぬ は 末代 の 恥")
 (def-easy-hint 2419910 "問う は 一旦 の 恥 問わぬ は 末代 の 恥")
 (def-easy-hint 2757120 "問う は 一度 の 恥 問わぬ は 末代 の 恥")
+(def-easy-hint 2834642 "柳 は 緑 花 は 紅")
+
 
 ;; には には
 
@@ -1184,12 +1184,68 @@
 (def-easy-hint 2832573 "巧詐 は 拙誠 に 如かず")
 (def-easy-hint 2704850 "花泥棒 は 罪 に ならない")
 
-;; unsorted
-(def-easy-hint 2834642 "柳 は 緑 花 は 紅")
-(def-easy-hint 2834655 "親 の 意見 と 茄子 の 花 は 千 に 一つ も 無駄 は ない")
+;; に は
+
 (def-easy-hint 2418150 "親 に 似ぬ 子 は 鬼子")
-(def-easy-hint 2418640 "静かに 流れる 川 は 深い")
 (def-easy-hint 2419940 "柳 の 下 に 何時も 泥鰌 は 居ない")
 (def-easy-hint 2832738 "身体髪膚 これ を 父母 に 受くあえて 毀傷せざる は 孝 の 始めなり")
+(def-easy-hint 2834655 "親 の 意見 と 茄子 の 花 は 千 に 一つ も 無駄 は ない")
 (def-easy-hint 2830412 "他 に 方法 は 無い")
 (def-easy-hint 2666530 "墓 に 布団 は 着せられぬ")
+
+;; unsorted
+
+(def-easy-hint 2834606 "親 は 無く とも 子 は 育つ")
+(def-easy-hint 2834583 "病 は 口 より 入り 禍 は 口 より 出ず")
+(def-easy-hint 2834582 "安物 は 高物")
+(def-easy-hint 2834576 "目 は 心 の 鏡")
+(def-easy-hint 2834575 "目 は 心 の 窓")
+(def-easy-hint 2834651 "冷や酒 と 親 の 意見 は 後 で きく")
+(def-easy-hint 2834564 "火 の 無い ところ に 煙 は 立たなぬ")
+(def-easy-hint 2834563 "徳 は 孤 ならず 必ず 隣 あり")
+(def-easy-hint 2834560 "君子 は 器 ならず")
+(def-easy-hint 2834416 "馬鹿 は 風邪 を 引かない")
+(def-easy-hint 2834363 "墨 は 餓鬼 に 磨らせ 筆 は 鬼 に 持たせよ")
+(def-easy-hint 2834360 "信 は 荘厳 より 起こる")
+(def-easy-hint 2834321 "父母 の 恩 は 山 よりも 高く 海 よりも 深し")
+(def-easy-hint 2834318 "二人 は 伴侶 三人 は 仲間割れ")
+(def-easy-hint 2834316 "人 の 花 は 赤い")
+(def-easy-hint 2834313 "紅 は 園生 に 植えても 隠れなし")
+(def-easy-hint 2834310 "地獄 は 壁一重")
+(def-easy-hint 2834309 "人 は 死して 名 を 留む")
+(def-easy-hint 2834308 "浮世 は 夢")
+
+;; unprocessed
+
+(def-easy-hint 2834287 "隣の芝は青い")
+(def-easy-hint 2834263 "弱き者汝の名は女なり")
+(def-easy-hint 2834244 "知識は力なり")
+
+(def-easy-hint 2834239 "武士は食わねど高楊枝")
+(def-easy-hint 2834233 "貧は世界の福の神")
+(def-easy-hint 2834232 "光は東から")
+
+(def-easy-hint 2834228 "馬に乗るまでは牛に乗れ")
+(def-easy-hint 2834227 "言わぬは言うにまさる")
+(def-easy-hint 2834227 "言わぬは言うに優る")
+
+(def-easy-hint 2834224 "合わせ物は離れ物")
+(def-easy-hint 2834220 "悪は延べよ")
+(def-easy-hint 2833980 "牛は牛連れ馬は馬連れ")
+
+(def-easy-hint 2833979 "馬鹿と天才は紙一重")
+(def-easy-hint 2833979 "バカと天才は紙一重")
+(def-easy-hint 2833939 "長い物には巻かれよ")
+
+(def-easy-hint 2833938 "長い物には巻かれろ")
+(def-easy-hint 2424520 "去る者は追わず来たる者は拒まず")
+(def-easy-hint 2419620 "ものは相談")
+
+(def-easy-hint 2418970 "知らぬは亭主ばかりなり")
+(def-easy-hint 2418180 "親はなくても子は育つ")
+(def-easy-hint 2417810 "弱き者よ汝の名は女なり")
+
+(def-easy-hint 2209690 "男に二言は無い")
+(def-easy-hint 2141010 "会うは別れの始め")
+(def-easy-hint 1471680 "バカは死ななきゃ治らない")
+)
