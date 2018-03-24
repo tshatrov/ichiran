@@ -658,6 +658,7 @@
   (set-common 'kana-text 1207610 "かける" 0)
   (set-common 'kanji-text 1236100 "強いる" :null)
   (set-common 'kana-text 1236100 "しいる" :null)
+  (set-common 'kana-text 1451750 "おんなじ" 0)
 
   (delete-sense-prop 1896380 "misc" "uk") ;; 出
 

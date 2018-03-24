@@ -390,6 +390,7 @@
   (assert-segment "後継ぎする" "後継ぎ" "する")
   (assert-segment "なすまん" "な" "すまん")
   (assert-segment "強いんだね" "強い" "ん" "だ" "ね")
+  (assert-segment "おんなじなんだろ" "おんなじ" "な" "ん" "だろ")
   )
 
 (define-test json-consistency-test
