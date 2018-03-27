@@ -422,8 +422,12 @@
     (1580640 (- len 3))
     (1013240))
 
-  (def-simple-split split-toha 2028950 '(-5 :connector "") (len) ;; とは
+  (def-simple-split split-toha 2028950 '(-5) (len) ;; とは
     (1008490 1)
+    (2028920 1))
+
+  (def-simple-split split-deha 1008450 '(-5) (len) ;; では
+    (2028980 1)
     (2028920 1))
 
   (def-simple-split split-naito 2394710 '(-5) (len) ;; ないと

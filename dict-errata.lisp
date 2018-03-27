@@ -659,6 +659,8 @@
   (set-common 'kanji-text 1236100 "強いる" :null)
   (set-common 'kana-text 1236100 "しいる" :null)
 
+  (delete-sense-prop 1896380 "misc" "uk") ;; 出
+
   ;;; add sense for な
   (add-sense 2029110 5 "indicates な-adjective")
 
