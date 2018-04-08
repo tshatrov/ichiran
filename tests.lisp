@@ -397,6 +397,8 @@
   (assert-segment "難しそうなんです" "難しそう" "な" "ん" "です")
   (assert-segment "良さげかも" "良さげ" "かも")
   (assert-segment "事故ってます" "事故ってます")
+  (assert-segment "卒倒している" "卒倒している")
+  (assert-segment "卒倒させる" "卒倒させる")
   )
 
 (define-test json-consistency-test

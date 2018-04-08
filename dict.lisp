@@ -634,22 +634,32 @@
         (elt coeffs length)
         (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
 
-(defun kanji-break-penalty (kanji-break score &key info)
+(defun kanji-break-penalty (kanji-break score &key info text use-length score-mod)
   (let ((end (cond ((cdr kanji-break) :both)
                    ((eql (car kanji-break) 0) :beg)
                    (t :end)))
-        (bonus 0))
+        (bonus 0) (ratio 2)
+        (posi (and info (getf info :posi))))
     (when info
       (cond ((intersection (getf info :seq-set) *no-kanji-break-penalty*)
              (return-from kanji-break-penalty score))
-            ((and (eql end :beg) (member "num" (getf info :posi) :test 'equal))
+            ((intersection '("vs-s" "v5s") posi :test 'equal)
+             ;; these words have する endings which might lead to bad splits
+             (let ((suru-suffix (find :suru (get-suffixes text) :key 'second)))
+               (when suru-suffix
+                 (let* ((offset (- (mora-length text) (mora-length (car suru-suffix))))
+                        (suffix-score (calc-score (third suru-suffix)
+                                                  :use-length (and use-length (- use-length offset))
+                                                  :score-mod score-mod)))
+                   (return-from kanji-break-penalty (min score (+ suffix-score 50)))))))
+            ((and (eql end :beg) (member "num" posi :test 'equal))
              (incf bonus 5))
             ((and (eql end :beg) (intersection
-                                  '("suf" "n-suf") (getf info :posi) :test 'equal))
+                                  '("suf" "n-suf") posi :test 'equal))
              (incf bonus 10))
             ))
     (if (>= score *score-cutoff*)
-        (max *score-cutoff* (+ (ceiling score 2) bonus))
+        (max *score-cutoff* (+ (ceiling score ratio) bonus))
         score)))
 
 
@@ -667,13 +677,13 @@
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break &aux ctr-mode)
   (typecase reading
     (compound-text
-     (multiple-value-bind (score info) (calc-score (primary reading)
-                                                   :use-length (mora-length (text reading))
-                                                   :score-mod (score-mod reading))
-       (setf (getf info :conj) (word-conj-data reading))
-       (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
-       (return-from calc-score
-         (values score info))))
+     (let ((args (list (primary reading) :use-length (mora-length (text reading)) :score-mod (score-mod reading))))
+       (multiple-value-bind (score info) (apply 'calc-score args)
+         (setf (getf info :conj) (word-conj-data reading))
+         (when kanji-break
+           (setf score (apply 'kanji-break-penalty kanji-break score :info info :text (text (car args)) (cdr args))))
+         (return-from calc-score
+           (values score info)))))
     (counter-text
      (setf ctr-mode t)))
 
@@ -733,7 +743,8 @@
          (no-common-bonus (or particle-p
                               (not conj-types-p)
                               (and (not long-p) (equal posi '("int")))))
-         (primary-p nil))
+         (primary-p nil)
+         (use-length-bonus 0))
     (when (or (intersection seq-set *skip-words*)
               (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
@@ -805,9 +816,12 @@
                                  (if (> n-kanji 1) (* (1- n-kanji) 5) 0))))
 
     (when use-length
-      (incf score (* prop-score (length-multiplier-coeff (- use-length len)
-                                                         (if (and (> len 3) (or kanji-p katakana-p)) :ltail :tail))))
-      (incf score (apply-score-mod score-mod prop-score (- use-length len))))
+      (incf use-length-bonus
+            (* prop-score (length-multiplier-coeff (- use-length len)
+                                                   (if (and (> len 3) (or kanji-p katakana-p)) :ltail :tail))))
+      (incf use-length-bonus
+            (apply-score-mod score-mod prop-score (- use-length len)))
+      (incf score use-length-bonus))
 
     (unless ctr-mode
       (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
@@ -829,9 +843,10 @@
     (let ((info (list :posi posi :seq-set (if ctr-mode seq-set (cons seq conj-of))
                       :conj conj-data
                       :common (and common-p common-of)
-                      :score-info (list prop-score kanji-break)
+                      :score-info (list prop-score kanji-break use-length-bonus)
                       :kpcl (list (or kanji-p katakana-p) primary-p common-p long-p))))
-      (when kanji-break (setf score (kanji-break-penalty kanji-break score :info info)))
+      (when kanji-break (setf score (kanji-break-penalty kanji-break score
+                                                         :info info :text text :use-length use-length :score-mod score-mod)))
       (values score info))))
 
 (defun gen-score (segment &key final kanji-break)
