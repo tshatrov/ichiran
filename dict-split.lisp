@@ -389,6 +389,14 @@
   (2028990 1)
   (1465590 nil t))
 
+(def-simple-split nil 2433760 50 (len) ;; そうなんです
+  (1006610 2)
+  (2683060))
+
+(def-simple-split nil 2088480 20 (len) ;; 良さげ
+  (1634130 2)
+  (2006580 1))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function

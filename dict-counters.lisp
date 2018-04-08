@@ -146,7 +146,7 @@
              ((:ka :ki :ku :ke :ko)
               (geminate number-kana)))))
     (return-from counter-join (call-next-method)))
-  
+
   (case digit
     (1 (case head
          ((:ka :ki :ku :ke :ko
@@ -326,7 +326,7 @@
     2249290 ;; 荘
     2833260 ;; 翻
     2833465 ;; 萬
-    2833466 ;; 索 
+    2833466 ;; 索
     2833467 ;; 筒
     ))
 
@@ -449,6 +449,9 @@
 
 (def-special-counter 2084840 ()
   (args 'counter-text "年" "ねん" :digit-opts '((4 "よ") (7 "しち") (9 "く")) :accepts '(:kan)))
+
+(def-special-counter 1468900 ()
+  (args 'counter-text "年生" "ねんせい" :digit-opts '((4 "よ") (7 "しち") (9 "く"))))
 
 (def-special-counter 1502840 ()
   (args 'counter-text "分" "ふん" :digit-opts '((4 :h))))

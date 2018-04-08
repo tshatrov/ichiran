@@ -644,6 +644,9 @@
              (return-from kanji-break-penalty score))
             ((and (eql end :beg) (member "num" (getf info :posi) :test 'equal))
              (incf bonus 5))
+            ((and (eql end :beg) (intersection
+                                  '("suf" "n-suf") (getf info :posi) :test 'equal))
+             (incf bonus 10))
             ))
     (if (>= score *score-cutoff*)
         (max *score-cutoff* (+ (ceiling score 2) bonus))
