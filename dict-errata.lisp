@@ -660,6 +660,9 @@
   (set-common 'kana-text 1236100 "しいる" :null)
   (set-common 'kana-text 1451750 "おんなじ" 0)
   (set-common 'kanji-text 2068330 "事故る" 0)
+  (set-common 'kana-text 1579260 "きのう" 2)
+  (set-common 'kanji-text 2644980 "柔らかさ" 0)
+  (set-common 'kana-text 2644980 "やわらかさ" 0)
 
   (delete-sense-prop 1896380 "misc" "uk") ;; 出
 
