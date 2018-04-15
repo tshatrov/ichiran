@@ -780,7 +780,7 @@
     (when primary-p
       (incf score (cond (long-p 10)
                         ((and secondary-conj-p (not kanji-p)) 2)
-                        (common-p 5)
+                        ((and common-p conj-types-p) 5)
                         ((or prefer-kana (not entry) (= (n-kanji entry) 0)) 3)
                         (t 2))))
     (when (and particle-p (or final (not semi-final-particle-p)))
