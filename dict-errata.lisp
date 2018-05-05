@@ -663,6 +663,9 @@
   (set-common 'kana-text 1579260 "きのう" 2)
   (set-common 'kanji-text 2644980 "柔らかさ" 0)
   (set-common 'kana-text 2644980 "やわらかさ" 0)
+  (set-common 'kana-text 2083610 "ベタ" 0)
+  (set-common 'kana-text 2083610 "べた" 0)
+  (set-common 'kana-text 1119610 "ベタ" :null)
 
   (delete-sense-prop 1896380 "misc" "uk") ;; 出
 
