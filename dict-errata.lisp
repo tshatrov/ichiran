@@ -260,8 +260,6 @@
   (delete-sense-prop 2094480 "misc" "uk")
   ;; いる
   (delete-sense-prop 2729170 "misc" "uk")
-  ;; そば
-  (delete-sense-prop 1238460 "misc" "uk")
   ;; 人
   (delete-sense-prop 1580640 "misc" "uk")
   ;; かし
@@ -666,6 +664,8 @@
   (set-common 'kana-text 2083610 "ベタ" 0)
   (set-common 'kana-text 2083610 "べた" 0)
   (set-common 'kana-text 1119610 "ベタ" :null)
+
+  (add-sense-prop 1238460 0 "misc" "uk") ;; そば
 
   (delete-sense-prop 1896380 "misc" "uk") ;; 出
 
