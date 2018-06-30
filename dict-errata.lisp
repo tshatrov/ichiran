@@ -664,6 +664,8 @@
   (set-common 'kana-text 2083610 "ベタ" 0)
   (set-common 'kana-text 2083610 "べた" 0)
   (set-common 'kana-text 1119610 "ベタ" :null)
+  (set-common 'kana-text 1004840 "コロコロ" 0)
+  (set-common 'kana-text 1257040 "ケンカ" 0)
 
   (add-sense-prop 1238460 0 "misc" "uk") ;; そば
 
