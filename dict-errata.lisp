@@ -670,6 +670,7 @@
   (delete-sense-prop 1896380 "misc" "uk") ;; 出
 
   (add-sense-prop 1468900 0 "pos" "ctr") ;; 年生
+  (add-sense-prop 1241380 0 "pos" "ctr") ;; 斤
 
   ;;; add sense for な
   (add-sense 2029110 5 "indicates な-adjective")
