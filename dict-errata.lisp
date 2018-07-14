@@ -666,10 +666,13 @@
   (set-common 'kana-text 1119610 "ベタ" :null)
   (set-common 'kana-text 1004840 "コロコロ" 0)
   (set-common 'kana-text 1257040 "ケンカ" 0)
+  (set-common 'kana-text 1633840 "ごとき" 0)
 
   (add-sense-prop 1238460 0 "misc" "uk") ;; そば
 
   (delete-sense-prop 1896380 "misc" "uk") ;; 出
+  (delete-sense-prop 1157000 "misc" "uk") ;; 易しい
+  (delete-sense-prop 1576360 "misc" "uk") ;; 逸れる
 
   (add-sense-prop 1468900 0 "pos" "ctr") ;; 年生
   (add-sense-prop 1241380 0 "pos" "ctr") ;; 斤

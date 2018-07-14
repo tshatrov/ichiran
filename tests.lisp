@@ -402,6 +402,9 @@
   (assert-segment "出したいときは" "出したい" "とき" "は")
   (assert-segment "柔らかさ" "柔らかさ")
   (assert-segment "次がある" "次" "が" "ある")
+  (assert-segment "のせいですね" "の" "せい" "です" "ね")
+  (assert-segment "それただの怪しい人ですし" "それ" "ただ" "の" "怪しい" "人" "です" "し")
+  (assert-segment "ごときが知る" "ごとき" "が" "知る")
   )
 
 (define-test json-consistency-test
