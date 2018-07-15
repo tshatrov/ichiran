@@ -802,6 +802,8 @@
                (primary-p 4)
                ((or (> len 2) (< 0 common 10)) 3)
                (t 2))))
+        (when (and (>= common-bonus 10) (find 10 conj-types))
+          (decf common-bonus 4))
         (incf score common-bonus)))
     (when long-p
       (setf score (max len score)))
