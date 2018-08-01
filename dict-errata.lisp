@@ -653,6 +653,8 @@
   )
 
 (defun add-errata-mar18 ()
+  (set-primary-nokanji 1565440 nil)
+
   (set-common 'kana-text 1207610 "かける" 0)
   (set-common 'kanji-text 1236100 "強いる" :null)
   (set-common 'kana-text 1236100 "しいる" :null)
