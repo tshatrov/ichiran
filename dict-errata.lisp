@@ -866,6 +866,11 @@
          do (loop for rule in (gethash pos hash)
                  when (and (= (cr-conj rule) 1) (cr-fml rule) (cr-neg rule))
                do (setf (cr-okuri rule) "ません"))))
+  ;; fix incorrect negative conditional form of v5u verbs
+  (let ((pos (get-pos-index "v5u")))
+    (loop for rule in (gethash pos hash)
+       when (and (= (cr-conj rule) 11) (not (cr-fml rule)) (cr-neg rule))
+       do (setf (cr-okuri rule) "わなかったら")))
   ;; remove potential forms of vs-s verbs
   (let ((pos (get-pos-index "vs-s")))
     (setf (gethash pos hash) (remove-if (lambda (r) (= (cr-conj r) 5)) (gethash pos hash))))
