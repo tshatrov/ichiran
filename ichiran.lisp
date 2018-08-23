@@ -65,8 +65,10 @@
 
 (defun switch-connection (conn &key reset)
   (with-db conn
-    (ichiran/dict:init-suffixes t reset))
-  (switch-conn-vars conn))
+    (ichiran/dict:init-suffixes t reset)
+    (ichiran/dict:init-counters reset))
+  (switch-conn-vars conn)
+  (setf *database* (apply 'connect *connection*)))
 
 
 (defun regex-file (filename regex)
