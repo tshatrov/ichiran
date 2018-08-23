@@ -485,6 +485,7 @@
   (add-errata-feb17)
   (add-errata-jan18)
   (add-errata-mar18)
+  (add-errata-aug18)
   (add-errata-counters)
   )
 
@@ -683,6 +684,10 @@
   (add-sense 2029110 5 "indicates な-adjective")
 
   (add-reading 2757120 "問うは一度の恥問わぬは末代の恥")
+  )
+
+(defun add-errata-aug18 ()
+  (add-sense-prop 1208870 0 "misc" "uk") ;; かなう
   )
 
 (defun add-errata-counters ()
