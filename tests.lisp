@@ -407,6 +407,7 @@
   (assert-segment "それただの怪しい人ですし" "それ" "ただ" "の" "怪しい" "人" "です" "し")
   (assert-segment "ごときが知る" "ごとき" "が" "知る")
   (assert-segment "山にはさまれて" "山" "に" "はさまれて")
+  (assert-segment "物がぼんやりとかすんで見える" "物" "が" "ぼんやり" "と" "かすんで" "見える")
   )
 
 (define-test json-consistency-test

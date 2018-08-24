@@ -687,7 +687,11 @@
   )
 
 (defun add-errata-aug18 ()
+  (set-common 'kana-text 1593870 "さらう" 0)
+
   (add-sense-prop 1208870 0 "misc" "uk") ;; かなう
+
+  (delete-sense-prop 1598660 "misc" "uk") ;; とかす
   )
 
 (defun add-errata-counters ()
@@ -809,6 +813,7 @@
                              2831062 ;; てる
                              2831063 ;; てく
                              2029030 ;; ものの
+                             2568020 ;; せる
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
