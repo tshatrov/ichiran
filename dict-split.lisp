@@ -450,12 +450,18 @@
   (def-simple-split split-honno 1011740 '(-5) (len) ;; ほんの
     (1522150 (- len 1))
     (1469800 1))
+
+  (def-simple-split split-kanatte 1208870 '(5) (len txt) ;; かなって
+    (:test (equal txt "かなって"))
+    (1002940 2)
+    (2086960 2))
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))
   (when (typep word 'simple-text)
     (let ((*split-map* *segsplit-map*))
-      (multiple-value-bind (split attrs) (get-split word)
+      (multiple-value-bind (split attrs)
+          (get-split word (cdr (getf (segment-info segment) :seq-set)))
         (when split
           (destructuring-bind (score &key (primary 0) (connector " ") root) attrs
             (let* ((word
