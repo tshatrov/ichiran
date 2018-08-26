@@ -234,12 +234,6 @@
     (loop for rule in rules
          collect (cons rule (construct-conjugation word rule)))))
 
-(defun get-all-readings (seq)
-  (query (:union
-          (:select 'text :from 'kanji-text :where (:= 'seq seq))
-          (:select 'text :from 'kana-text :where (:= 'seq seq)))
-         :column))
-
 
 (defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 

@@ -151,6 +151,9 @@
 
 (def-de-split 1343110 1343100) ;; ところで
 
+(def-simple-split split-degozaimasu 2253080 20 () ;; でございます
+  (2028980 1)
+  (1612690 nil t))
 
 (defmacro def-toori-split (seq seq-a &key (score 50) (seq-b 1432930))
   (let ((name (intern (format nil "~a~a" :split-toori- seq))))

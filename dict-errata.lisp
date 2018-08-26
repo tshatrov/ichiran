@@ -197,23 +197,39 @@
     (setf (slot-value kt 'nokanji) t)
     (update-dao kt)))
 
+(defun get-all-readings (seq)
+  (query (:union
+          (:select 'text :from 'kanji-text :where (:= 'seq seq))
+          (:select 'text :from 'kana-text :where (:= 'seq seq)))
+         :column))
+
+(defun add-gozaimasu-conjs (&key reset &aux (seqs '(1612690 2253080)))
+  (when reset
+    (loop for conj in (select-dao 'conjugation (:in 'from (:set seqs)))
+       do (delete-conjugation (seq conj) (seq-from conj))))
+  (loop for seq in seqs
+     for readings = (get-all-readings seq)
+     do (loop for (conj suf) in '(((1 "exp" t :null) "せん")
+                                  ((2 "exp" :null :null) "した")
+                                  ((3 "exp" :null :null) "して")
+                                  ((9 "exp" :null :null) "しょう")
+                                  ((11 "exp" :null :null) "したら")
+                                  ((12 "exp" :null :null) "したり")
+                                  )
+           do (add-conj seq conj
+                        (loop for reading in readings
+                           collect (list reading (apply-patch reading (cons suf "す"))))))))
+
 (defun add-errata ()
   (add-deha-ja-readings)
   (remove-hiragana-nokanji)
+  (add-gozaimasu-conjs)
 
   (set-primary-nokanji 1538900 nil) ;; ただ
   (set-primary-nokanji 1580640 nil) ;; 人
   (set-primary-nokanji 1289030 nil) ;; いまいち
 
   (add-primary-nokanji 1415510 "タカ")
-
-  ;;; gozaimashita / gozaimashitara
-  (add-conj 1612690 '(2 "exp" :null :null)
-            '(("ございます" "ございました")))
-  (add-conj 1612690 '(11 "exp" :null :null)
-            '(("ございます" "ございましたら")))
-  (add-conj 1612690 '(1 "exp" t :null)
-            '(("ございます" "ございません")))
 
   ;; きみ / キミ
   (delete-reading 1247250 "キミ")
