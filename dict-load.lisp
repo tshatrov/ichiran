@@ -58,12 +58,12 @@
     (loop for (reading-text common nokanji pri-tags) in (nreverse to-add)
        for ord from 0
        when nokanji do (setf primary-nokanji t)
-       do (make-dao table :seq seq :text reading-text :ord ord :common common :nokanji nokanji 
+       do (make-dao table :seq seq :text reading-text :ord ord :common common :nokanji nokanji
                     :common-tags pri-tags))
     (when primary-nokanji
       (query (:update 'entry :set 'primary-nokanji t :where (:= 'seq seq))))))
-         
-  
+
+
 (defun insert-sense-traits (sense-node tag sense-id seq)
   (do-node-list-ord (ord node (dom:get-elements-by-tag-name sense-node tag))
     (make-dao 'sense-prop :sense-id sense-id :tag tag :text (node-text node) :ord ord :seq seq)))
@@ -100,12 +100,12 @@
 (defun fix-entities (source)
   "replaces entity definitions with abbreviations"
   (let ((entity-hash (cxml::dtd-gentities (cxml::dtd (slot-value source 'cxml::context)))))
-    (maphash 
+    (maphash
      (lambda (name entdef)
        (unless (member name '("lt" "gt" "amp" "apos" "quot") :test 'equal)
          (setf (cxml::entdef-value (cdr entdef)) name)))
      entity-hash)))
-    
+
 (defun load-jmdict (&key (path *jmdict-path*) (load-extras t))
   (init-tables)
   (with-connection *connection*
@@ -156,7 +156,7 @@
       (push
        `(defun ,loader-name ()
           (setf ,hash-name (make-hash-table :test 'equal))
-          (loop :for ,row-def :in (cl-csv:read-csv 
+          (loop :for ,row-def :in (cl-csv:read-csv
                                    (merge-pathnames *jmdict-data* ,filename)
                                    :separator #\Tab :skip-first-p ,skip-first)
              :for ,row-count-var :from 0
@@ -180,7 +180,7 @@
                  ,val-var-form))
             forms)))
     `(progn ,@(nreverse forms))))
-               
+
 (csv-hash *pos-index* ("kwpos.csv")
           ((pos-id pos description) pos (cons (parse-integer pos-id) description))
           (val (car val)))
@@ -238,7 +238,7 @@
 (defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 
 (defparameter *pos-with-conj-rules*
- '("adj-i" "adj-ix" "cop-da" "v1" "v1-s" "v5aru" 
+ '("adj-i" "adj-ix" "cop-da" "v1" "v1-s" "v5aru"
    "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
    "v5t" "v5u" "v5u-s" "vk" "vs-s" "vs-i"))
 
@@ -254,7 +254,7 @@
        for pos-id = (get-pos-index pos)
        for rules = (get-conj-rules pos-id)
        if (and rules (not (member pos *do-not-conjugate* :test 'equal)))
-         do (loop 
+         do (loop
                for (reading ord kanji-flag) in (query (:union (:select 'text 'ord 1 :from 'kanji-text
                                                                        :where (:and (:= 'seq seq) 'conjugate-p))
                                                               (:select 'text 'ord 0 :from 'kana-text
@@ -287,7 +287,7 @@
          do (loop for ii from 0 below 4
                for neg = (>= ii 2)
                for fml = (oddp ii)
-               for readings = (remove-if (lambda (item) 
+               for readings = (remove-if (lambda (item)
                                            (member (car item) original-readings :test 'equal))
                                          (row-major-aref matrix ii))
                when readings
@@ -302,8 +302,8 @@
   "Only can sort sequences of equal length"
   (lambda (seq1 seq2)
     (block nil
-      (map nil 
-           (lambda (e1 e2) 
+      (map nil
+           (lambda (e1 e2)
              (cond ((funcall predicate e1 e2) (return t))
                    ((funcall predicate e2 e1) (return nil))))
            seq1 seq2))))
@@ -320,7 +320,7 @@
               (kana-readings (remove-duplicates kana-readings :test 'equal))
               (seq-candidates
                (if kanji-readings
-                   (query (:intersect 
+                   (query (:intersect
                            (:select 'seq :from 'kanji-text
                                     :where (:in 'text (:set kanji-readings))
                                     :group-by 'seq
@@ -351,14 +351,14 @@
                  (loop for kr in kana-readings
                     for ord from 0
                     do (make-dao 'kana-text :seq seq :text kr :ord ord :common :null :conjugate-p conjugate-p)))))
-         
+
          (let* ((old-conj (if via
                               (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:= 'via via)))
                               (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:is-null 'via)))))
                 (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from :via (or via :null))))
                 (conj-id (id conj)))
            (make-dao 'conj-prop :conj-id conj-id :conj-type conj-type :pos pos :neg neg :fml fml)
-           
+
            (let* ((old-csr (when old-conj (query (:select 'text 'source-text :from 'conj-source-reading :where (:= 'conj-id conj-id)))))
                   (source-readings (remove-duplicates (set-difference source-readings old-csr :test 'equal) :test 'equal)))
              (loop for (text source-text) in source-readings
@@ -379,7 +379,7 @@
 
 
 (defun load-secondary-conjugations ()
-  (let ((to-conj (query-dao 'conjugation 
+  (let ((to-conj (query-dao 'conjugation
                             (:select 'conj.* :distinct :from (:as 'conjugation 'conj)
                                      :left-join 'conj-prop :on (:= 'conj.id 'conj-prop.conj-id)
                                      :where (:and (:in 'conj-prop.conj-type (:set *secondary-conjugation-types-from*))
