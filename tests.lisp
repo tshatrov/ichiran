@@ -409,6 +409,7 @@
   (assert-segment "山にはさまれて" "山" "に" "はさまれて")
   (assert-segment "物がぼんやりとかすんで見える" "物" "が" "ぼんやり" "と" "かすんで" "見える")
   (assert-segment "どなた様でございましょうか" "どなた" "様" "でございましょう" "か")
+  (assert-segment "読んでくださりありがとうございました" "読んで" "くださり" "ありがとう" "ございました")
   )
 
 (define-test json-consistency-test

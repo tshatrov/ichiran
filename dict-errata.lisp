@@ -885,6 +885,11 @@
                                              1 "" "" ""))))
     (dolist (rule rules)
       (push rule (gethash pos hash nil))))
+
+  (let ((pos (get-pos-index "v5aru")))
+    (push (make-conjugation-rule pos 3 nil nil 2 1 "り" "" "")
+          (gethash pos hash nil)))
+
   ;; fix non-past negative formal for v1 v1-s
   (let ((posi (mapcar 'get-pos-index '("v1" "v1-s"))))
     (loop for pos in posi
