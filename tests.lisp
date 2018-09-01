@@ -413,6 +413,7 @@
   (assert-segment "ふざけんな" "ふざけんな")
   (assert-segment "観終わってた" "観" "終わってた")
   (assert-segment "意味深終わり" "意味深" "終わり")
+  (assert-segment "共感性" "共感" "性")
   )
 
 (define-test json-consistency-test

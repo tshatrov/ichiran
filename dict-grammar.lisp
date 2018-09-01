@@ -782,6 +782,14 @@
   :score 40
   :connector "")
 
+(def-generic-synergy synergy-suffix-sei (l r)
+  #'filter-is-noun
+  (filter-in-seq-set 1375260)
+  :description "suffix-sei"
+  :score 12
+  :connector ""
+  )
+
 (def-generic-synergy synergy-o-prefix (l r)
   (filter-in-seq-set 1270190)
   (filter-is-pos ("n") (segment k p c l) (or k l))
