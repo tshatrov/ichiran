@@ -704,6 +704,10 @@
 
 (defun add-errata-aug18 ()
   (set-common 'kana-text 1593870 "さらう" 0)
+  (set-common 'kana-text 2141690 "ふざけんな" 0)
+  (set-common 'kana-text 1214770 "かん" :null)
+  (set-common 'kanji-text 1214770 "観" :null)
+  (set-common 'kanji-text 2082780 "意味深" 0)
 
   (add-sense-prop 1208870 0 "misc" "uk") ;; かなう
 
