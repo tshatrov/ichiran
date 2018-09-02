@@ -709,6 +709,11 @@
   (set-common 'kanji-text 1214770 "観" :null)
   (set-common 'kanji-text 2082780 "意味深" 0)
 
+  (add-reading 2722640 "オケ")
+  (add-primary-nokanji 2722640 "オケ")
+  (set-common 'kana-text 2722640 "オケ" 0)
+  (add-sense-prop 2722640 0 "misc" "uk")
+
   (add-sense-prop 1208870 0 "misc" "uk") ;; かなう
 
   (delete-sense-prop 1598660 "misc" "uk") ;; とかす
