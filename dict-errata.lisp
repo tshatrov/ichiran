@@ -708,6 +708,7 @@
   (set-common 'kana-text 1214770 "かん" :null)
   (set-common 'kanji-text 1214770 "観" :null)
   (set-common 'kanji-text 2082780 "意味深" 0)
+  (set-common 'kana-text 2209180 "とて" 0)
 
   (add-reading 2722640 "オケ")
   (add-primary-nokanji 2722640 "オケ")
