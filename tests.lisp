@@ -214,7 +214,7 @@
   (assert-segment "奴がまともに見られない" "奴" "が" "まとも" "に" "見られない")
   (assert-segment "間違いなし" "間違いなし")
   (assert-segment "見ませんでしょうか" "見ません" "でしょうか")
-  (assert-segment "書いていただけませんでしょうか" "書いて" "いただけません" "でしょうか")
+  (assert-segment "書いていただけませんでしょうか" "書いていただけません" "でしょうか")
   (assert-segment "友達できる" "友達" "できる")
   (assert-segment "実はそうなんだ" "実は" "そう" "なんだ")
   (assert-segment "やらしいです" "やらしいです")
@@ -415,6 +415,7 @@
   (assert-segment "意味深終わり" "意味深" "終わり")
   (assert-segment "共感性" "共感" "性")
   (assert-segment "今日とて居残りです" "今日" "とて" "居残り" "です")
+  (assert-segment "堪能させていただきます" "堪能させていただきます")
   )
 
 (define-test json-consistency-test

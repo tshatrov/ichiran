@@ -90,7 +90,9 @@
    :aru "indicates completion / finished action"
    :kuru "indicates action that had been continuing up till now / came to be "
    :oku "to do in advance / to leave in the current state expecting a later change"
-   :kureru "(asking) to let do something"
+   :kureru "(asking) to do something for one"
+   :morau "(asking) to get somebody to do something"
+   :itadaku "(asking) to get somebody to do something (polite)"
    :iku "is becoming / action starting now and continuing"
    :suru "makes a verb from a noun"
    :itasu "makes a verb from a noun (humble)"
@@ -186,7 +188,9 @@
 
         (load-conjs :te 1305380 :chau) ;; しまう
 
-        (load-conjs :te+ 1269130 :kureru) ;; くれる
+        (load-conjs :te+space 1269130 :kureru) ;; くれる
+        (load-conjs :te+space 1535910 :morau) ;; もらう
+        (load-conjs :te+space 1587290 :itadaku) ;; いただく
 
         (loop for kf in (get-kana-forms 1578850) ;;  いく / く
            for tkf = (text kf)
@@ -339,6 +343,9 @@
   (te-check root))
 
 (def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
+  (te-check root))
+
+(def-simple-suffix suffix-te+space :te+space (:connector " " :score 3) (root)
   (te-check root))
 
 (def-simple-suffix suffix-kudasai :kudasai (:connector " " :score (constantly 360)) (root)
