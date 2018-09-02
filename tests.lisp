@@ -416,6 +416,8 @@
   (assert-segment "共感性" "共感" "性")
   (assert-segment "今日とて居残りです" "今日" "とて" "居残り" "です")
   (assert-segment "堪能させていただきます" "堪能させていただきます")
+  (assert-segment "わからんからそう思った" "わからん" "から" "そう" "思った")
+  (assert-segment "うちからそうなっても" "うち" "から" "そう" "なっても")
   )
 
 (define-test json-consistency-test

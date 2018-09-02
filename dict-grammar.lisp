@@ -387,7 +387,9 @@
 (defun apply-patch (root patch)
   (concatenate 'string (subseq root 0 (- (length root) (length (cdr patch)))) (car patch)))
 
-(def-simple-suffix suffix-sou :sou (:connector "" :score (constantly 60)) (root suf patch)
+(def-simple-suffix suffix-sou :sou (:score (constantly (if (equal root "から") 40 60))
+                                    :connector "")
+    (root suf patch)
   (cond ((alexandria:ends-with-subseq "なさ" root)
          (setf patch '("い" . "さ"))
          (let ((root (apply-patch root patch))
