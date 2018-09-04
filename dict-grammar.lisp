@@ -260,7 +260,8 @@
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
 
-        (load-abbr :eba "や") ;; う
+        ;; TODO: this abbr conflicts with noun + や too often
+        ;; (load-abbr :eba "や") ;; う
         (load-abbr :teba "ちゃ" :join t) ;; つ
         (load-abbr :reba "りゃ") ;; る
         (load-abbr :keba "きゃ") ;; く
@@ -522,9 +523,8 @@
 
 (pushnew :dewanai *suffix-unique-only*)
 
-
-(def-abbr-suffix abbr-eba :eba 2 (root)
-  (find-word-full (concatenate 'string root "えば")))
+;; (def-abbr-suffix abbr-eba :eba 2 (root)
+;;   (find-word-full (concatenate 'string root "えば")))
 
 (def-abbr-suffix abbr-teba :teba 2 (root)
   (find-word-full (concatenate 'string root "てば")))
