@@ -937,7 +937,7 @@
   (loop with sticky = (find-sticky-positions str)
         with katakana-groups = (consecutive-char-groups :katakana str)
         with number-groups = (consecutive-char-groups :number str)
-        and kanji-break
+        and kanji-break and ends
         and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
@@ -961,7 +961,9 @@
                                                               (let ((d (- number-group-end start)))
                                                                 (and (<= d 20) d))))))))
               (when segments
-                (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break))
+                (when (or (= start 0) (find start ends))
+                  (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break)))
+                (pushnew end ends)
                 (list (list start end segments)))))
        into result
      finally (return (values result kanji-break))))
