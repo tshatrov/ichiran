@@ -714,6 +714,7 @@
   (add-primary-nokanji 2722640 "オケ")
   (set-common 'kana-text 2722640 "オケ" 0)
   (add-sense-prop 2722640 0 "misc" "uk")
+  (add-sense-prop 1527140 0 "misc" "uk")
 
   (add-sense-prop 1208870 0 "misc" "uk") ;; かなう
 

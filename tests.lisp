@@ -420,6 +420,7 @@
   (assert-segment "うちからそうなっても" "うち" "から" "そう" "なっても")
   (assert-segment "上映会やな" "上映" "会" "や" "な")
   (assert-segment "以上書いてください" "以上" "書いてください")
+  (assert-segment "のがいまだに" "の" "が" "いまだに")
   )
 
 (define-test json-consistency-test
