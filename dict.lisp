@@ -730,7 +730,7 @@
          (semi-final-particle-p (member seq *semi-final-prt*))
          (non-final-particle-p (member seq *non-final-prt*))
          (pronoun-p (member "pn" posi :test 'equal))
-         (cop-da-p (member "cop-da" posi :test 'equal))
+         (cop-da-p (intersection seq-set *copulae*))
          (long-p (> len
                     (cond
                       ((and kanji-p (not prefer-kana)

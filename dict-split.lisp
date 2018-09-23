@@ -408,6 +408,10 @@
 (def-simple-split nil 2666360 30 () ;; 少なくない
   (("少なくない" 1348910)))
 
+(def-simple-split split-janai 2755350 10 (len) ;; じゃない
+  (2089020 2)
+  (2906771 nil t))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function

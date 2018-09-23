@@ -866,6 +866,10 @@
                                          ))
   "Particles that are final, but also have other uses")
 
+(defparameter *copulae* '(2089020 ;; だ
+                          ;; 2755350 ;; じゃない
+                          ))
+
 (defparameter *non-final-prt*
   '(2139720 ;; ん
     )

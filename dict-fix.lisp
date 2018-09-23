@@ -96,3 +96,9 @@
        (when (insert-conjugation readings :seq next-seq :via (seq-via conj) :from (seq-from conj)
                                  :conj-type 3 :neg nil :fml nil :pos (pos prop))
          (incf next-seq))))
+
+
+(defun delete-forbidden-conjs ()
+  (let ((seqs (query (:select 'conj.seq :from (:as 'conjugation 'conj)
+                              :where (:in 'conj.from (:set *do-not-conjugate-seq*))) :column)))
+    (query (:delete-from 'entry :where (:in 'seq (:set seqs))))))

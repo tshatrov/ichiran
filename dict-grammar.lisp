@@ -972,6 +972,11 @@
   (lambda (segment) (alexandria:starts-with #\え (get-text segment)))
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-janai (l r)
+  (complement (filter-is-compound-end 2028920))
+  (filter-in-seq-set 1529520 1296400 2139720)
+  :allow-first t)
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*

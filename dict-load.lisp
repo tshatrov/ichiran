@@ -237,6 +237,8 @@
 
 (defparameter *do-not-conjugate* '("n" "vs" "adj-na"))
 
+(defparameter *do-not-conjugate-seq* '(2765070 2835284))
+
 (defparameter *pos-with-conj-rules*
  '("adj-i" "adj-ix" "cop-da" "v1" "v1-s" "v5aru"
    "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
@@ -369,7 +371,8 @@
 (defun load-conjugations ()
   (with-connection *connection*
     (let ((seqs (query (:select 'seq :distinct :from 'sense-prop
-                                :where (:and (:= 'tag "pos")
+                                :where (:and (:not (:in 'seq (:set *do-not-conjugate-seq*)))
+                                             (:= 'tag "pos")
                                              (:in 'text (:set *pos-with-conj-rules*))))
                        :column)))
       (loop for cnt from 1
