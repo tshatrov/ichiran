@@ -423,8 +423,9 @@
    (find-word-with-pos root "adj-na")))
 
 (pushnew (cons :sa
-               (lambda (match &aux (seq (seq match)))
-                 (and seq (query (:select 'root-p :from 'entry :where (:= 'seq seq)) :single))))
+               (lambda (matches)
+                 (let ((seqs (loop for match in matches if (seq match) collect it)))
+                   (and seqs (query (:select 'seq :from 'entry :where (:and (:in 'seq (:set seqs)) 'root-p)) :column)))))
          *suffix-unique-only*)
 
 (def-simple-suffix suffix-garu :garu (:connector "" :score 0) (root suf patch)
@@ -452,6 +453,16 @@
        (find-word-with-conj-prop root (lambda (cdata)
                                         (conj-neg (conj-data-prop cdata))))))
 
+(pushnew (cons :desu
+               (lambda (matches)
+                 (let ((seqs (loop for match in matches if (seq match) collect it)))
+                   (< (length (and seqs (query (:select 'seq :from 'conjugation
+                                                        :where (:and (:in 'seq (:set seqs))
+                                                                     (:= 'from 2755350))) ;; じゃない
+                                               :column)))
+                      (length matches)))))
+         *suffix-unique-only*)
+
 (def-simple-suffix suffix-desho :desho (:connector " " :score 5) (root)
   (and (alexandria:ends-with-subseq "ない" root)
        (find-word-with-conj-prop root (lambda (cdata)
@@ -465,7 +476,6 @@
 
 (pushnew :mo *suffix-unique-only*)
 (pushnew :nikui *suffix-unique-only*)
-(pushnew :desu *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var kana-var)
@@ -587,7 +597,7 @@
 (defun match-unique (suffix-class matches)
   (let ((uniq (find suffix-class *suffix-unique-only* :key (lambda (x) (if (consp x) (car x) x)))))
     (cond ((consp uniq)
-           (remove-if-not (cdr uniq) matches))
+           (funcall (cdr uniq) matches))
           (t uniq))))
 
 (defun find-word-suffix (word &key matches)
