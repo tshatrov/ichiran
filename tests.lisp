@@ -424,6 +424,8 @@
   (assert-segment "彼ははんぱじゃなく" "彼" "は" "はんぱ" "じゃなく")
   (assert-segment "許さないじゃなくてさ" "許さない" "じゃなくて" "さ")
   (assert-segment "じゃなかったです" "じゃなかったです")
+  (assert-segment "彼女は苦しげにうめいて横たわった" "彼女" "は" "苦しげ" "に" "うめいて" "横たわった")
+  (assert-segment "わたしにはちょっとわかりかねますので" "わたし" "には" "ちょっと" "わかり" "かねます" "ので")
   )
 
 (define-test json-consistency-test

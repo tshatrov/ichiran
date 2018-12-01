@@ -117,6 +117,7 @@
    :desho "it seems/perhaps/don't you think?"
    :tosuru "to try to .../to be about to..."
    :garu "to feel .../have a ... impression of someone"
+   :me "somewhat/-ish"
    ;; these are used for splitsegs
    2826528 "polite prefix" ;; お
    2028980 "at / in / by" ;; で
@@ -249,6 +250,9 @@
         (load-conjs :garu 1631750) ;; がる
 
         (load-kf :ren (get-kana-form 2016470 "がち") :class :gachi)
+
+        (load-kf :iadj (get-kana-form 2006580 "げ"))
+        (load-kf :iadj (get-kana-form 1604890 "め") :class :me)
 
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
@@ -427,6 +431,9 @@
                  (let ((seqs (loop for match in matches if (seq match) collect it)))
                    (and seqs (query (:select 'seq :from 'entry :where (:and (:in 'seq (:set seqs)) 'root-p)) :column)))))
          *suffix-unique-only*)
+
+(def-simple-suffix suffix-iadj :iadj (:connector "" :score 1) (root)
+  (find-word-with-conj-type root +conj-adjective-stem+))
 
 (def-simple-suffix suffix-garu :garu (:connector "" :score 0) (root suf patch)
   (unless (member root '("な" "い" "よ") :test 'equal)
