@@ -3,6 +3,7 @@
   (:use :cl :postmodern :ichiran/conn)
   (:import-from :ichiran/dict :load-jmdict :load-best-readings
                 :add-errata :recalc-entry-stats
+                :init-suffixes :init-suffixes-running-p
                 :find-word :find-word-full :dict-segment :calc-score)
   (:import-from :ichiran/kanji :load-kanjidic :load-kanji-stats)
   (:export
@@ -95,3 +96,7 @@
       (values
        (loop for seq in seq-set unless (gethash seq hash) collect seq)
        hash))))
+
+
+(defun show-missing-constants (old-conn new-conn)
+  (display-seq-set (collect-entries (get-hardcoded-constants) :conn new-conn) a nil :conn old-conn))
