@@ -56,11 +56,14 @@
 ;; find expressions
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "pos") (:= 'text "exp")))
 
-(defmacro display-seq-set (seq-set entry-var test &key (conn 'ichiran/conn:*connection*))
-  `(with-db ,conn
-     (dolist (,entry-var (select-dao 'ichiran/dict::entry (:in 'seq (:set ,seq-set))))
-       (when ,(or test t)
-         (print (ichiran/dict::entry-digest ,entry-var))))))
+(defmacro display-seq-set (seq-set (&optional entry-var test) &key (conn 'ichiran/conn:*connection*))
+  (alexandria:with-gensyms (x)
+    (unless entry-var (setf entry-var (gensym "EV")))
+    `(with-db ,conn
+       (dolist (,entry-var (select-dao 'ichiran/dict::entry
+                                       (:in 'seq (:set (mapcar (lambda (,x) (if (listp ,x) (car ,x) ,x)) ,seq-set)))))
+         (when ,(or test t)
+           (print (ichiran/dict::entry-digest ,entry-var)))))))
 
 ;; example test
 ;; (and (not (primary-nokanji entry)) (<= (length (get-kana entry)) 3) (not (eql (common entry) :null)))
@@ -99,4 +102,4 @@
 
 
 (defun show-missing-constants (old-conn new-conn)
-  (display-seq-set (collect-entries (get-hardcoded-constants) :conn new-conn) a nil :conn old-conn))
+  (display-seq-set (collect-entries (get-hardcoded-constants) :conn new-conn) () :conn old-conn))
