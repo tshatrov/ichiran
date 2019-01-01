@@ -462,6 +462,9 @@
 (def-special-counter 1373990 ()
   (args 'counter-text "世紀" "せいき" :digit-opts '((10 "じっ"))))
 
+(def-special-counter 2836694 ()
+  (args 'counter-text "傑" "けつ" :digit-opts '((10 "じっ"))))
+
 (def-special-counter 2208060 ()
   (args 'counter-text "遍" "へん" :digit-opts '((3 :r))))
 
@@ -479,6 +482,9 @@
 
 (def-special-counter 1315130 ()
   (args 'counter-text "字" "じ" :digit-opts '((4 "よ"))))
+
+(def-special-counter 1487770 ()
+  (args 'counter-text "筆" "ひつ" :digit-opts '((4 :h))))
 
 (defclass counter-tsu (counter-text) ())
 
@@ -720,3 +726,6 @@
 
 (def-special-counter 1606800 ()
   (args 'counter-wari "割" "わり"))
+
+(def-special-counter 1606950 ()
+  (args 'counter-wari "割引" "わりびき"))
