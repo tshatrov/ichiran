@@ -502,6 +502,7 @@
   (add-errata-jan18)
   (add-errata-mar18)
   (add-errata-aug18)
+  (add-errata-jan19)
   (add-errata-counters)
   )
 
@@ -720,6 +721,17 @@
   (add-sense-prop 1208870 0 "misc" "uk") ;; かなう
 
   (delete-sense-prop 1598660 "misc" "uk") ;; とかす
+  )
+
+(defun add-errata-jan19 ()
+
+  (add-sense-prop 2756830 0 "misc" "uk")
+
+  (delete-sense-prop 1604890 "misc" "uk") ;; 目
+
+  (add-reading 2081610 "スレ違")
+  (add-sense-prop 2081610 0 "misc" "uk")
+  (add-primary-nokanji 2081610 "スレチ")
   )
 
 (defun add-errata-counters ()

@@ -277,7 +277,11 @@
 
 (def-simple-split split-souda 1006650 5 ()
   (2137720 2)
-  ((2089020 1628500)))
+  (2089020))
+
+(def-simple-split split-soudesu 2837492 5 ()
+  (2137720 2)
+  (1628500))
 
 (def-simple-split split-kinosei 1221750 100 ()
   (1221520 1)
@@ -410,7 +414,7 @@
 
 (def-simple-split split-janai 2755350 10 (len) ;; じゃない
   (2089020 2)
-  (2906771 nil t))
+  (1529520 nil t))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
