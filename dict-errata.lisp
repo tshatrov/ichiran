@@ -724,6 +724,7 @@
   )
 
 (defun add-errata-jan19 ()
+  (set-common 'kanji-text 2017470 "塗れ" 0)
 
   (add-sense-prop 2756830 0 "misc" "uk")
 
