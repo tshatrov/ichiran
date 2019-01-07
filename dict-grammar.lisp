@@ -103,7 +103,6 @@
    :mo "even if ..."
    :sugiru "to be too (much) ..."
    :nikui "difficult to..."
-   :kara "because/why"
    :sa "-ness (degree or condition of adjective)"
    :tsutsu "while ... / in the process of ..."
    :tsutsuaru "to be doing ... / to be in the process of doing ..."
@@ -126,6 +125,7 @@
    2029010 "indicates direct object of action" ;; を
    1469800 "indicates possessive (...'s)"
    2086960 "quoting particle"
+   1002980 "from / because"
    ))
 
 (defun get-suffix-description (seq)
@@ -214,8 +214,6 @@
         ;; because suru isn't conjugated twice, this is added separately
         (load-conjs :suru 2269820 :sareru) ;; される
         (load-conjs :suru 1005160 :saseru) ;; させる
-
-        (load-conjs :kara 1002980) ;; から
 
         (load-conjs :sou 1006610) ;; そう
 
@@ -382,12 +380,6 @@
 
 (def-simple-suffix suffix-suru :suru (:connector " " :score 5) (root)
   (find-word-with-pos root "vs"))
-
-(def-simple-suffix suffix-kara :kara (:connector " " :score 1) (root)
-  (or (find-word-seq root 1577100 2089020)
-      #-(and)
-      (and (find (char root (1- (length root))) "てで")
-           (find-word-with-conj-type root 3))))
 
 (defun apply-patch (root patch)
   (concatenate 'string (subseq root 0 (- (length root) (length (cdr patch)))) (car patch)))

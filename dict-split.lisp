@@ -416,6 +416,7 @@
   (2089020 2)
   (1529520 nil t))
 
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
@@ -469,6 +470,14 @@
     (:test (equal txt "かなって"))
     (1002940 2)
     (2086960 2))
+
+  (def-simple-split split-dakara 1007310 '(-5) () ;; だから
+    (2089020 1)
+    (1002980))
+
+  (def-simple-split nil 1675330 '(10 :primary 1) () ;; から元気
+    (1002980 2)
+    (1260720))
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))
