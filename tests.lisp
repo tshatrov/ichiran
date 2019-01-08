@@ -70,7 +70,7 @@
   (assert-segment "物語になってく" "物語" "に" "なってく")
   (assert-segment "書いてきてくださった" "書いてきて" "くださった")
   (assert-segment "今日は何の日" "今日" "は" "何の" "日")
-  (assert-segment "何から話そうか" "何から" "話そう" "か")
+  (assert-segment "何から話そうか" "何" "から" "話そう" "か")
   (assert-segment "話したくなる" "話したく" "なる")
   (assert-segment "進化してく友情" "進化してく" "友情")
   (assert-segment "私に任せてくれ" "私" "に" "任せてくれ")
@@ -426,6 +426,8 @@
   (assert-segment "じゃなかったです" "じゃなかったです")
   (assert-segment "彼女は苦しげにうめいて横たわった" "彼女" "は" "苦しげ" "に" "うめいて" "横たわった")
   (assert-segment "わたしにはちょっとわかりかねますので" "わたし" "には" "ちょっと" "わかり" "かねます" "ので")
+  (assert-segment "要素はないかと" "要素" "は" "ない" "か" "と")
+  (assert-segment "すごいじゃん" "すごい" "じゃん")
   )
 
 (define-test json-consistency-test

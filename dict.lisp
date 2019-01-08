@@ -1028,12 +1028,23 @@
     (loop for (seg-left seg-right) in splits
          nconcing (cons (get-penalties seg-left seg-right) (get-synergies seg-left seg-right)))))
 
+(defun expand-segment-list (segment-list)
+  (setf (segment-list-segments segment-list)
+        (stable-sort
+         (loop for segment in (segment-list-segments segment-list)
+            for segsplit = (get-segsplit segment)
+            collect segment
+            when segsplit
+            collect segsplit and do (incf (segment-list-matches segment-list)))
+         #'> :key #'segment-score)))
+
 (defun find-best-path (segment-lists str-length &key (limit 5))
   "generalized version of old find-best-path that operates on segment-lists and uses synergies"
   (let ((top (make-instance 'top-array :limit limit)))
     (register-item top (gap-penalty 0 str-length) nil)
 
     (dolist (segment-list segment-lists)
+      (expand-segment-list segment-list)
       (setf (segment-list-top segment-list) (make-instance 'top-array :limit limit)))
 
     ;;assume segments are sorted by (start, end) (as is the result of join-substring-words)
@@ -1190,18 +1201,8 @@
 
 (defparameter *segment-score-cutoff* 2/3)
 
-(defun expand-segment-list (segment-list)
-  (setf (segment-list-segments segment-list)
-        (stable-sort
-         (loop for segment in (segment-list-segments segment-list)
-            for segsplit = (get-segsplit segment)
-            collect segment
-            when segsplit
-            collect segsplit and do (incf (segment-list-matches segment-list)))
-         #'> :key #'segment-score)))
-
 (defun word-info-from-segment-list (segment-list)
-  (let* ((segments (expand-segment-list segment-list))
+  (let* ((segments (segment-list-segments segment-list))
          (wi-list* (mapcar #'word-info-from-segment segments))
          (wi1 (car wi-list*))
          (max-score (word-info-score wi1))
