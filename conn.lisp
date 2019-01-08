@@ -3,7 +3,7 @@
 (in-package #:ichiran/conn)
 
 ;; main connection
-(defvar *connection* '("jmdict" "postgres" "" "localhost"))
+(defvar *connection* nil) ;; '("jmdict" "postgres" "" "localhost"))
 
 ;; secondary connections (alist)
 (defvar *connections* '((:a "jmdict2" "postgres" "" "localhost")
@@ -52,12 +52,20 @@
               do (setf (gethash ,key *conn-var-cache*) (symbol-value ,var))))))))
 
 (defun switch-conn-vars (dbid)
-  (setf *connection* (get-spec dbid)) 
+  (setf *connection* (get-spec dbid))
   (loop
      for (var . iv) in *conn-vars*
      for key = (cons var *connection*)
      for (val exists) = (multiple-value-list (gethash key *conn-var-cache*))
      for value = (if exists val iv)
-     do (setf (symbol-value var) value))) 
+     do (setf (symbol-value var) value)))
 
 (def-conn-var *test-var* 10)
+
+(defun load-settings (&key keep-connection)
+  (let ((old-connection *connection*))
+    (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+    (if (and old-connection keep-connection)
+        (setf *connection* old-connection)
+        (unless (equal old-connection *connection*)
+          (switch-conn-vars *connection*)))))

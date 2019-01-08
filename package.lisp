@@ -32,7 +32,8 @@
            :*connection*
            :*connections*
            :def-conn-var
-           :switch-conn-vars))
+           :switch-conn-vars
+           :load-settings))
 
 (defpackage :ichiran/dict
   (:use :cl :postmodern :split-sequence

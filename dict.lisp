@@ -7,9 +7,7 @@
 
 (defvar *jmdict-data* #p"foobar")
 
-(defvar *connection* '("jmdict" "postgres" "" "localhost"))
-
-(load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+(load-settings :keep-connection t)
 
 (defgeneric get-kana (obj)
   (:documentation "most popular kana representation"))
