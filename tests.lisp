@@ -430,6 +430,7 @@
   (assert-segment "すごいじゃん" "すごい" "じゃん")
   (assert-segment "腕をつかまれて路地" "腕" "を" "つかまれて" "路地")
   (assert-segment "別にマイナスにならん" "別に" "マイナス" "に" "ならん")
+  (assert-segment "遊びばかりはだめだよ" "遊び" "ばかり" "は" "だめ" "だ" "よ")
   )
 
 (define-test json-consistency-test
