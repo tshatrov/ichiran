@@ -428,6 +428,8 @@
   (assert-segment "わたしにはちょっとわかりかねますので" "わたし" "には" "ちょっと" "わかり" "かねます" "ので")
   (assert-segment "要素はないかと" "要素" "は" "ない" "か" "と")
   (assert-segment "すごいじゃん" "すごい" "じゃん")
+  (assert-segment "腕をつかまれて路地" "腕" "を" "つかまれて" "路地")
+  (assert-segment "別にマイナスにならん" "別に" "マイナス" "に" "ならん")
   )
 
 (define-test json-consistency-test

@@ -420,10 +420,19 @@
   (2089020 2)
   (2139720 1))
 
-(def-simple-split nil 2771940 -5 () ;; はないか
+(def-simple-split nil 2771940 -5 (len txt) ;; はないか
+  (:test (equal txt "はないか"))
   (2028920 1)
   (1529520 2)
   (2028970 1))
+
+(def-simple-split split-nara 1009470 1 () ;; なら
+  (("なら" 2089020)))
+
+(def-simple-split nil 2083990 10 (len txt) ;; ならん
+  (:test (equal txt "ならん"))
+  (1009470 2)
+  (2139720 1))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
