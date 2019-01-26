@@ -435,6 +435,7 @@
   (assert-segment "小動物好き物好き" "小動物" "好き" "物好き")
   (assert-segment "知れないですか" "知れないです" "か")
   (assert-segment "かも知れないですね" "かも知れない" "です" "ね")
+  (assert-segment "匙ですくう" "匙" "で" "すくう")
   )
 
 (define-test json-consistency-test

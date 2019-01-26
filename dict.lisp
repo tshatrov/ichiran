@@ -639,7 +639,9 @@
         (bonus 0) (ratio 2)
         (posi (and info (getf info :posi))))
     (when info
-      (cond ((intersection (getf info :seq-set) *no-kanji-break-penalty*)
+      (cond ((or (intersection (getf info :seq-set) *no-kanji-break-penalty*)
+                 ;; do not penalize second word of で/す break
+                 (and (eql end :beg) (alexandria:starts-with #\す text)))
              (return-from kanji-break-penalty score))
             ((intersection '("vs-s" "v5s") posi :test 'equal)
              ;; these words have する endings which might lead to bad splits

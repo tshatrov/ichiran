@@ -892,6 +892,7 @@
   '(1169870 ;; 飲む
     1198360 ;; 会議
     1277450 ;; 好き
+    2028980 ;; で
     )
   "Words that get no kanji break penalty")
 
