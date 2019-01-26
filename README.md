@@ -8,7 +8,7 @@ The web interface is under development right now. You can try it at [ichi.moe](h
 
 1. Download JMDict data from [here](https://gitlab.com/yamagoya/jmdictdb/tree/master/pg/data). If you want to initialize database from scratch download [JMDict](ftp://ftp.monash.edu.au/pub/nihongo/JMdict.gz), and optionally [kanjidic2.xml](http://www.csse.monash.edu.au/~jwb/kanjidic2/kanjidic2.xml.gz) to use ichiran/kanji functionality.
 2. Create a settings.lisp file based on the provided settings.lisp.template file with the correct paths to the abovementioned files and the database connection parameters.
-3. The code can be loaded as a regular ASDF system. Use quicklisp to easily install all the dependencies. However note the Postmodern remark above.
+3. The code can be loaded as a regular ASDF system. Use quicklisp to easily install all the dependencies. 
 4.
    * Easy mode: Use database dump from [the release page](https://github.com/tshatrov/ichiran/releases) to create a suitable database. Make sure ```settings.lisp``` contains the correct connection parameters. Use ```(ichiran/maintenance:add-errata)``` to make database up to date.
    * Hard mode: Use ```(ichiran/maintenance:full-init)``` to completely initialize the database. Use ```(ichiran/maintenance:load-jmdict)``` followed by ```(ichiran/maintenance:load-best-readings)``` to initialize only `ichiran/dict` and not `ichiran/kanji`. Either way, this will take a few hours or so.
