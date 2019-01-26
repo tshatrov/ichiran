@@ -4,13 +4,9 @@ Ichiran is a collection of tools for working with text in Japanese language. It 
 
 The web interface is under development right now. You can try it at [ichi.moe](http://ichi.moe).
 
-## Notes
-
-Currently incompatible with Postmodern on quicklisp due to [this issue](https://github.com/marijnh/Postmodern/issues/70). Please use the master branch of [Postmodern](https://github.com/marijnh/Postmodern) until quicklisp updates it.
-
 ## Installation
 
-1. Download [JMDict](ftp://ftp.monash.edu.au/pub/nihongo/JMdict.gz) and JMDict data from [here](http://edrdg.org/~smg/cgi-bin/hgweb-jmdictdb.cgi/file/9389981dcd33/pg/data?style=gitweb). Optionally also obtain [kanjidic2.xml](http://www.csse.monash.edu.au/~jwb/kanjidic2/kanjidic2.xml.gz) to use ichiran/kanji functionality.
+1. Download JMDict data from [here](https://gitlab.com/yamagoya/jmdictdb/tree/master/pg/data). If you want to initialize database from scratch download [JMDict](ftp://ftp.monash.edu.au/pub/nihongo/JMdict.gz), and optionally [kanjidic2.xml](http://www.csse.monash.edu.au/~jwb/kanjidic2/kanjidic2.xml.gz) to use ichiran/kanji functionality.
 2. Create a settings.lisp file based on the provided settings.lisp.template file with the correct paths to the abovementioned files and the database connection parameters.
 3. The code can be loaded as a regular ASDF system. Use quicklisp to easily install all the dependencies. However note the Postmodern remark above.
 4.
