@@ -74,6 +74,11 @@
                               :where (:and (:= 'kt.text word)
                                            (:in 'sp.text (:set posi)))))))
 
+(defun or-as-hiragana (fn word &rest args)
+  (let ((result (apply fn word args)))
+    (or result
+        (find-word-as-hiragana word :finder (lambda (w) (apply fn w args))))))
+
 (defun find-word-with-suffix (wordstr &rest suffix-classes)
   (loop for word in (find-word-full wordstr)
      for seq = (seq word)
@@ -438,7 +443,7 @@
 
 (def-simple-suffix suffix-ra :ra (:connector "" :score 1) (root)
   (unless (alexandria:ends-with-subseq "ら" root)
-    (or (find-word-with-pos root "pn")
+    (or (or-as-hiragana 'find-word-with-pos root "pn")
         (find-word-seq root 1580640))))
 
 (pushnew :ra *suffix-unique-only*)

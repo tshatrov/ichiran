@@ -442,7 +442,7 @@
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
                       "夕べ" "さくや" "建ち並ばなきゃ" "建ち並びましてる"
                       "どおりで" "十万三" "5万100" "1234"
-                      "1日" "2期" "三羽" "1万500円"
+                      "1日" "2期" "三羽" "1万500円" "オレら"
                       )
        for word-info = (word-info-from-text word)
        for word-info-json = (word-info-json word-info)

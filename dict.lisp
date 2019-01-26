@@ -536,9 +536,11 @@
 (defmethod get-original-text ((reading proxy-text))
   (get-original-text (source reading)))
 
-(defun find-word-as-hiragana (str &key exclude)
+(defun find-word-as-hiragana (str &key exclude finder)
   (let* ((as-hiragana (as-hiragana str))
-         (words (find-word as-hiragana :root-only t)))
+         (words (and (string/= str as-hiragana) (if finder
+                                                    (funcall finder as-hiragana)
+                                                    (find-word as-hiragana :root-only t)))))
     (when words
       (let ((str (copy-seq str)))
         (loop for w in words
@@ -1195,7 +1197,7 @@
                  :conjugations (when (typep word 'simple-text) (word-conjugations word))
                  :true-text (when (typep word 'simple-text) (true-text word))
                  :components (when (typep word 'compound-text)
-                               (loop with primary-id = (id (primary word))
+                               (loop with primary-seq = (seq (primary word))
                                   for wrd in (words word)
                                   collect (make-instance 'word-info
                                                          :type (word-type wrd)
@@ -1204,7 +1206,7 @@
                                                          :kana (get-kana wrd)
                                                          :seq (seq wrd)
                                                          :conjugations (word-conjugations wrd)
-                                                         :primary (= (id wrd) primary-id))))
+                                                         :primary (= (seq wrd) primary-seq))))
                  :counter (when (typep word 'counter-text) (list (value-string word) (ordinalp word)))
                  :score (segment-score segment)
                  :start (segment-start segment)
