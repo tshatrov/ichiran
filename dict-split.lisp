@@ -434,6 +434,13 @@
   (1009470 2)
   (2139720 1))
 
+(def-simple-split nil 2009290 100 (len txt) ;; 中でも
+  (1423310 (- len 2))
+  (1008460))
+
+(def-simple-split nil 1502500 100 (len txt) ;; 物好き
+  (1502390 (- len 2))
+  (1277450 2 nil t))
 
 (def-simple-split nil 1002970 600 (len txt r) ;; かもしれない
   (:test (eql (word-type r) :kanji))
