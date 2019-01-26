@@ -894,6 +894,9 @@
     )
   "Words that get no kanji break penalty")
 
+(defparameter *force-kanji-break*
+  '("です"))
+
 ;; Additional conjugations
 
 (defconstant +conj-adverbial+ 50)

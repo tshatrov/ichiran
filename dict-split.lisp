@@ -434,6 +434,12 @@
   (1009470 2)
   (2139720 1))
 
+
+(def-simple-split nil 1002970 600 (len txt r) ;; かもしれない
+  (:test (eql (word-type r) :kanji))
+  (2143350 2)
+  (("知れない" 1420490)))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function

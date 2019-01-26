@@ -960,7 +960,11 @@
                                                                 (and (<= d 20) d))))))))
               (when segments
                 (when (or (= start 0) (find start ends))
-                  (setf kanji-break (nconc (sequential-kanji-positions part start) kanji-break)))
+                  (setf kanji-break
+                        (nconc (if (find part *force-kanji-break* :test 'equal)
+                                   (alexandria:iota (1- (length part)) :start (1+ start))
+                                   (sequential-kanji-positions part start))
+                               kanji-break)))
                 (pushnew end ends)
                 (list (list start end segments)))))
        into result
@@ -983,6 +987,13 @@
        when sl
        collect (make-segment-list :segments (cull-segments sl) :start start :end end
                                   :matches (length segments)))))
+
+(defun substring-index(str)
+  (let ((sls (join-substring-words str))
+        (index (make-hash-table :test 'equal)))
+    (loop for sl in sls
+       do (setf (gethash (list (segment-list-start sl) (segment-list-end sl)) index) sl))
+    index))
 
 (defstruct (top-array-item (:conc-name tai-)) score payload)
 
