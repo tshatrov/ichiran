@@ -760,6 +760,7 @@
 
 (defun add-errata-jan19 ()
   (set-common 'kanji-text 2017470 "塗れ" 0)
+  (set-common 'kana-text 2722660 "すげぇ" 0)
 
   (add-sense-prop 2756830 0 "misc" "uk")
 
@@ -774,6 +775,8 @@
   (add-reading 1572760 "クドい")
   (add-conj-reading 1572760 "クドい")
   (add-reading 1003620 "ギュっと")
+
+  (set-primary-nokanji 1631830 nil) ;; くせに
   )
 
 (defun add-errata-counters ()

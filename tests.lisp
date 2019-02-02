@@ -420,7 +420,7 @@
   (assert-segment "うちからそうなっても" "うち" "から" "そう" "なっても")
   (assert-segment "上映会やな" "上映" "会" "や" "な")
   (assert-segment "以上書いてください" "以上" "書いてください")
-  (assert-segment "のがいまだに" "の" "が" "いまだに")
+  (assert-segment "してしまったのがいまだに忘れられないし" "してしまった" "の" "が" "いまだに" "忘れられない" "し")
   (assert-segment "彼ははんぱじゃなく" "彼" "は" "はんぱ" "じゃなく")
   (assert-segment "許さないじゃなくてさ" "許さない" "じゃなくて" "さ")
   (assert-segment "じゃなかったです" "じゃなかったです")
@@ -438,6 +438,8 @@
   (assert-segment "匙ですくう" "匙" "で" "すくう")
   (assert-segment "デカかったクドくない" "デカかった" "クドくない")
   (assert-segment "決めたらしい教われたらしい" "決めたらしい" "教われたらしい")
+  (assert-segment "臆病なくせにとてもよい仲間だった" "臆病" "な" "くせに" "とても" "よい" "仲間" "だった")
+  (assert-segment "あのねあのさ" "あのね" "あのさ")
   )
 
 (define-test json-consistency-test

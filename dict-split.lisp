@@ -447,6 +447,20 @@
   (2143350 2)
   (("知れない" 1420490)))
 
+(def-simple-split nil 1005600 -10 () ;; しまった
+  (("しまった" 1305380)))
+
+(def-simple-split nil 2016840 -5 () ;; やった
+  (("やった" 1012980)))
+
+(def-simple-split nil 1000430 -5 () ;; あの
+  (1000420))
+
+(def-simple-split nil 1612640 5 () ;; あのね
+  (1000420 2)
+  ((2029080 2029120 1005110)))
+
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
