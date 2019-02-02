@@ -557,6 +557,7 @@
    (kana :reader get-kana :initarg :kana)
    (primary :reader primary :initarg :primary)
    (words :reader words :initarg :words)
+   (score-base :initform nil :initarg :score-base)
    (score-mod :reader score-mod :initarg :score-mod)
    ))
 
@@ -575,20 +576,22 @@
 
 (defmethod word-type ((obj compound-text)) (word-type (primary obj)))
 
-(defgeneric adjoin-word (word1 word2 &key text kana score-mod)
+(defgeneric adjoin-word (word1 word2 &key text kana score-mod score-base)
   (:documentation "make compound word from 2 words"))
 
-(defmethod adjoin-word :around (word1 word2 &key text kana score-mod)
+(defmethod adjoin-word :around (word1 word2 &key text kana score-mod score-base)
   (call-next-method word1 word2
                     :text (or text (concatenate 'string (get-text word1) (get-text word2)))
                     :kana (or kana (concatenate 'string (get-kana word1) (get-kana word2)))
-                    :score-mod (or score-mod 0)))
+                    :score-mod (or score-mod 0)
+                    :score-base score-base))
 
-(defmethod adjoin-word ((word1 simple-text) (word2 simple-text) &key text kana score-mod)
+(defmethod adjoin-word ((word1 simple-text) (word2 simple-text) &key text kana score-mod score-base)
   (make-instance 'compound-text
-                 :text text :kana kana :primary word1 :words (list word1 word2) :score-mod score-mod))
+                 :text text :kana kana :primary word1 :words (list word1 word2)
+                 :score-mod score-mod :score-base score-base))
 
-(defmethod adjoin-word ((word1 compound-text) (word2 simple-text) &key text kana score-mod)
+(defmethod adjoin-word ((word1 compound-text) (word2 simple-text) &key text kana score-mod &allow-other-keys)
   (with-slots ((s-text text) (s-kana kana) (s-words words) (s-score-mod score-mod)) word1
     (setf s-text text s-kana kana
           s-words (append s-words (list word2))
@@ -609,6 +612,11 @@
 
 (defmethod (setf word-conjugations) (value (word compound-text))
   (setf (word-conjugations (car (last (words word)))) value))
+
+(defgeneric score-base (word)
+  (:method ((word compound-text))
+    (with-slots (score-base primary) word
+      (or score-base primary))))
 
 (defstruct segment
   start end word (score nil) (info nil) (top nil) (text nil))
@@ -679,7 +687,7 @@
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break &aux ctr-mode)
   (typecase reading
     (compound-text
-     (let ((args (list (primary reading) :use-length (mora-length (text reading)) :score-mod (score-mod reading))))
+     (let ((args (list (score-base reading) :use-length (mora-length (text reading)) :score-mod (score-mod reading))))
        (multiple-value-bind (score info) (apply 'calc-score args)
          (setf (getf info :conj) (word-conj-data reading))
          (when kanji-break

@@ -52,6 +52,23 @@
                             (lambda (cdata)
                               (member (conj-type (conj-data-prop cdata)) conj-types))))
 
+(defun pair-words-by-conj (&rest word-groups)
+  (flet ((key (word)
+           (sort (mapcar (lambda (conj-id)
+                           (let ((conj (get-dao 'conjugation conj-id)))
+                             (list (seq-from conj) (let ((via (seq-via conj))) (if (eql via :null) 0 via)))))
+                         (word-conjugations word))
+                 (lex-compare '<))))
+    (loop with bag = (make-hash-table :test 'equal)
+       for wg in word-groups
+       for idx from 0
+       do (loop for word in wg
+             for key = (key word)
+             for arr = (or (gethash key bag) (loop for i below (length word-groups) collect nil))
+             do (setf (elt arr idx) word
+                      (gethash key bag) arr))
+       finally (return (alexandria:hash-table-values bag)))))
+
 (defun find-word-seq (word &rest seqs)
   (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
     (select-dao table (:and (:= 'text word) (:in 'seq (:set seqs))))))
@@ -317,7 +334,10 @@
        (let* ((*suffix-map-temp* ,(if (= stem 0) '*suffix-map-temp* nil))
               (,patch-var nil)
               (,primary-words (progn ,@get-primary-words)))
-         (mapcar (lambda (pw)
+         (mapcar (lambda (pw &aux score-base)
+                   (when (listp pw)
+                     (setf score-base (second pw)
+                           pw (first pw)))
                    (adjoin-word pw ,suf
                                 :text (concatenate 'string ,root-var ,suf-var)
                                 :kana (let ((k (get-kana pw)))
@@ -329,7 +349,8 @@
                                                          (destem k ,stem))
                                                      ,connector
                                                      ,suf-var))
-                                :score-mod ,score))
+                                :score-mod ,score
+                                :score-base score-base))
                  ,primary-words)))))
 
 (def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
@@ -449,7 +470,9 @@
 (pushnew :ra *suffix-unique-only*)
 
 (def-simple-suffix suffix-rashii :rashii (:connector "" :score 3) (root)
-  (find-word-with-conj-type root 2))
+  (pair-words-by-conj
+   (find-word-with-conj-type root 2)
+   (find-word-with-conj-type (concatenate 'string root "ら") 11)))
 
 (def-simple-suffix suffix-desu :desu (:connector " " :score 5) (root)
   (and (or (alexandria:ends-with-subseq "ない" root)
