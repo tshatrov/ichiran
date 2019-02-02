@@ -72,6 +72,41 @@
             for ord from 0
             do (setf (slot-value obj 'ord) ord) (update-dao obj)))))
 
+
+(defun root-diff (base-text reading)
+  (loop
+     with lb = (length base-text) and lr = (length reading)
+     for ib from (1- lb) downto 0
+     for ir from (1- lr) downto 0
+     when (char/= (char base-text ib) (char reading ir))
+     do (return (values (1+ ib) (1+ ir)))
+     finally (return (if (>= lr lb) (values 0 (- lr lb)) (values (- lb lr) 0)))))
+
+(defun root-diff-fn (base-text reading)
+  (multiple-value-bind (b r) (root-diff base-text reading)
+    (lambda (text)
+      (concatenate 'string (subseq reading 0 r) (subseq text b)))))
+
+(defun add-conj-reading (seq reading)
+  (let* ((is-kana (test-word reading :kana))
+         (table (if is-kana 'kana-text 'kanji-text))
+         (base-text (query (:select 'text :from table :where (:and (:= 'seq seq) (:= 'ord 0))) :single))
+         (diff-fn (root-diff-fn base-text reading)))
+    (loop for conj in (select-dao 'conjugation (:= 'from seq))
+       for entry = (get-dao 'entry (seq conj))
+       for base = (car (select-dao table (:and (:= 'seq (seq conj)) (:= 'ord 0))))
+       for new-text = (funcall diff-fn (text base))
+       unless (select-dao table (:and (:= 'seq (seq conj)) (:= 'text new-text)))
+       do (let ((maxord (query (:select (:max 'ord) :from table :where (:= 'seq (seq conj))) :single))
+                (source-text (query (:select 'source-text :from 'conj-source-reading
+                                             :where (:and (:= 'conj-id (id conj)) (:= 'text (text base)))) :single)))
+            (make-dao table :text new-text :seq (seq conj) :ord maxord :common :null :conjugate-p (conjugate-p base))
+            (make-dao 'conj-source-reading :conj-id (id conj) :text new-text :source-text (funcall diff-fn source-text))
+            (if is-kana
+                (incf (n-kana entry))
+                (incf (n-kanji entry)))
+            (update-dao entry)))))
+
 (defun delete-senses (seq prop-test)
   (let* ((sense-props (remove-if-not prop-test (select-dao 'sense-prop (:= 'seq seq))))
          (sense-ids (remove-duplicates (mapcar #'sense-id sense-props))))
@@ -733,6 +768,12 @@
   (add-reading 2081610 "スレ違")
   (add-sense-prop 2081610 0 "misc" "uk")
   (add-primary-nokanji 2081610 "スレチ")
+
+  (add-reading 1008370 "デカい" :common 0)
+  (add-conj-reading 1008370 "デカい")
+  (add-reading 1572760 "クドい")
+  (add-conj-reading 1572760 "クドい")
+  (add-reading 1003620 "ギュっと")
   )
 
 (defun add-errata-counters ()
