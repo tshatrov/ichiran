@@ -440,6 +440,7 @@
   (assert-segment "決めたらしい教われたらしい" "決めたらしい" "教われたらしい")
   (assert-segment "臆病なくせにとてもよい仲間だった" "臆病" "な" "くせに" "とても" "よい" "仲間" "だった")
   (assert-segment "あのねあのさ" "あのね" "あのさ")
+  (assert-segment "今までになかったような名優" "今まで" "に" "なかった" "ような" "名優")
   )
 
 (define-test json-consistency-test

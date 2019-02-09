@@ -460,6 +460,13 @@
   (1000420 2)
   ((2029080 2029120 1005110)))
 
+(def-simple-split nil 1314600 -5 () ;; に+ない
+  (2028990 1)
+  (1529520 nil t))
+
+(def-simple-split nil 1322540 -5 () ;; に+ない
+  (2028990 1)
+  (1529520 nil t))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
