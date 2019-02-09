@@ -729,3 +729,13 @@
 
 (def-special-counter 1606950 ()
   (args 'counter-wari "割引" "わりびき"))
+
+(defclass counter-age (counter-text) ())
+
+(defmethod get-kana ((obj counter-age))
+  (case (number-value obj)
+    (20 "はたち")
+    (t (call-next-method))))
+
+(def-special-counter 1294940 ()
+  (args 'counter-age '("歳" "才") "さい"))
