@@ -682,6 +682,28 @@
   (:method ((score-mod list) score len)
     (reduce '+ score-mod :key (lambda (sm) (apply-score-mod sm score len)))))
 
+
+(defvar *is-arch-lock* (sb-thread:make-mutex :name "is-arch-lock"))
+(def-conn-var *is-arch-cache* nil)
+
+(defun is-arch (seq)
+  (if *is-arch-cache*
+      (nth-value 1 (gethash seq *is-arch-cache*))
+      (let ((is-arch-cache (make-hash-table)))
+        (dolist (seq (query
+                      (:select 'sense.seq :from 'sense
+                               :left-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.sense-id 'sense.id)
+                                                                          (:= 'sp.tag "misc")
+                                                                          (:= 'sp.text "arch"))
+                               :group-by 'sense.seq :having (:every (:not-null 'sp.id)))
+                      :column))
+          (setf (gethash seq is-arch-cache) t))
+        (sb-thread:with-mutex (*is-arch-lock*)
+          (unless *is-arch-cache*
+            (setf *is-arch-cache* is-arch-cache)))
+        (nth-value 1 (gethash seq *is-arch-cache*)))))
+
+
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-forms* *skip-conj-forms* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break &aux ctr-mode)
@@ -723,13 +745,7 @@
          (prefer-kana
           (select-dao 'sense-prop (:and (:in 'seq (:set sp-seq-set))
                                         (:= 'tag "misc") (:= 'text "uk"))))
-         (is-arch (query
-                   (:select (:every (:not-null 'sp.id)) :from 'sense
-                            :left-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.sense-id 'sense.id)
-                                                                       (:= 'sp.tag "misc")
-                                                                       (:= 'sp.text "arch"))
-                            :where (:in 'sense.seq (:set sp-seq-set)))
-                   :single))
+         (is-arch (every 'is-arch sp-seq-set))
          (posi (if ctr-mode (list "ctr")
                    (query (:select 'text :distinct :from 'sense-prop
                                    :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column)))
