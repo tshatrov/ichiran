@@ -33,7 +33,8 @@
            :*connections*
            :def-conn-var
            :switch-conn-vars
-           :load-settings))
+           :load-settings
+           :with-log))
 
 (defpackage :ichiran/dict
   (:use :cl :postmodern :split-sequence

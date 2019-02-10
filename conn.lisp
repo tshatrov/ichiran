@@ -69,3 +69,10 @@
         (setf *connection* old-connection)
         (unless (equal old-connection *connection*)
           (switch-conn-vars *connection*)))))
+
+
+(defmacro with-log ((path &key (if-exists :append)) &body body)
+  (alexandria:with-gensyms (stream)
+    `(with-open-file (,stream ,path :direction :output :if-does-not-exist :create :if-exists ,if-exists)
+       (let ((cl-postgres:*query-log* ,stream))
+         ,@body))))
