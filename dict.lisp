@@ -688,25 +688,20 @@
     (reduce '+ score-mod :key (lambda (sm) (apply-score-mod sm score len)))))
 
 
-(defvar *is-arch-lock* (sb-thread:make-mutex :name "is-arch-lock"))
-(def-conn-var *is-arch-cache* nil)
+(defcache :is-arch *is-arch-cache*
+  (let ((is-arch-cache (make-hash-table)))
+    (dolist (seq (query
+                  (:select 'sense.seq :from 'sense
+                           :left-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.sense-id 'sense.id)
+                                                                      (:= 'sp.tag "misc")
+                                                                      (:= 'sp.text "arch"))
+                           :group-by 'sense.seq :having (:every (:not-null 'sp.id)))
+                  :column))
+      (setf (gethash seq is-arch-cache) t))
+    is-arch-cache))
 
 (defun is-arch (seq)
-  (if *is-arch-cache*
-      (nth-value 1 (gethash seq *is-arch-cache*))
-      (let ((is-arch-cache (make-hash-table)))
-        (dolist (seq (query
-                      (:select 'sense.seq :from 'sense
-                               :left-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.sense-id 'sense.id)
-                                                                          (:= 'sp.tag "misc")
-                                                                          (:= 'sp.text "arch"))
-                               :group-by 'sense.seq :having (:every (:not-null 'sp.id)))
-                      :column))
-          (setf (gethash seq is-arch-cache) t))
-        (sb-thread:with-mutex (*is-arch-lock*)
-          (unless *is-arch-cache*
-            (setf *is-arch-cache* is-arch-cache)))
-        (nth-value 1 (gethash seq *is-arch-cache*)))))
+  (nth-value 1 (gethash seq (ensure :is-arch))))
 
 
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-forms* *skip-conj-forms* are defined in dict-errata.lisp

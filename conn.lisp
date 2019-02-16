@@ -76,3 +76,47 @@
     `(with-open-file (,stream ,path :direction :output :if-does-not-exist :create :if-exists ,if-exists)
        (let ((cl-postgres:*query-log* ,stream))
          ,@body))))
+
+
+(defclass cache ()
+  ((mapping :initform nil :allocation :class)
+   (name :initarg :name :reader cache-name)
+   (var :initarg :var :reader cache-var)
+   (lock :reader cache-lock)
+   ))
+
+(defmethod initialize-instance :after ((cache cache) &key &allow-other-keys)
+  (let ((name (cache-name cache)))
+    (setf (slot-value cache 'lock) (sb-thread:make-mutex :name (symbol-name name)))
+    (setf (getf (slot-value cache 'mapping) name) cache)))
+
+(defun get-cache (name)
+  (getf (slot-value (sb-mop:class-prototype (find-class 'cache)) 'mapping) name))
+
+(defgeneric init-cache (cache-name)
+  (:documentation "Should return a value to initialize cache with"))
+
+(defgeneric reset-cache (cache-name)
+  (:method (cache-name)
+    (let ((val (init-cache cache-name))
+          (cache (get-cache cache-name)))
+      (sb-thread:with-mutex ((cache-lock cache))
+        (setf (symbol-value (cache-var cache)) val)))))
+
+(defgeneric ensure (cache-name)
+  (:method (cache-name)
+    (let ((cache (get-cache cache-name)))
+      (or (symbol-value (cache-var cache))
+          (let ((val (init-cache cache-name))
+                (cache (get-cache cache-name)))
+            (sb-thread:with-mutex ((cache-lock cache))
+              (or (symbol-value (cache-var cache))
+                  (setf (symbol-value (cache-var cache)) val))))))))
+
+(defmacro defcache (name var &body init-body)
+  (alexandria:with-gensyms (cache-var)
+    `(progn
+       (def-conn-var ,var nil)
+       (make-instance 'cache :name ',name :var ',var)
+       (defmethod init-cache ((,cache-var (eql ,name)))
+         ,@init-body))))

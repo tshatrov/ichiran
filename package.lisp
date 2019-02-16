@@ -29,12 +29,11 @@
 (defpackage :ichiran/conn
   (:use :cl :postmodern)
   (:export :get-spec :with-db :let-db
-           :*connection*
-           :*connections*
-           :def-conn-var
-           :switch-conn-vars
-           :load-settings
-           :with-log))
+           :*connection* :*connections*
+           :def-conn-var :switch-conn-vars
+           :load-settings :with-log
+           :cache :get-cache :init-cache :reset-cache :ensure :defcache
+           ))
 
 (defpackage :ichiran/dict
   (:use :cl :postmodern :split-sequence
