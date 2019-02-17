@@ -25,7 +25,7 @@
 
 (defvar *conn-vars* nil)
 
-(defvar *conn-var-cache* (make-hash-table :test #'equal))
+(defvar *conn-var-cache* (make-hash-table :test 'equal))
 
 (defmacro def-conn-var (name initial-value &rest args)
   `(progn
@@ -90,8 +90,11 @@
     (setf (slot-value cache 'lock) (sb-thread:make-mutex :name (symbol-name name)))
     (setf (getf (slot-value cache 'mapping) name) cache)))
 
+(defun all-caches ()
+  (slot-value (sb-mop:class-prototype (find-class 'cache)) 'mapping))
+
 (defun get-cache (name)
-  (getf (slot-value (sb-mop:class-prototype (find-class 'cache)) 'mapping) name))
+  (getf (all-caches) name))
 
 (defgeneric init-cache (cache-name)
   (:documentation "Should return a value to initialize cache with"))
@@ -119,4 +122,10 @@
        (def-conn-var ,var nil)
        (make-instance 'cache :name ',name :var ',var)
        (defmethod init-cache ((,cache-var (eql ,name)))
-         ,@init-body))))
+         (with-connection *connection*
+           ,@init-body)))))
+
+(defun init-all-caches (&optional reset)
+  (loop with fn = (if reset 'reset-cache 'ensure)
+     for (name . rest) on (all-caches) by #'cddr
+     do (funcall fn name)))

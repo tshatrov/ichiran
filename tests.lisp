@@ -490,8 +490,9 @@
 ;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-all-tests ()
-  (init-counters)
+  (init-all-caches)
   (init-suffixes t)
+
   (let* ((lparallel:*kernel* (lparallel:make-kernel 4))
          (res (unwind-protect
                    (run-tests :all :ichiran/test)

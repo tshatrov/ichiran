@@ -1,7 +1,5 @@
 (in-package :ichiran/dict)
 
-(def-conn-var *counter-cache* nil)
-
 (defgeneric counter-join (counter n number-kana counter-kana)
   (:documentation "Construct counter kana text")
   (:method (counter n number-kana counter-kana)
@@ -219,11 +217,10 @@
 
 (defparameter *counter-foreign* '(1120410))
 
-(defun init-counters (&optional reset)
-  (when (or reset (not *counter-cache*))
-    (setf *counter-cache* (make-hash-table :test 'equal))
+(defcache :counters *counter-cache*
+  (let ((counter-cache (make-hash-table :test 'equal)))
     (labels ((add-args* (text args)
-               (push args (gethash text *counter-cache* nil))
+               (push args (gethash text counter-cache nil))
                (loop for suf in (getf (cdr args) :accepts)
                   for (suf-text suf-kana suf-desc) = (cdr (assoc suf *counter-suffixes*))
                   for (cls . new-args) = (copy-list args)
@@ -231,7 +228,7 @@
                   do (setf (getf new-args :text) new-text
                            (getf new-args :suffix) (format nil "~@[~a~]~a" (getf new-args :suffix) suf-kana))
                     (push suf-desc (getf new-args :suffix-descriptions))
-                    (push (cons cls new-args) (gethash new-text *counter-cache* nil))))
+                    (push (cons cls new-args) (gethash new-text counter-cache nil))))
              (add-args (text &rest args)
                (if (listp text)
                    (loop for txt in text
@@ -256,12 +253,12 @@
                                    :ordinalp (and (> (length text) 1) (alexandria:ends-with #\目 text))
                                    :accepts (cdr (assoc (seq kt) *counter-accepts*))
                                    :foreign foreign))))
-      (loop for counter in (alexandria:hash-table-keys *counter-cache*)
+      (loop for counter in (alexandria:hash-table-keys counter-cache)
          for cord = (concatenate 'string counter "目")
          unless (or (alexandria:emptyp counter)
                     (and (> (length counter) 1) (alexandria:ends-with #\目 counter))
-                    (gethash cord *counter-cache*))
-         do (loop for old-args in (gethash counter *counter-cache*)
+                    (gethash cord counter-cache))
+         do (loop for old-args in (gethash counter counter-cache)
                for (cls . args) = (copy-list old-args)
                unless (getf args :ordinalp)
                do
@@ -269,11 +266,11 @@
                        (getf args :suffix) (format nil "~@[~a~]め" (getf args :suffix))
                        (getf args :ordinalp) t)
                  (apply #'add-args cord cls args)))
-      )))
+      )
+    counter-cache))
 
 (defun find-counter (number counter &key (unique t))
-  (init-counters)
-  (let ((counter-args (gethash counter *counter-cache*)))
+  (let ((counter-args (gethash counter (ensure :counters))))
     (when counter-args
       (loop for args in counter-args
          for counter-obj = (handler-case

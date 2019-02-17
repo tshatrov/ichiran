@@ -71,8 +71,8 @@
 
 (defun switch-connection (conn &key reset)
   (with-db conn
-    (ichiran/dict:init-suffixes t reset)
-    (ichiran/dict:init-counters reset))
+    (init-all-caches reset)
+    (ichiran/dict:init-suffixes t reset))
   (switch-conn-vars conn)
   (setf *database* (apply 'connect *connection*)))
 

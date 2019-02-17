@@ -32,7 +32,8 @@
            :*connection* :*connections*
            :def-conn-var :switch-conn-vars
            :load-settings :with-log
-           :cache :get-cache :init-cache :reset-cache :ensure :defcache
+           :cache  :defcache :all-caches :init-all-caches
+           :get-cache :init-cache :reset-cache :ensure
            ))
 
 (defpackage :ichiran/dict
@@ -51,8 +52,7 @@
            :find-word-info-json
            :simple-word-info
            :process-hints
-           :strip-hints
-           :init-counters))
+           :strip-hints))
 
 (defpackage :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
