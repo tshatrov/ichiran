@@ -860,11 +860,18 @@
                       for part in split
                       for cnt from 1
                       for last = (= cnt nparts)
-                      summing (calc-score part
+                      for plen = (length (text part))
+                      for slen = plen then (+ slen plen)
+                      for pmlen = (mora-length (text part))
+                      for smlen = pmlen then (+ smlen pmlen)
+                      for tpart = (if (and last (> slen (length text)))
+                                      (let ((new-len (max 1 (+ plen (- (length text) slen)))))
+                                        (make-instance 'proxy-text :source part :text (subseq (text part) 0 new-len) :kana ""))
+                                      part)
+                      summing (calc-score tpart
                                           :final (and final last)
                                           :use-length (when (and last use-length)
-                                                        (+ (mora-length (text part))
-                                                           (- use-length len)))
+                                                        (+ pmlen (- use-length smlen)))
                                           :score-mod (if last score-mod 0)
                                           )))))))
 
