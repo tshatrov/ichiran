@@ -140,7 +140,7 @@
 
 ;;; conjugations generator (warning: terrible code ahead)
 
-(defmacro csv-hash (hash-name (filename &key skip-first ((:errata errata-fn))) loader-opts &rest accessor-opts-list)
+(defmacro csv-hash (hash-name (filename &key skip-first ((:errata errata-fn)) relative) loader-opts &rest accessor-opts-list)
   (let ((base-name (string-trim "*" hash-name))
         (forms (list `(defparameter ,hash-name nil)))
         (loader-opts-length (length loader-opts)) ;;([loader-name] row-def row-key value-form)
@@ -157,7 +157,9 @@
        `(defun ,loader-name ()
           (setf ,hash-name (make-hash-table :test 'equal))
           (loop :for ,row-def :in (cl-csv:read-csv
-                                   (merge-pathnames *jmdict-data* ,filename)
+                                   ,(if relative
+                                      `(asdf:system-relative-pathname ,relative ,filename)
+                                      `(merge-pathnames *jmdict-data* ,filename))
                                    :separator #\Tab :skip-first-p ,skip-first)
              :for ,row-count-var :from 0
              :do (setf (gethash ,row-key-form ,hash-name) ,value-form))

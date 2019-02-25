@@ -42,10 +42,10 @@
     hash))
 
 
-(defmacro hash-from-list (var list)
+(defmacro hash-from-list (var list &key test)
   (alexandria:with-gensyms (hash key val)
     `(defparameter ,var
-       (let ((,hash (make-hash-table)))
+       (let ((,hash (make-hash-table ,@(when test `(:test ,test)))))
          (loop for (,key ,val) on ,list by #'cddr
               do (setf (gethash ,key ,hash) ,val))
          ,hash))))

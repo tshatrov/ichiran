@@ -56,6 +56,7 @@
 
 (defpackage :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
+  (:import-from :ichiran/dict :csv-hash)
   (:export :romanize :romanize-word :romanize* :romanize-word-info
            :generic-romanization :generic-hepburn :kana-table
            :simplified-hepburn :simplifications
