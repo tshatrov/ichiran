@@ -121,26 +121,23 @@ kye	きぇ
 kyi	きぃ
 kyo	きょ
 kyu	きゅ
-la	ぁ
-le	ぇ
-li	ぃ
-lka	ヵ
-lke	ヶ
-ll	っ	l
-lo	ぉ
-ltsu	っ
-ltu	っ
-lu	ぅ
-lwa	ゎ
-lya	ゃ
-lye	ぇ
-lyi	ぃ
-lyo	ょ
-lyu	ゅ
+la	ら
+le	れ
+li	り
+lo	ろ
+ll	っ	r
+lu	る
+lya	りゃ
+lye	りぇ
+lyi	りぃ
+lyo	りょ
+lyu	りゅ
 ma	ま
 me	め
 mi	み
-mm	っ	m
+mm	ん	m
+mb	ん	b
+mp	ん	p
 mo	も
 mu	む
 mya	みゃ
@@ -150,6 +147,7 @@ myo	みょ
 myu	みゅ
 n	ん
 n'	ん
+n-	ん
 na	な
 ne	ね
 ni	に
