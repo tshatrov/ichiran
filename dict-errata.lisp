@@ -54,6 +54,12 @@
         (update-dao entry)))
     entry))
 
+(defun reset-readings (&rest seqs)
+  (let ((readings (nconc
+                   (select-dao 'kana-text (:in 'seq (:set seqs)))
+                   (select-dao 'kanji-text (:in 'seq (:set seqs))))))
+    (mapcar 'set-reading readings)))
+
 (defun delete-reading (seq reading)
   (let* ((is-kana (test-word reading :kana))
          (table (if is-kana 'kana-text 'kanji-text))
@@ -70,8 +76,8 @@
       (update-dao entry)
       (loop for obj in (select-dao table (:= 'seq seq) 'ord)
             for ord from 0
-            do (setf (slot-value obj 'ord) ord) (update-dao obj)))))
-
+         do (setf (slot-value obj 'ord) ord) (update-dao obj))
+      (reset-readings seq))))
 
 (defun root-diff (base-text reading)
   (loop
@@ -776,7 +782,20 @@
   (add-conj-reading 1572760 "クドい")
   (add-reading 1003620 "ギュっと")
 
+  (add-reading 2833957 "ろうへいはしなずただきえさるのみ")
+  (delete-reading 2833957 "ろうへいはしなずきえさるのみ")
+
+  (delete-reading 2424520 "去る者は追わず、来たる者は拒まず")
+  (delete-reading 2570040 "朝焼けは雨、夕焼けは晴れ")
+  (add-reading 2757120 "問うは一度の恥問わぬは末代の恥")
+  (delete-reading 2757120 "問うは一度の恥、問わぬは末代の恥")
+  (delete-reading 2833961 "梅は食うとも核食うな、中に天神寝てござる")
+  (delete-reading 2834318 "二人は伴侶、三人は仲間割れ")
+  (delete-reading 2834363 "墨は餓鬼に磨らせ、筆は鬼に持たせよ")
+
   (set-primary-nokanji 1631830 nil) ;; くせに
+
+  (delete-sense-prop 1270350 "misc" "arch") ;; ござる
   )
 
 (defun add-errata-counters ()

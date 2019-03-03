@@ -651,6 +651,18 @@
      for new-pos = (translate-hint-position match pos)
      if new-pos collect (list hint new-pos)))
 
+(defparameter *easy-hints-seqs* nil "Only used for testing")
+
+(defun check-easy-hints ()
+  (with-db nil
+    (let ((readings (select-dao 'kana-text (:in 'seq (:set *easy-hints-seqs*))))
+          (*disable-hints* t))
+      (loop for reading in readings
+         for kanji = (true-kanji reading)
+         for kana = (true-kana reading)
+         for match = (ichiran/kanji:match-readings kanji kana)
+         unless match collect (list reading kanji kana)))))
+
 (defmacro def-easy-hint (seq kanji-split)
   (let* ((parts (split-sequence #\Space kanji-split))
          (text (remove #\Space kanji-split))
@@ -663,13 +675,15 @@
                    do (incf pos (length part))))
          (reading-var (gensym "RV")))
     (alexandria:with-gensyms (match kr rtext)
-      `(defhint (,seq) (,reading-var)
-         (when (typep ,reading-var 'simple-text)
-           (let* ((,rtext (true-kanji ,reading-var))
-                  (,match (match-diff ,text ,rtext))
-                  (,kr (ichiran/kanji:match-readings ,rtext (true-kana ,reading-var))))
-             (when (and ,match ,kr)
-               (insert-hints (get-kana ,reading-var) (translate-hints ,kr (translate-hints ,match ',hints))))))))))
+      `(progn
+         (push ,seq *easy-hints-seqs*)
+         (defhint (,seq) (,reading-var)
+           (when (typep ,reading-var 'simple-text)
+             (let* ((,rtext (true-kanji ,reading-var))
+                    (,match (match-diff ,text ,rtext))
+                    (,kr (ichiran/kanji:match-readings ,rtext (true-kana ,reading-var))))
+               (when (and ,match ,kr)
+                 (insert-hints (get-kana ,reading-var) (translate-hints ,kr (translate-hints ,match ',hints)))))))))))
 
 (defun get-hint (reading)
   (let ((hint-fn (gethash (seq reading) *hint-map*))
@@ -1014,6 +1028,18 @@
   (:space (1+ ha)))
 
 
+;; easy hint doesn't work for そうはイカのキンタマ because it has no best kanji
+(def-simple-hint (2716860) ;; "そう は イカ の 金玉"
+    (l k)
+  (ha (search "は" k))
+  (no (search "の" k :from-end t))
+  (:space ha)
+  (:mod ha)
+  (:space (1+ ha))
+  (:space no)
+  (:space (1+ no)))
+
+
 ;; Easy hints!
 
 ;; は
@@ -1221,7 +1247,6 @@
 (def-easy-hint 2420140 "恋 は 思案 の 外")
 (def-easy-hint 2550210 "幸運 の 女神 は 前髪 しかない")
 (def-easy-hint 2591070 "火事 と 喧嘩 は 江戸 の 華")
-(def-easy-hint 2716860 "そう は イカ の 金玉")
 (def-easy-hint 2796370 "禍福 は 糾える 縄 の ごとし")
 (def-easy-hint 2833968 "人間 は 万物 の 尺度 である")
 (def-easy-hint 2833958 "言葉 は 身 の 文")
