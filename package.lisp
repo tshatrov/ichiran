@@ -54,7 +54,7 @@
            :process-hints
            :strip-hints))
 
-(defpackage :ichiran
+(uiop:define-package :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
   (:import-from :ichiran/dict :csv-hash)
   (:export :romanize :romanize-word :romanize* :romanize-word-info
