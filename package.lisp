@@ -63,7 +63,8 @@
            :*hepburn-basic* :*hepburn-simple* :*hepburn-passport*
            :*hepburn-traditional* :*hepburn-modified*
            :kunrei-siki :*kunrei-siki*
-           :*default-romanization-method*))
+           :*default-romanization-method*
+           :romaji-kana))
 
 (defpackage :ichiran/kanji
   (:use :cl :postmodern :ichiran/conn :ichiran :ichiran/characters :ichiran/dict)
