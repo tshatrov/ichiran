@@ -82,7 +82,7 @@
           new-branches))))
 
 (defun romaji-kana (s)
-  (loop with branches = (list (make-kana-representation :rest s))
+  (loop with branches = (list (make-kana-representation :rest (string-downcase s)))
      with finished = nil
      while branches
      do (setf branches (branches-next branches))
@@ -91,3 +91,13 @@
      finally
        (when finished
          (return (values (kr-canonical finished) (format nil "^~a$" (kr-pattern finished)))))))
+
+(defun romaji-suggest (s)
+  (multiple-value-bind (canon pattern) (romaji-kana s)
+    (when pattern
+      (multiple-value-bind (pkanji pkana) (find-kanji-for-pattern pattern)
+        (let ((hiragana (remove-duplicates (cons canon pkana) :test 'equal :from-end t)))
+          (jsown:new-js
+            ("hiragana" hiragana)
+            ("katakana" (mapcar 'as-katakana hiragana))
+            ("kanji" pkanji)))))))

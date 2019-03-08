@@ -1264,7 +1264,7 @@
            finally (return (make-instance 'word-info
                                           :type (word-info-type wi1)
                                           :text (word-info-text wi1)
-                                          :kana (remove-duplicates kana-list :test 'equal)
+                                          :kana (remove-duplicates kana-list :test 'equal :from-end t)
                                           :seq seq-list
                                           :components wi-list
                                           :alternative t
@@ -1740,3 +1740,18 @@
 (defun find-word-info-json (text &key reading root-only)
   (mapcar (lambda (wi) (word-info-gloss-json wi :root-only root-only))
           (find-word-info text :reading reading :root-only root-only)))
+
+
+(defun find-word-kana-pattern (pattern)
+  (stable-sort (select-dao 'kana-text (:~ 'text pattern)) #'compare-common
+               :key (lambda (r) (and (not (eql (common r) :null)) (common r)))))
+
+(defun find-kanji-for-pattern (pattern)
+  (with-connection *connection*
+    (loop for r in (find-word-kana-pattern pattern)
+       for k = (get-kanji r)
+       when k collect k into kanji
+       collect (text r) into kana
+       finally (return
+                 (values (remove-duplicates kanji :test 'equal :from-end t)
+                         (remove-duplicates kana :test 'equal :from-end t))))))

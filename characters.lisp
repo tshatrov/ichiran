@@ -26,7 +26,7 @@
     :da "だダ"    :dji "ぢヂ"   :dzu "づヅ"   :de "でデ"    :do "どド"
     :ba "ばバ"    :bi "びビ"    :bu "ぶブ"    :be "べベ"    :bo "ぼボ"
     :pa "ぱパ"    :pi "ぴピ"    :pu "ぷプ"    :pe "ぺペ"    :po "ぽポ"
-    :vu "ヴ"
+    :vu "ゔヴ"
     ))
 
 (defparameter *all-characters* (append *sokuon-characters*
@@ -240,6 +240,17 @@
                 (class (gethash char *char-class-hash*)))
            (if class
                (char (getf *all-characters* class) 0)
+               char)))
+       str))
+
+(defun as-katakana (str)
+  "convert hiragana to katakana"
+  (map 'string
+       (lambda (char)
+         (let* ((char (or (to-normal-char char) char))
+                (class (gethash char *char-class-hash*)))
+           (if class
+               (alexandria:last-elt (getf *all-characters* class))
                char)))
        str))
 

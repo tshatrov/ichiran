@@ -7,7 +7,7 @@
            :*katakana-regex* :*hiragana-regex* :*kanji-regex* :test-word
            :hash-from-list :voice-char :simplify-ngrams :normalize
            :split-by-regex :basic-split :mora-length :count-char-class
-           :as-hiragana :sequential-kanji-positions
+           :as-hiragana :as-katakana :sequential-kanji-positions
            :*undakuten-hash* :*dakuten-hash* :*handakuten-hash*
            :kanji-prefix :kanji-mask :kanji-regex :kanji-match :kanji-cross-match
            :unrendaku :rendaku :destem :geminate
@@ -46,13 +46,10 @@
            :word-info-start :word-info-end :word-info-counter :word-info-skipped
            :word-info-json :word-info-gloss-json
            :init-suffixes :init-suffixes-running-p
-           :node-text
-           :get-kanji-words
-           :find-word-info
-           :find-word-info-json
-           :simple-word-info
-           :process-hints
-           :strip-hints))
+           :node-text :get-kanji-words
+           :find-word-info :find-word-info-json :simple-word-info
+           :process-hints :strip-hints
+           :find-kanji-for-pattern))
 
 (uiop:define-package :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
@@ -64,7 +61,7 @@
            :*hepburn-traditional* :*hepburn-modified*
            :kunrei-siki :*kunrei-siki*
            :*default-romanization-method*
-           :romaji-kana))
+           :romaji-kana :romaji-suggest))
 
 (defpackage :ichiran/kanji
   (:use :cl :postmodern :ichiran/conn :ichiran :ichiran/characters :ichiran/dict)
