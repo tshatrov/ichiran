@@ -307,7 +307,7 @@
       (cons stagks stagrs))))
 
 (defparameter *extra-counter-ids*
-  '(2104230 ;; 月
+  '(1255430 ;; 月
     1606800 ;; 割
     ))
 
@@ -702,7 +702,7 @@
           "October" "November" "December")
         (1- (number-value counter))))
 
-(def-special-counter 2104230 ()
+(def-special-counter 1255430 ()
   (args 'counter-months "月" "がつ"))
 
 (defclass counter-people (counter-text) ())
