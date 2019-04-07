@@ -318,6 +318,7 @@
     2423450 ;; 差し
     2671670 ;; 幅 （の）
     2735690 ;; 種 （くさ）
+    2838543 ;; 杯 （はた）
 
     ;; mahjong stuff - need some research on how to say these
     2249290 ;; 荘

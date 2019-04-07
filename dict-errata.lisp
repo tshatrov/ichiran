@@ -544,6 +544,7 @@
   (add-errata-mar18)
   (add-errata-aug18)
   (add-errata-jan19)
+  (add-errata-apr19)
   (add-errata-counters)
   )
 
@@ -772,10 +773,6 @@
 
   (delete-sense-prop 1604890 "misc" "uk") ;; 目
 
-  (add-reading 2081610 "スレ違")
-  (add-sense-prop 2081610 0 "misc" "uk")
-  (add-primary-nokanji 2081610 "スレチ")
-
   (add-reading 1008370 "デカい" :common 0)
   (add-conj-reading 1008370 "デカい")
   (add-reading 1572760 "クドい")
@@ -796,6 +793,14 @@
   (set-primary-nokanji 1631830 nil) ;; くせに
 
   (delete-sense-prop 1270350 "misc" "arch") ;; ござる
+  )
+
+(defun add-errata-apr19 ()
+  (delete-reading 2081610 "スレ違") ;; this was added by mistake in the previous errata
+  (set-primary-nokanji 2081610 nil) ;; this was added by mistake in the previous errata
+
+  (add-sense-prop 1615340 0 "misc" "uk")
+  (delete-sense-prop 1715710 "misc" "uk")
   )
 
 (defun add-errata-counters ()

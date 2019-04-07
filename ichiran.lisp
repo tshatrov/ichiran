@@ -4,7 +4,8 @@
   (:import-from :ichiran/dict :load-jmdict :load-best-readings
                 :add-errata :recalc-entry-stats
                 :init-suffixes :init-suffixes-running-p
-                :find-word :find-word-full :dict-segment :calc-score)
+                :find-word :find-word-full :dict-segment :calc-score
+                :entry-info-short)
   (:import-from :ichiran/kanji :load-kanjidic :load-kanji-stats)
   (:export
    #:full-init
