@@ -386,6 +386,14 @@
 (def-special-counter 1315920 ()
   (args 'counter-text "時間" "じかん" :digit-opts '((4 "よ") (9 "く"))))
 
+(defclass counter-halfhour (counter-text) ())
+
+(defmethod value-string ((counter counter-halfhour))
+  (format nil "~a:30" (number-value counter)))
+
+(def-special-counter 1658480 ()
+  (args 'counter-halfhour "時半" "じはん" :digit-opts '((4 "よ") (9 "く"))))
+
 (def-special-counter 1356740 ()
   (args 'counter-text "畳" "じょう" :digit-opts '((4 "よ") (7 "しち"))))
 

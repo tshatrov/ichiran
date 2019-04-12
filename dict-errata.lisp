@@ -801,6 +801,8 @@
 
   (add-sense-prop 1615340 0 "misc" "uk")
   (delete-sense-prop 1715710 "misc" "uk")
+
+  (add-sense-prop 1658480 0 "pos" "ctr")
   )
 
 (defun add-errata-counters ()
