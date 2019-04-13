@@ -449,6 +449,7 @@
   (assert-segment "わけのわからないことをくどくど言う" "わけのわからない" "こと" "を" "くどくど" "言う")
   (assert-segment "ごくまれに" "ごくまれ" "に")
   (assert-segment "天をうらんでみたところで始まらない" "天" "を" "うらんで" "みた" "ところで" "始まらない")
+  (assert-segment "7時には帰ってきなさい" "7時" "には" "帰ってきなさい")
   )
 
 (define-test json-consistency-test

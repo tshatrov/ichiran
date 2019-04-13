@@ -487,6 +487,11 @@
 ;;   (("見た" 1259290) 2)
 ;;   (1343100))
 
+(def-simple-split nil 1315860 20 (len) ;; 時には
+  (1315840 (- len 2))
+  (2215430 2))
+
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
