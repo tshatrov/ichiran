@@ -819,7 +819,7 @@
     (when (and common-p (not no-common-bonus))
       (let ((common-bonus
              (cond
-               (secondary-conj-p (if (and kanji-p primary-p) 4 2))
+               ((and secondary-conj-p (not use-length)) (if (and kanji-p primary-p) 4 2))
                ((or long-p cop-da-p (and root-p (or kanji-p (and primary-p (> len 2)))))
                 (cond ((= common 0) 10)
                       ((not primary-p) (max (- 15 common) 10))
