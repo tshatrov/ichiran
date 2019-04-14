@@ -491,6 +491,11 @@
   (1315840 (- len 2))
   (2215430 2))
 
+(def-simple-split nil 1474200 -10 (len txt r) ;; 這います/います
+  (:test (eql (word-type r) :kana))
+  (2028920 1)
+  (1577980 nil t))
+
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
@@ -516,6 +521,11 @@
   (def-simple-split split-tokorowo 2136660 '(-10) (len) ;; ところを
     (1343100 (- len 1))
     (2029010 1))
+
+  (def-simple-split split-tokorodewa 1897510 '(-10) (len) ;; ところでは
+    (1343100 (- len 2))
+    (2028980 1)
+    (2028920 1))
 
   (def-simple-split split-omise 2409240 '(20 :primary 1 :connector "") (len) ;; お店
     (2826528 1)
