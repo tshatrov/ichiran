@@ -496,6 +496,10 @@
   (2028920 1)
   (1577980 nil t))
 
+(def-simple-split nil 2276360 10 (len) ;; 尽くし
+  (2436480 (- len 1))
+  (2086640 1))
+
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
