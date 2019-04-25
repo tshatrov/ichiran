@@ -276,6 +276,7 @@
 
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ず")
+        (load-abbr :nai "ざる")
         (load-abbr :nai "ぬ")
         (load-abbr :nai-n "ん")
         (load-abbr :nai-n "ねぇ")

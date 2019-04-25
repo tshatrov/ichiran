@@ -453,6 +453,7 @@
   (assert-segment "7時には帰ってきなさい" "7時" "には" "帰ってきなさい")
   (assert-segment "人はいますか" "人" "は" "います" "か")
   (assert-segment "トマトづくし" "トマト" "づくし")
+  (assert-segment "見えざる関係性" "見えざる" "関係性")
   )
 
 (define-test json-consistency-test
