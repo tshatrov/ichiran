@@ -801,6 +801,8 @@
   (set-common 'kana-text 1538750 "いやす" 0)
   (set-common 'kana-text 2147610 "いなくなる" 0)
 
+  (set-primary-nokanji 1409110 nil)
+
   (delete-reading 2081610 "スレ違") ;; this was added by mistake in the previous errata
   (set-primary-nokanji 2081610 nil) ;; this was added by mistake in the previous errata
 
