@@ -801,6 +801,10 @@
   (set-common 'kana-text 1538750 "いやす" 0)
   (set-common 'kana-text 2147610 "いなくなる" 0)
 
+  (set-common 'kana-text 1346290 "マス" 37)
+  (add-sense-prop 1346290 2 "misc" "uk")
+  (set-primary-nokanji 1346290 t)
+
   (set-primary-nokanji 1409110 nil)
 
   (delete-reading 2081610 "スレ違") ;; this was added by mistake in the previous errata
