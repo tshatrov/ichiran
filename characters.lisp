@@ -108,10 +108,10 @@
 (defparameter *kanji-regex* "[々ヶ〆一-龯]")
 (defparameter *kanji-char-regex* "[一-龯]")
 
-(defparameter *nonword-regex* "[^々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
+(defparameter *nonword-regex* "[^々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー〇]")
 (defparameter *numeric-regex* "[0-9０-９〇一二三四五六七八九零壱弐参拾十百千万億兆京]")
 (defparameter *num-word-regex* "[0-9０-９〇々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
-(defparameter *word-regex* "[々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー]")
+(defparameter *word-regex* "[々ヶ〆一-龯ァ-ヺヽヾぁ-ゔゝゞー〇]")
 (defparameter *digit-regex* "[0-9０-９〇]")
 (defparameter *decimal-point-regex* "[.,]")
 
