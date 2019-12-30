@@ -261,7 +261,15 @@
                         (loop for reading in readings
                            collect (list reading (apply-patch reading (cons suf "す"))))))))
 
+(defun conjugate-da (&key (seq 2089020))
+  ;; JMdict might have renamed cop-da to cop, but the data csvs still use cop-da
+  ;; which causes だ to not conjugate, which is bad
+  (unless (select-dao 'sense-prop (:and (:= 'seq seq) (:= 'tag "pos") (:= 'text "cop-da")))
+    (add-sense-prop seq 0 "pos" "cop-da")
+    (conjugate-entry-outer seq)))
+
 (defun add-errata ()
+  (conjugate-da)
   (add-deha-ja-readings)
   (remove-hiragana-nokanji)
   (add-gozaimasu-conjs)
