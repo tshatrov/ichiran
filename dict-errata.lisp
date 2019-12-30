@@ -553,6 +553,7 @@
   (add-errata-aug18)
   (add-errata-jan19)
   (add-errata-apr19)
+  (add-errata-jan20)
   (add-errata-counters)
   )
 
@@ -819,9 +820,12 @@
   (set-primary-nokanji 2081610 nil) ;; this was added by mistake in the previous errata
 
   (add-sense-prop 1615340 0 "misc" "uk")
-  (delete-sense-prop 1715710 "misc" "uk")
-
   (add-sense-prop 1658480 0 "pos" "ctr")
+  )
+
+(defun add-errata-jan20 ()
+  (delete-sense-prop 1715710 "misc" "uk")
+  (set-common 'kana-text 1715710 "みたところ" :null)
   )
 
 (defun add-errata-counters ()
