@@ -834,8 +834,10 @@
 
 (def-simple-hint
     (2097010 ;; ところへ
+     1009150 ;; 何方へ
      )
     (l)
+  (:space (- l 1))
   (:mod (- l 1)))
 
 (def-simple-hint
@@ -1379,6 +1381,37 @@
 (def-easy-hint 2834655 "親 の 意見 と 茄子 の 花 は 千 に 一つ も 無駄 は ない")
 (def-easy-hint 2830412 "他 に 方法 は 無い")
 (def-easy-hint 2666530 "墓 に 布団 は 着せられぬ")
+
+;; へ
+
+;; (:select 'kt.seq 'kt.text :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
+;;                               :where (:and (:= 'kt.seq 'sp.seq)
+;;                                            (:= 'sp.tag "pos")
+;;                                            (:or (:= 'sp.text "exp") (:= 'sp.text "int"))
+;;                                            (:like 'kt.text "%へ%")
+;;                                            (:not (:in 'kt.seq (:set (alexandria:hash-table-keys *hint-map*))))))
+
+(def-easy-hint 2204530 "ヘブライ人 へ の 手紙")
+(def-easy-hint 2813120 "ヘブル人 へ の 手紙")
+(def-easy-hint 2839843 "上 を 下 へ")
+(def-easy-hint 2839846 "上 や 下 へ の 大騒ぎ")
+(def-easy-hint 2841303 "足下 へ も 寄りつけない")
+(def-easy-hint 1151370 "悪 の 道 へ 誘う")
+(def-easy-hint 1171020 "右 から 左 へ")
+(def-easy-hint 1892250 "大学 へ 進む")
+(def-easy-hint 1898770 "中 へ 入る")
+(def-easy-hint 2125750 "そこ へ 持ってきて")
+(def-easy-hint 2129780 "目 から 鼻 へ 抜ける")
+(def-easy-hint 2177720 "棚 へ 上げる")
+(def-easy-hint 2402730 "故郷 へ 錦 を 飾る")
+(def-easy-hint 2431220 "への字 に 結んだ 口")
+(def-easy-hint 2515280 "力 へ の 意志")
+(def-easy-hint 2515290 "権力 へ の 意志")
+(def-easy-hint 2716340 "平均 へ の 回帰")
+(def-easy-hint 2738180 "右 へ 倣え")
+(def-easy-hint 2826689 "東 へ 東 へ")
+(def-easy-hint 2831475 "脇 へ それる")
+(def-easy-hint 2219570 "元 へ")
 
 ;; unsorted
 

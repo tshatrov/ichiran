@@ -824,6 +824,9 @@
   )
 
 (defun add-errata-jan20 ()
+  (add-reading 2839843 "うえをしたへ")
+  (delete-reading 2839843 "うえをしたえ")
+
   (delete-sense-prop 1715710 "misc" "uk")
   (set-common 'kana-text 1715710 "みたところ" :null)
   (set-common 'kana-text 2841254 "からって" :null)
