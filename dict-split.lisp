@@ -560,6 +560,11 @@
   (def-simple-split nil 1675330 '(10 :primary 1) () ;; から元気
     (1002980 2)
     (1260720))
+
+  (def-simple-split nil 2841254 '(5) () ;; からって
+    (1002980 2)
+    (2086960 2))
+
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))

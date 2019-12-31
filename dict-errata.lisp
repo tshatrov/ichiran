@@ -826,6 +826,7 @@
 (defun add-errata-jan20 ()
   (delete-sense-prop 1715710 "misc" "uk")
   (set-common 'kana-text 1715710 "みたところ" :null)
+  (set-common 'kana-text 2841254 "からって" :null)
   )
 
 (defun add-errata-counters ()

@@ -455,6 +455,7 @@
   (assert-segment "トマトづくし" "トマト" "づくし")
   (assert-segment "見えざる関係性" "見えざる" "関係性")
   (assert-segment "だめだったら" "だめ" "だったら")
+  (assert-segment "万事不都合の無いようにはからってくれ" "万事" "不都合" "の" "無い" "ように" "はからってくれ")
   )
 
 (define-test json-consistency-test
