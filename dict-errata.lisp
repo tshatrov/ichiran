@@ -830,6 +830,9 @@
   (delete-sense-prop 1715710 "misc" "uk")
   (set-common 'kana-text 1715710 "みたところ" :null)
   (set-common 'kana-text 2841254 "からって" :null)
+  (set-common 'kana-text 2028950 "とは" :null)
+
+
   (add-sense-prop 1468900 0 "pos" "ctr")
   (add-sense-prop 1469050 0 "pos" "ctr")
   )

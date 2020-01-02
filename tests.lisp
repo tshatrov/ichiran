@@ -189,7 +189,6 @@
   (assert-segment "参考にしたらしい" "参考にしたらしい")
   (assert-segment "狙いやすそうで" "狙い" "やすそう" "で")
   (assert-segment "予定はございませんので" "予定" "は" "ございません" "ので")
-  ;;(assert-segment "名目上ではね" "名目上" "で" "は" "ね")
   (assert-segment "犬はトラックにはねられた" "犬" "は" "トラック" "に" "はねられた")
   (assert-segment "仕事してください" "仕事してください")
   (assert-segment "おいかけっこしましょ" "おい" "かけっこしましょ")
@@ -457,6 +456,9 @@
   (assert-segment "だめだったら" "だめ" "だったら")
   (assert-segment "万事不都合の無いようにはからってくれ" "万事" "不都合" "の" "無い" "ように" "はからってくれ")
   (assert-segment "ではみなさん" "では" "みなさん")
+  (assert-segment "鉄とはがね" "鉄" "と" "はがね")
+  (assert-segment "抹茶とは" "抹茶" "とは")
+  ;; (assert-segment "当たりとはずれ" "当たり" "と" "はずれ")
   )
 
 (define-test json-consistency-test

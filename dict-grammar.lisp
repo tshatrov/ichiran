@@ -747,6 +747,7 @@
     1008490 ;; と
     1008530 ;; とか
     1008590 ;; として
+    2028950 ;; とは
     2028960 ;; や
     1009600 ;; にとって
     ))
@@ -755,7 +756,7 @@
   #'filter-is-noun
  (apply #'filter-in-seq-set *noun-particles*)
   :description "noun+prt"
-  :score (+ 10 (* 5 (- (segment-list-end r) (segment-list-start r))))
+  :score (+ 10 (* 4 (- (segment-list-end r) (segment-list-start r))))
   :connector " ")
 
 ;; (def-generic-synergy synergy-suru-verb (l r)
