@@ -332,7 +332,7 @@
   (assert-segment "大きさほどもある" "大きさ" "ほど" "も" "ある")
   (assert-segment "しかいない" "しか" "いない")
   (assert-segment "掴めていない" "掴めていない")
-  (assert-segment "振り回れたいな" "振り回れたい" "な")
+  (assert-segment "振り回されたいな" "振り回されたい" "な")
   (assert-segment "さぼっている" "さぼっている")
   (assert-segment "のままで来る" "の" "まま" "で" "来る")
   (assert-segment "5人中4人" "5人中" "4人")
@@ -459,6 +459,7 @@
   (assert-segment "鉄とはがね" "鉄" "と" "はがね")
   (assert-segment "抹茶とは" "抹茶" "とは")
   ;; (assert-segment "当たりとはずれ" "当たり" "と" "はずれ")
+  (assert-segment "工夫がされる" "工夫" "が" "される")
   )
 
 (define-test json-consistency-test

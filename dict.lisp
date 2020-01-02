@@ -689,14 +689,17 @@
 
 
 (defcache :is-arch *is-arch-cache*
-  (let ((is-arch-cache (make-hash-table)))
-    (dolist (seq (query
+  (let* ((is-arch-cache (make-hash-table))
+         (a1 (query
                   (:select 'sense.seq :from 'sense
                            :left-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.sense-id 'sense.id)
                                                                       (:= 'sp.tag "misc")
-                                                                      (:= 'sp.text "arch"))
+                                                                      (:or (:= 'sp.text "arch")
+                                                                           (:= 'sp.text "obsc")))
                            :group-by 'sense.seq :having (:every (:not-null 'sp.id)))
                   :column))
+         (a2 (query (:select (:distinct 'seq) :from 'conjugation :where (:in 'from (:set a1))) :column)))
+    (dolist (seq (union a1 a2))
       (setf (gethash seq is-arch-cache) t))
     is-arch-cache))
 
