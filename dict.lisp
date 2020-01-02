@@ -837,7 +837,7 @@
     (when long-p
       (setf score (max len score)))
     (when kanji-p
-      (setf score (max 5 score))
+      (setf score (max (if is-arch 3 5) score))
       (when (and long-p (or (> n-kanji 1) (> len 4)))
         (incf score 2)))
     (when ctr-mode

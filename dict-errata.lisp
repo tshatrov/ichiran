@@ -832,6 +832,8 @@
   (set-common 'kana-text 2841254 "からって" :null)
   (set-common 'kana-text 2028950 "とは" :null)
 
+  ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
+  (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ
 
   (add-sense-prop 1468900 0 "pos" "ctr")
   (add-sense-prop 1469050 0 "pos" "ctr")
