@@ -493,6 +493,11 @@
   (2436480 (- len 1))
   (2086640 1))
 
+(def-simple-split nil 1579130 -1 (len txt) ;; ことし
+  (:test (equal txt "ことし"))
+  (1313580 2)
+  (2086640 1))
+
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
@@ -564,7 +569,6 @@
   (def-simple-split nil 2841254 '(5) () ;; からって
     (1002980 2)
     (2086960 2))
-
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))
