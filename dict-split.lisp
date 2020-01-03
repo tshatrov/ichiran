@@ -23,7 +23,7 @@
               (,offset 0)
               (,parts nil))
          (declare (ignorable ,text-var ,length-var))
-         ,@(loop for (part-seq part-length-form conj-p rendaku-p) in parts-def
+         ,@(loop for (part-seq part-length-form conj-p modify) in parts-def
               if (eql part-seq :test)
                 collect
                 `(unless ,part-length-form
@@ -42,9 +42,10 @@
                                    ''find-word-seq)
                                 (let ((part-txt (subseq ,text-var ,offset
                                                        (and ,part-length (+ ,offset ,part-length)))))
-                                  ,(if rendaku-p
-                                      '(unrendaku part-txt)
-                                      'part-txt))
+                                  ,(case modify
+                                     ((t) '(unrendaku part-txt))
+                                     ((nil) 'part-txt)
+                                     (t `(funcall ,modify part-txt))))
                                 ,pseq))
                          ,parts)
                    (when ,part-length
@@ -502,6 +503,30 @@
   (:test (equal txt "ことし"))
   (1313580 2)
   (2086640 1))
+
+(def-simple-split nil 2668400 50 (len txt) ;; 汗を流す
+  (1213060 (position #\を txt))
+  (2029010 1)
+  (1552120 nil t))
+
+(def-simple-split nil 1591050 100 () ;; 気がつく
+  (1221520 1)
+  (2028930 1)
+  (1495740 nil t))
+
+(defun optprefix (prefix)
+  (lambda (txt)
+    (if (alexandria:starts-with-subseq prefix txt)
+        txt
+        (concatenate 'string prefix txt))))
+
+(def-simple-split nil 1894260 50 (len txt) ;; ついてる
+  (:test (> len 3))
+  (("付いて" 1495740) 3)
+  (1577980 nil t (optprefix "い")))
+
+(def-simple-split nil 1854750 20 ()
+  (("付いて" 1495740)))
 
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")

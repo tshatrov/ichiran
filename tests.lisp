@@ -467,7 +467,10 @@
   (assert-segment "鬱が悪化する" "鬱" "が" "悪化する")
   (assert-segment "一部が手に入ればことし１年の願いがかなうとされています"
                   "一部" "が" "手に入れば" "ことし" "１年" "の" "願い" "が" "かなう" "とされています")
-  )
+  (assert-segment "汗を流しました" "汗を流しました")
+  (assert-segment "気がついてる" "気がついてる")
+  (assert-segment "ガスがついている" "ガス" "が" "ついている")
+   )
 
 (define-test json-consistency-test
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"
