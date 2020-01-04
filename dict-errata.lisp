@@ -290,7 +290,7 @@
   (set-common 'kana-text 1517840 "ハチ" 34)
 
   (add-reading 2029080 "ねぇ")
-  (add-reading 2089020 "じゃ" :common 0)
+  (add-reading 2089020 "じゃ" :common 0 :conjugate-p nil)
 
   (delete-reading 2145800 "いら")
 

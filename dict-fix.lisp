@@ -102,3 +102,12 @@
   (let ((seqs (query (:select 'conj.seq :from (:as 'conjugation 'conj)
                               :where (:in 'conj.from (:set *do-not-conjugate-seq*))) :column)))
     (query (:delete-from 'entry :where (:in 'seq (:set seqs))))))
+
+
+(defun fix-da-conjs (&key (seq 2089020))
+  (let ((seqs (query (:select 'conj.seq :from (:as 'conjugation 'conj)
+                              :where (:in 'conj.from (:set *do-not-conjugate-seq*))) :column)))
+    (query (:delete-from 'entry :where (:and (:not 'root-p) (:in 'seq (:set seqs))))))
+  (loop for kt in (select-dao 'kana-text (:and (:= 'text "じゃ") (:= 'seq seq)))
+     do (setf (slot-value kt 'conjugate-p) nil) (update-dao kt))
+  (conjugate-entry-outer seq))

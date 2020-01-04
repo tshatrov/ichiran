@@ -509,6 +509,10 @@
 (define-test number-split-test
   (assert-equal (basic-split "二〇二〇") '((:word . "二〇二〇"))))
 
+(define-test check-de
+  "Tests that で is a conjugation of だ"
+  (assert-equal (ichiran/dict::seq-from (car (ichiran/dict::select-conjs 2028980))) 2089020))
+
 (define-parallel-test counter-test
   (dolist (ctr '("倍" "晩" "秒" "着" "挺" "丁" "台" "段" "度" "円" "服" "幅" "分" "杯" "発" "遍" "篇" "匹" "本"
                  "時" "畳" "帖" "条" "課" "日" "回" "ヵ月" "階" "軒" "機" "個" "脚" "間" "枚" "巻" "名" "年" "人"
