@@ -470,6 +470,7 @@
   (assert-segment "汗を流しました" "汗を流しました")
   (assert-segment "気がついてる" "気がついてる")
   (assert-segment "ガスがついている" "ガス" "が" "ついている")
+  (assert-segment "再開通" "再" "開通")
    )
 
 (define-test json-consistency-test

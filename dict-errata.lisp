@@ -831,6 +831,8 @@
   (set-common 'kana-text 1715710 "みたところ" :null)
   (set-common 'kana-text 2841254 "からって" :null)
   (set-common 'kana-text 2028950 "とは" :null)
+  (set-common 'kanji-text 1292400 "再開" 13)
+  (set-common 'kana-text 1292400 "さいかい" 13)
 
   ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
   (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ

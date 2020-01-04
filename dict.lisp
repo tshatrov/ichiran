@@ -672,6 +672,8 @@
             ((and (eql end :beg) (intersection
                                   '("suf" "n-suf") posi :test 'equal))
              (incf bonus 10))
+            ((and (eql end :end) (member "pref" posi :test 'equal))
+             (incf bonus 12))
             ))
     (if (>= score *score-cutoff*)
         (max *score-cutoff* (+ (ceiling score ratio) bonus))
