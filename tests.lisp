@@ -474,6 +474,8 @@
   (assert-segment "謝罪はあったにせよ" "謝罪" "は" "あった" "にせよ")
   (assert-segment "うそではないにしろ" "うそ" "ではない" "にしろ")
   (assert-segment "普段着てる服" "普段" "着てる" "服")
+  (assert-segment "エレガントなお洋服" "エレガント" "な" "お" "洋服")
+  (assert-segment "老いてなお元気なこと" "老いて" "なお" "元気" "な" "こと")
   )
 
 (define-test json-consistency-test
