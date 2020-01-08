@@ -1002,6 +1002,7 @@
     1198360 ;; 会議
     1277450 ;; 好き
     2028980 ;; で
+    1423000 ;; 着る
     )
   "Words that get no kanji break penalty")
 

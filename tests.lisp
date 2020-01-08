@@ -473,7 +473,8 @@
   (assert-segment "再開通" "再" "開通")
   (assert-segment "謝罪はあったにせよ" "謝罪" "は" "あった" "にせよ")
   (assert-segment "うそではないにしろ" "うそ" "ではない" "にしろ")
-   )
+  (assert-segment "普段着てる服" "普段" "着てる" "服")
+  )
 
 (define-test json-consistency-test
   (loop for word in '("の" "赤かったろう" "書いてきてる" "捩じり鉢巻きで"

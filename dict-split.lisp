@@ -536,7 +536,9 @@
   (2028990 1)
   (("せよ" 1157170)))
 
-
+(def-simple-split nil 1602740 50 (len) ;; 普段着
+  (1497180 (1- len))
+  (2093780))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
