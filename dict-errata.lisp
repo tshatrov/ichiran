@@ -833,6 +833,7 @@
   (set-common 'kana-text 2028950 "とは" :null)
   (set-common 'kanji-text 1292400 "再開" 13)
   (set-common 'kana-text 1292400 "さいかい" 13)
+  (set-common 'kana-text 1306200 "しよう" 10)
 
   ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
   (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ
