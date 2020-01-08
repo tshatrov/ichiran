@@ -528,6 +528,15 @@
 (def-simple-split nil 1854750 20 ()
   (("付いて" 1495740)))
 
+(def-simple-split nil 2526850 10 () ;; にしろ
+  (2028990 1)
+  (("しろ" 1157170)))
+
+(def-simple-split nil 2026650 10 () ;; にせよ
+  (2028990 1)
+  (("せよ" 1157170)))
+
+
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 

@@ -471,6 +471,8 @@
   (assert-segment "気がついてる" "気がついてる")
   (assert-segment "ガスがついている" "ガス" "が" "ついている")
   (assert-segment "再開通" "再" "開通")
+  (assert-segment "謝罪はあったにせよ" "謝罪" "は" "あった" "にせよ")
+  (assert-segment "うそではないにしろ" "うそ" "ではない" "にしろ")
    )
 
 (define-test json-consistency-test
