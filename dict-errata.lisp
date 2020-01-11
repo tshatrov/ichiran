@@ -193,10 +193,9 @@
 (defun remove-hiragana-nokanji ()
   (loop with kts = (remove-if-not (lambda (kt) (test-word (text kt) :hiragana))
                                  (select-dao 'kana-text 'nokanji))
-     for entry in (select-dao 'entry (:in 'seq (:set (mapcar #'seq kts))))
+     for entry in (select-dao 'entry (:and (:in 'seq (:set (mapcar #'seq kts))) 'primary-nokanji))
      do (setf (slot-value entry 'primary-nokanji) nil)
-       (update-dao entry)
-       (print entry)))
+       (update-dao entry)))
 
 (defun set-primary-nokanji (seq value)
   (let ((entry (get-dao 'entry seq)))
