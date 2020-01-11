@@ -39,11 +39,12 @@
       (setf (word-conjugations res) conj))
     res))
 
-(defun find-word-with-conj-prop (wordstr filter-fn)
+(defun find-word-with-conj-prop (wordstr filter-fn &key allow-root)
   (loop for word in (find-word-full wordstr)
-       for conj-data = (remove-if-not filter-fn (word-conj-data word))
-       for conj-ids = (mapcar (lambda (cdata) (conj-id (conj-data-prop cdata))) conj-data)
-       when conj-data
+       for conj-data = (word-conj-data word)
+       for conj-data-filtered = (remove-if-not filter-fn conj-data)
+       for conj-ids = (mapcar (lambda (cdata) (conj-id (conj-data-prop cdata))) conj-data-filtered)
+       when (or conj-data-filtered (and (null conj-data) allow-root))
        do (setf (word-conjugations word) conj-ids)
        and collect word))
 
@@ -275,12 +276,12 @@
         (load-kf :iadj (get-kana-form 1604890 "め") :class :me)
 
         (load-abbr :nai "ねえ")
-        (load-abbr :nai "ず")
-        (load-abbr :nai "ざる")
-        (load-abbr :nai "ぬ")
+        (load-abbr :nai "ねぇ")
+        (load-abbr :nai "ねー")
+        (load-abbr :nai-x "ず")
+        (load-abbr :nai-x "ざる")
+        (load-abbr :nai-x "ぬ")
         (load-abbr :nai-n "ん")
-        (load-abbr :nai-n "ねぇ")
-        (load-abbr :nai-n "ねー")
 
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
@@ -506,21 +507,24 @@
 (pushnew :nikui *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
-                           (root-var &optional suf-var kana-var)
+                           (root-var &optional suf-var patch-var)
                            &body get-primary-words)
   (alexandria:with-gensyms (suf primary-words)
     (unless suf-var (setf suf-var (gensym "SV")))
-    (unless kana-var (setf kana-var (gensym "KV")))
+    (unless patch-var (setf patch-var (gensym "PV")))
     `(defsuffix ,name ,keyword (,root-var ,suf-var ,suf)
        (declare (ignore ,suf))
        (let* ((*suffix-map-temp* nil)
-              (,kana-var nil)
+              (,patch-var nil)
               (,primary-words (progn ,@get-primary-words)))
          (mapcar (lambda (pw)
                    (let ((text (concatenate 'string ,root-var ,suf-var))
                          (kana (let ((k (get-kana pw)))
                                  (concatenate 'string
-                                              (or ,kana-var
+                                              (if ,patch-var
+                                                  (concatenate 'string
+                                                               (destem k (length (car ,patch-var)))
+                                                               (cdr ,patch-var))
                                                   (destem k ,stem))
                                               ,suf-var))))
                      (etypecase pw
@@ -538,7 +542,24 @@
 
 
 (def-abbr-suffix abbr-nee :nai 2 (root)
-  (find-word-full (concatenate 'string root "ない")))
+  (find-word-with-conj-prop
+   (concatenate 'string root "ない")
+   (lambda (cdata)
+     ;; 居ない 来ない create problems so they are blocked
+     (and (not (find (conj-data-from cdata) '(1577980 1547720)))
+          (conj-neg (conj-data-prop cdata))))
+   :allow-root t))
+
+(def-abbr-suffix abbr-nx :nai-x 2 (root suf patch)
+  (cond ((and (equal root "せ") (equal suf "ぬ"))
+         (setf patch '("しない" . "せ"))
+         (find-word-conj-of "しない" 1157170))
+        (t
+         (find-word-with-conj-prop
+          (concatenate 'string root "ない")
+          (lambda (cdata)
+            (and (/= (conj-data-from cdata) 1157170)
+                 (conj-neg (conj-data-prop cdata))))))))
 
 (def-abbr-suffix abbr-n :nai-n 2 (root)
   (find-word-with-conj-prop
