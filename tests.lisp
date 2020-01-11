@@ -479,6 +479,7 @@
   (assert-segment "何も口にせぬ" "何も" "口" "に" "せぬ")
   (assert-segment "切ねぇ" "切ねぇ")
   (assert-segment "何故人気がある" "何故" "人気" "が" "ある")
+  (assert-segment "バラしちゃってる" "バラしちゃってる")
   )
 
 (define-test json-consistency-test
