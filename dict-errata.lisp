@@ -820,6 +820,8 @@
   (delete-reading 2839843 "うえをしたえ")
   (add-reading 1930050 "バラす")
   (add-conj-reading 1930050 "バラす")
+  (add-reading 1593170 "コケる")
+  (add-conj-reading 1593170 "コケる")
 
   (delete-sense-prop 1715710 "misc" "uk")
   (set-common 'kana-text 1715710 "みたところ" :null)
