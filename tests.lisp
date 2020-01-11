@@ -478,6 +478,7 @@
   (assert-segment "老いてなお元気なこと" "老いて" "なお" "元気" "な" "こと")
   (assert-segment "何も口にせぬ" "何も" "口" "に" "せぬ")
   (assert-segment "切ねぇ" "切ねぇ")
+  (assert-segment "何故人気がある" "何故" "人気" "が" "ある")
   )
 
 (define-test json-consistency-test
