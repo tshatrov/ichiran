@@ -361,12 +361,22 @@
                               (select-dao 'conjugation (:and (:= 'from from) (:= 'seq seq) (:is-null 'via)))))
                 (conj (or (car old-conj) (make-dao 'conjugation :seq seq :from from :via (or via :null))))
                 (conj-id (id conj)))
-           (make-dao 'conj-prop :conj-id conj-id :conj-type conj-type :pos pos :neg neg :fml fml)
+           (unless (select-dao 'conj-prop
+                               (:and (:= 'conj-id conj-id)
+                                     (:= 'conj-type conj-type)
+                                     (:= 'pos pos)
+                                     (:=== 'neg neg)
+                                     (:=== 'fml fml)))
+             (make-dao 'conj-prop :conj-id conj-id :conj-type conj-type :pos pos :neg neg :fml fml))
 
            (let* ((old-csr (when old-conj (query (:select 'text 'source-text :from 'conj-source-reading :where (:= 'conj-id conj-id)))))
                   (source-readings (remove-duplicates (set-difference source-readings old-csr :test 'equal) :test 'equal)))
              (loop for (text source-text) in source-readings
-                  do (make-dao 'conj-source-reading :conj-id conj-id :text text :source-text source-text))))
+                unless (select-dao 'conj-source-reading
+                                   (:and (:= 'conj-id conj-id)
+                                         (:= 'text text)
+                                         (:= 'source-text source-text)))
+                do (make-dao 'conj-source-reading :conj-id conj-id :text text :source-text source-text))))
 
          (return (not seq-candidates)))))
 

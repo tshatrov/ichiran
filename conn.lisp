@@ -11,6 +11,9 @@
 
 (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
 
+(register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
+(register-sql-operators :2+-ary (:=/= "IS DISTINCT FROM"))
+
 (defun get-spec (dbid)
   (cond ((not dbid) *connection*)
         ((listp dbid) dbid)

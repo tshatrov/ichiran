@@ -1,14 +1,8 @@
 (in-package :ichiran/dict)
 
-(defun sql-eql-or-null (cell value)
-  (if (equal value :null)
-      `(:is-null ,cell)
-      `(:= ,cell ,value)))
-
 (defun find-conj (seq-from options)
   (destructuring-bind (conj-type pos neg fml) options
     (query
-     (sql-compile
       `(:select conj.id
                 :from (:as conjugation conj)
                 :inner-join (:as conj-prop prop)
@@ -16,8 +10,8 @@
                 :where (:and (:= conj.from ,seq-from)
                              (:= prop.conj-type ,conj-type)
                              (:= prop.pos ,pos)
-                             ,(sql-eql-or-null 'prop.neg neg)
-                             ,(sql-eql-or-null 'prop.fml fml))))
+                             (:=== prop.neg ,neg)
+                             (:=== prop.fml ,fml)))
      :column)))
 
 (defun add-conj (seq-from options reading-map)
@@ -179,11 +173,10 @@
 
 (defun delete-conjugation (seq from &optional (via :null))
   (let ((conj (query-dao 'conjugation
-                         (sql-compile
                           `(:select * :from conjugation
                                     :where (:and (:= seq ,seq)
                                                  (:= from ,from)
-                                                 ,(sql-eql-or-null 'via via))))))
+                                                 (:=== via ,via)))))
         (entry (get-dao 'entry seq)))
     (when conj
       (let* ((conj-ids (mapcar #'id conj))
