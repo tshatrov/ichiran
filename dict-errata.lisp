@@ -3,16 +3,16 @@
 (defun find-conj (seq-from options)
   (destructuring-bind (conj-type pos neg fml) options
     (query
-      `(:select conj.id
-                :from (:as conjugation conj)
-                :inner-join (:as conj-prop prop)
-                :on (:= prop.conj-id conj.id)
-                :where (:and (:= conj.from ,seq-from)
-                             (:= prop.conj-type ,conj-type)
-                             (:= prop.pos ,pos)
-                             (:=== prop.neg ,neg)
-                             (:=== prop.fml ,fml)))
-     :column)))
+      (:select 'conj.id
+               :from (:as 'conjugation 'conj)
+               :inner-join (:as 'conj-prop 'prop)
+               :on (:= 'prop.conj-id 'conj.id)
+               :where (:and (:= 'conj.from seq-from)
+                            (:= 'prop.conj-type conj-type)
+                            (:= 'prop.pos pos)
+                            (:=== 'prop.neg neg)
+                            (:=== 'prop.fml fml)))
+      :column)))
 
 (defun add-conj (seq-from options reading-map)
   (unless (find-conj seq-from options)
@@ -173,10 +173,10 @@
 
 (defun delete-conjugation (seq from &optional (via :null))
   (let ((conj (query-dao 'conjugation
-                          `(:select * :from conjugation
-                                    :where (:and (:= seq ,seq)
-                                                 (:= from ,from)
-                                                 (:=== via ,via)))))
+                          (:select '* :from 'conjugation
+                                   :where (:and (:= 'seq seq)
+                                                (:= 'from from)
+                                                (:=== 'via via)))))
         (entry (get-dao 'entry seq)))
     (when conj
       (let* ((conj-ids (mapcar #'id conj))
