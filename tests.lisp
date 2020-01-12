@@ -481,6 +481,8 @@
   (assert-segment "何故人気がある" "何故" "人気" "が" "ある")
   (assert-segment "バラしちゃってる" "バラしちゃってる")
   (assert-segment "気を使わせている" "気を使わせている")
+  (assert-segment "一段上がる" "一段" "上がる")
+  (assert-segment "一段落ちる" "一段" "落ちる")
   )
 
 (define-test json-consistency-test

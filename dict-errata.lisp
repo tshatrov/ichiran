@@ -831,6 +831,7 @@
   (set-common 'kana-text 1292400 "さいかい" 13)
   (set-common 'kana-text 1306200 "しよう" 10)
   (set-common 'kana-text 2056930 "つまらなさそう" 0)
+  (set-common 'kanji-text 1164710 "一段落" :null)
 
   ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
   (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ
@@ -1000,6 +1001,7 @@
     1277450 ;; 好き
     2028980 ;; で
     1423000 ;; 着る
+    1164690 ;; 一段
     )
   "Words that get no kanji break penalty")
 
