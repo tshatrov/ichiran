@@ -483,6 +483,10 @@
   (assert-segment "気を使わせている" "気を使わせている")
   (assert-segment "一段上がる" "一段" "上がる")
   (assert-segment "一段落ちる" "一段" "落ちる")
+  (assert-segment "恐怖ですくむ" "恐怖" "で" "すくむ")
+  (assert-segment "全員がたちすくみました" "全員" "が" "たちすくみました")
+  (assert-segment "雪がないため" "雪" "が" "ない" "ため")
+  (assert-segment "零れ落ちてる" "零れ落ちてる")
   )
 
 (define-test json-consistency-test

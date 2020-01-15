@@ -555,6 +555,21 @@
   (1305990 nil t)
   )
 
+(def-simple-split nil 1551500 50 () ;; 立ちすくむ
+  (("立ち" 1597040) 2)
+  (1570220 nil t))
+
+(def-simple-split nil 1581550 10 (len txt r) ;; 雪がない
+  (:test (eql (word-type r) :kanji))
+  (1386500 (position #\が txt))
+  (2028930 1)
+  (1529520 nil t))
+
+(def-simple-split nil 2002270 50 (len txt) ;;　零れ落ちる
+  (("零れ" 1557650) (1+ (position #\れ txt)))
+  (1548550 nil t))
+
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
