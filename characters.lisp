@@ -339,3 +339,10 @@
             (multiple-value-bind (match value) (match-diff (subseq s1 m) (subseq s2 m))
               (when match
                 (values (cons (subseq s1 0 m) match) (+ value m))))))))))
+
+
+(defun safe-subseq (sequence start &optional end)
+  (let ((len (length sequence)))
+    (when (and (<= 0 start len)
+               (or (not end) (<= start end len)))
+      (subseq sequence start end))))

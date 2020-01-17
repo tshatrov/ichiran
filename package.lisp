@@ -12,7 +12,7 @@
            :kanji-prefix :kanji-mask :kanji-regex :kanji-match :kanji-cross-match
            :unrendaku :rendaku :destem :geminate
            :collect-char-class :*kanji-char-regex* :consecutive-char-groups
-           :match-diff
+           :match-diff :safe-subseq
            ))
 
 (defpackage :ichiran/numbers
