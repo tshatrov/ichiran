@@ -493,6 +493,8 @@
   (assert-segment "皇位についたが" "皇位" "に" "ついた" "が")
   (assert-segment "疱瘡がついたか" "疱瘡" "が" "ついた" "か")
   (assert-segment "折りたたみ式ついたて" "折りたたみ" "式" "ついたて")
+  (assert-segment "いろいろな部分をもんだりこすったりすること" "いろいろ" "な" "部分" "を" "もんだり" "こすったり" "する" "こと")
+  (assert-segment "たまにはいいもんだよ" "たまに" "は" "いい" "もんだ" "よ")
   )
 
 (define-test json-consistency-test
