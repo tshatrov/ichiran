@@ -490,6 +490,9 @@
   (assert-segment "使い物にならんだろ" "使い物" "に" "ならん" "だろ")
   (assert-segment "私とならんで走った" "私" "と" "ならんで" "走った")
   (assert-segment "のうえに" "の" "うえ" "に")
+  (assert-segment "皇位についたが" "皇位" "に" "ついた" "が")
+  (assert-segment "疱瘡がついたか" "疱瘡" "が" "ついた" "か")
+  (assert-segment "折りたたみ式ついたて" "折りたたみ" "式" "ついたて")
   )
 
 (define-test json-consistency-test

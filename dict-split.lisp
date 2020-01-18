@@ -22,12 +22,13 @@
               (,length-var (length ,text-var))
               (,offset 0)
               (,parts nil))
-         (declare (ignorable ,text-var ,length-var))
+         (declare (ignorable ,text-var ,length-var ,offset))
          ,@(loop for (part-seq part-length-form conj-p modify) in parts-def
-              if (eql part-seq :test)
-                collect
+              if (eql part-seq :test) collect
                 `(unless ,part-length-form
                    (return-from ,name nil))
+              else if (eql part-seq :score) collect
+                `(return-from ,name (values '(:score) ,score))
               else collect
                 `(let* ((,pseq ,(if (listp part-seq)
                                     (if (and part-seq (stringp (car part-seq)))
@@ -578,6 +579,19 @@
 (def-simple-split nil 2002270 50 (len txt) ;;　零れ落ちる
   (("零れ" 1557650) (1+ (position #\れ txt)))
   (1548550 nil t))
+
+(def-simple-split nil 1314770 -10 (len txt r) ;; につく
+  (:test (eql (word-type r) :kana))
+  (2028990 1)
+  (1495740 nil t))
+
+(def-simple-split nil 1008030 -10 () ;; つい
+  (:score))
+
+(def-simple-split nil 1597740 5 (len txt r) ;;　ついたて
+  (:test (eql (word-type r) :kana))
+  (1008030 2)
+  (2081610))
 
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")

@@ -775,7 +775,8 @@
                               (not conj-types-p)
                               (and (not long-p) (equal posi '("int")))))
          (primary-p nil)
-         (use-length-bonus 0))
+         (use-length-bonus 0)
+         split-info)
     (when (or (intersection seq-set *skip-words*)
               (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
@@ -858,32 +859,39 @@
 
     (unless ctr-mode
       (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
-        (when split
-          (setf score
-                (+ score-mod-split
-                   (loop with nparts = (length split)
-                      for part in split
-                      for cnt from 1
-                      for last = (= cnt nparts)
-                      for plen = (length (text part))
-                      for slen = plen then (+ slen plen)
-                      for pmlen = (mora-length (text part))
-                      for smlen = pmlen then (+ smlen pmlen)
-                      for tpart = (if (and last (> slen (length text)))
-                                      (let ((new-len (max 1 (+ plen (- (length text) slen)))))
-                                        (make-instance 'proxy-text :source part :text (subseq (text part) 0 new-len) :kana ""))
-                                      part)
-                      summing (calc-score tpart
-                                          :final (and final last)
-                                          :use-length (when (and last use-length)
-                                                        (+ pmlen (- use-length smlen)))
-                                          :score-mod (if last score-mod 0)
-                                          )))))))
+        (cond
+          ((member :score split)
+           (incf score score-mod-split)
+           (setf split-info score-mod-split))
+          (split
+           (setf score
+                 (+ score-mod-split
+                    (loop with nparts = (length split)
+                       for part in split
+                       for cnt from 1
+                       for last = (= cnt nparts)
+                       for plen = (length (text part))
+                       for slen = plen then (+ slen plen)
+                       for pmlen = (mora-length (text part))
+                       for smlen = pmlen then (+ smlen pmlen)
+                       for tpart = (if (and last (> slen (length text)))
+                                       (let ((new-len (max 1 (+ plen (- (length text) slen)))))
+                                         (make-instance 'proxy-text :source part :text (subseq (text part) 0 new-len) :kana ""))
+                                       part)
+                       for part-score = (calc-score tpart
+                                                    :final (and final last)
+                                                    :use-length (when (and last use-length)
+                                                                  (+ pmlen (- use-length smlen)))
+                                                    :score-mod (if last score-mod 0))
+                       collect part-score into part-scores
+                       finally
+                         (setf split-info (cons score-mod-split part-scores))
+                         (return (reduce '+ part-scores)))))))))
 
     (let ((info (list :posi posi :seq-set (if ctr-mode seq-set (cons seq conj-of))
                       :conj conj-data
                       :common (and common-p common-of)
-                      :score-info (list prop-score kanji-break use-length-bonus)
+                      :score-info (list prop-score kanji-break use-length-bonus split-info)
                       :kpcl (list (or kanji-p katakana-p) primary-p common-p long-p))))
       (when kanji-break (setf score (kanji-break-penalty kanji-break score
                                                          :info info :text text :use-length use-length :score-mod score-mod)))
