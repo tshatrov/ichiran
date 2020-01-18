@@ -489,6 +489,7 @@
   (assert-segment "零れ落ちてる" "零れ落ちてる")
   (assert-segment "使い物にならんだろ" "使い物" "に" "ならん" "だろ")
   (assert-segment "私とならんで走った" "私" "と" "ならんで" "走った")
+  (assert-segment "のうえに" "の" "うえ" "に")
   )
 
 (define-test json-consistency-test
