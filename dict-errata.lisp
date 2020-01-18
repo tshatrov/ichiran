@@ -840,7 +840,11 @@
   (add-sense-prop 1468900 0 "pos" "ctr")
   (add-sense-prop 1469050 0 "pos" "ctr")
 
-  (delete-sense-prop 1245280 "pos" "adj-no") ;; 空 から (to make it even with そら)　
+  (delete-sense-prop 1245280 "pos" "adj-no") ;; 空 から (to make it even with そら)
+
+  (add-sense-prop 1429740 0 "pos" "suf") ;; 長
+  (add-sense-prop 1429740 1 "pos" "n")
+  (delete-sense-prop 2647210 "pos" "suf")
   )
 
 (defun add-errata-counters ()
