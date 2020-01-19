@@ -863,6 +863,10 @@
           ((member :score split)
            (incf score score-mod-split)
            (setf split-info score-mod-split))
+          ((member :pscore split)
+           (let ((new-prop-score (max 1 (+ prop-score score-mod-split))))
+             (setf score (ceiling (* (/ score prop-score) new-prop-score))
+                   prop-score new-prop-score)))
           (split
            (setf score
                  (+ score-mod-split

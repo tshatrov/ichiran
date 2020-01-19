@@ -486,6 +486,7 @@
   (assert-segment "恐怖ですくむ" "恐怖" "で" "すくむ")
   (assert-segment "全員がたちすくみました" "全員" "が" "たちすくみました")
   (assert-segment "雪がないため" "雪" "が" "ない" "ため")
+  (assert-segment "雪がなく" "雪" "が" "なく")
   (assert-segment "零れ落ちてる" "零れ落ちてる")
   (assert-segment "使い物にならんだろ" "使い物" "に" "ならん" "だろ")
   (assert-segment "私とならんで走った" "私" "と" "ならんで" "走った")

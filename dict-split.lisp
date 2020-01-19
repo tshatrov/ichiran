@@ -12,47 +12,55 @@
 
 (defmacro def-simple-split (name seq score (&optional length-var text-var reading-var) &body parts-def)
   "each part is (seq length-form)"
-  (alexandria:with-gensyms (offset parts pseq part-length part-txt)
+  (alexandria:with-gensyms (offset parts pseq part-length part-txt score-var)
     (unless name (setf name (intern (format nil "~a~a" :split- seq))))
     (unless reading-var (setf reading-var (gensym "RV")))
     (unless length-var (setf length-var (gensym "LV")))
     (unless text-var (setf text-var (gensym "TV")))
     `(defsplit ,name ,seq (,reading-var)
-       (let* ((,text-var (true-text ,reading-var))
-              (,length-var (length ,text-var))
-              (,offset 0)
-              (,parts nil))
-         (declare (ignorable ,text-var ,length-var ,offset))
-         ,@(loop for (part-seq part-length-form conj-p modify) in parts-def
-              if (eql part-seq :test) collect
-                `(unless ,part-length-form
-                   (return-from ,name nil))
-              else if (eql part-seq :score) collect
-                `(return-from ,name (values '(:score) ,score))
-              else collect
-                `(let* ((,pseq ,(if (listp part-seq)
-                                    (if (and part-seq (stringp (car part-seq)))
-                                        `(list (seq (car (find-word-conj-of ,@part-seq))))
-                                        `',part-seq)
-                                    `',(list part-seq)))
-                        (,part-length ,part-length-form)
-                        (,part-txt (safe-subseq ,text-var ,offset
-                                                (and ,part-length (+ ,offset ,part-length)))))
-                   (push
-                    (when ,part-txt
-                      (car (apply
-                            ,(if conj-p
-                                 ''find-word-conj-of
-                                 ''find-word-seq)
-                            ,(case modify
-                               ((t) `(unrendaku ,part-txt))
-                               ((nil) part-txt)
-                               (t `(funcall ,modify ,part-txt)))
-                            ,pseq)))
-                    ,parts)
-                   (when ,part-length
-                     (incf ,offset ,part-length))))
-         (values (nreverse ,parts) ,score)))))
+       (prog* ((,text-var (true-text ,reading-var))
+               (,length-var (length ,text-var))
+               (,offset 0)
+               (,parts nil)
+               (,score-var ,score))
+          (declare (ignorable ,text-var ,length-var ,offset))
+          ,@(loop for (part-seq part-length-form conj-p modify) in parts-def
+               if (eql part-seq :test) collect
+                 ;; ends splitting if test fails
+                 ;; part-length-form is an expression to test
+                 ;; conj-p is new score if test fails
+                 ;; if modify is :score or :pscore, add modify to parts if test fails
+                 `(unless ,part-length-form
+                    ,@(when conj-p `((setf ,score-var ,conj-p)))
+                    ,@(when modify `((push ,modify ,parts)))
+                    (go :end))
+               else if (find part-seq '(:score :pscore)) collect
+                 `(push ,part-seq ,parts)
+               else collect
+                 `(let* ((,pseq ,(if (listp part-seq)
+                                     (if (and part-seq (stringp (car part-seq)))
+                                         `(list (seq (car (find-word-conj-of ,@part-seq))))
+                                         `',part-seq)
+                                     `',(list part-seq)))
+                         (,part-length ,part-length-form)
+                         (,part-txt (safe-subseq ,text-var ,offset
+                                                 (and ,part-length (+ ,offset ,part-length)))))
+                    (push
+                     (when ,part-txt
+                       (car (apply
+                             ,(if conj-p
+                                  ''find-word-conj-of
+                                  ''find-word-seq)
+                             ,(case modify
+                                ((t) `(unrendaku ,part-txt))
+                                ((nil) part-txt)
+                                (t `(funcall ,modify ,part-txt)))
+                             ,pseq)))
+                     ,parts)
+                    (when ,part-length
+                      (incf ,offset ,part-length))))
+          :end
+          (return (values (nreverse ,parts) ,score-var))))))
 
 (defun get-split* (reading &optional conj-of)
   (let ((split-fn (gethash (seq reading) *split-map*)))
@@ -570,12 +578,6 @@
   (("立ち" 1597040) 2)
   (1570220 nil t))
 
-(def-simple-split nil 1581550 10 (len txt r) ;; 雪がない
-  (:test (eql (word-type r) :kanji))
-  (1386500 (position #\が txt))
-  (2028930 1)
-  (1529520 nil t))
-
 (def-simple-split nil 2002270 50 (len txt) ;;　零れ落ちる
   (("零れ" 1557650) (1+ (position #\れ txt)))
   (1548550 nil t))
@@ -592,6 +594,13 @@
   (:test (eql (word-type r) :kana))
   (1008030 2)
   (2081610))
+
+(def-simple-split nil 1581550 10 (len txt) ;; 雪がない
+  (:test (alexandria:starts-with-subseq "雪" txt))
+  (1386500 1)
+  (2028930 1)
+  (:test (> len 2) -2 :pscore)
+  (1529520 nil t))
 
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
