@@ -602,6 +602,9 @@
   (:test (> len 2) -2 :pscore)
   (1529520 nil t))
 
+(def-simple-split nil 1601080 -5 (len txt) ;; はやめる
+  (2028920 1)
+  (1310680 nil t))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 

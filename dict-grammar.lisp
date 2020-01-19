@@ -1037,6 +1037,11 @@
   (filter-in-seq-set 1529520 1296400 2139720)
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-nohayamete (l r)
+  (complement (filter-in-seq-set 1469800))
+  (filter-in-seq-set 1601080)
+  :allow-first t)
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*
