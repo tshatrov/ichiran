@@ -840,8 +840,9 @@
   ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
   (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ
 
-  (add-sense-prop 1468900 0 "pos" "ctr")
-  (add-sense-prop 1469050 0 "pos" "ctr")
+  (add-sense-prop 1468900 0 "pos" "ctr") ;; 年生
+  (add-sense-prop 1469050 0 "pos" "ctr") ;; 年度
+  (add-sense-prop 1284270 0 "pos" "ctr") ;; 号車
 
   (delete-sense-prop 1245280 "pos" "adj-no") ;; 空 から (to make it even with そら)
 
