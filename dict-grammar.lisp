@@ -299,6 +299,8 @@
 
         (load-abbr :shimashou "しましょ")
         (load-abbr :dewanai "じゃない")
+
+        (load-abbr :ii "ええ")
         ))))
 
 (defun init-suffixes (&optional blocking reset)
@@ -618,6 +620,11 @@
 (pushnew :beba *suffix-unique-only*)
 (pushnew :meba *suffix-unique-only*)
 (pushnew :seba *suffix-unique-only*)
+
+(def-abbr-suffix abbr-ii :ii 2 (root)
+  (find-word-full (concatenate 'string root "いい")))
+
+(pushnew :ii *suffix-unique-only*)
 
 (defun parse-suffix-val (substr val)
   (when val
