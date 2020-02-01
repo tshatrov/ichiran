@@ -478,7 +478,7 @@
    (find-word-with-conj-type root 2)
    (find-word-with-conj-type (concatenate 'string root "ら") 11)))
 
-(def-simple-suffix suffix-desu :desu (:connector " " :score 5) (root)
+(def-simple-suffix suffix-desu :desu (:connector " " :score (constantly 200)) (root)
   (and (or (alexandria:ends-with-subseq "ない" root)
            (alexandria:ends-with-subseq "なかった" root))
        (find-word-with-conj-prop root (lambda (cdata)
@@ -494,7 +494,7 @@
                       (length matches)))))
          *suffix-unique-only*)
 
-(def-simple-suffix suffix-desho :desho (:connector " " :score 5) (root)
+(def-simple-suffix suffix-desho :desho (:connector " " :score (constantly 300)) (root)
   (and (alexandria:ends-with-subseq "ない" root)
        (find-word-with-conj-prop root (lambda (cdata)
                                         (conj-neg (conj-data-prop cdata))))))
