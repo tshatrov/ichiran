@@ -836,6 +836,8 @@
   (set-common 'kana-text 1352130 "うえ" 1)
   (set-common 'kana-text 1502390 "もん" 0)
   (set-common 'kana-text 2780660 "もん" 0)
+  (set-common 'kana-text 2653620 "がち" 0)
+  (set-common 'kana-text 2653620 "ガチ" 0)
 
   ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
   (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ
