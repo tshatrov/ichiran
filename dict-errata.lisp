@@ -823,6 +823,7 @@
   (add-reading 1593170 "コケる")
   (add-conj-reading 1593170 "コケる")
 
+  (delete-sense-prop 1632980 "misc" "uk")
   (delete-sense-prop 1715710 "misc" "uk")
   (set-common 'kana-text 1715710 "みたところ" :null)
   (set-common 'kana-text 2841254 "からって" :null)
@@ -838,6 +839,8 @@
   (set-common 'kana-text 2780660 "もん" 0)
   (set-common 'kana-text 2653620 "がち" 0)
   (set-common 'kana-text 2653620 "ガチ" 0)
+
+  (set-primary-nokanji 1495000 nil) ;; まずい
 
   ;; (delete-sense-prop 2036080 "misc" "uk") ;; 鬱
   (add-sense-prop 2510160 0 "misc" "obsc") ;; 鬱ぐ
