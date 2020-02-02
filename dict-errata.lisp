@@ -823,6 +823,7 @@
   (add-reading 1593170 "コケる")
   (add-conj-reading 1593170 "コケる")
 
+  (add-sense-prop 1565100 0 "misc" "uk")
   (delete-sense-prop 1632980 "misc" "uk")
   (delete-sense-prop 1715710 "misc" "uk")
   (set-common 'kana-text 1715710 "みたところ" :null)

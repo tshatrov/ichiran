@@ -507,6 +507,7 @@
   (assert-segment "人はいないですね" "人" "は" "いないです" "ね")
   (assert-segment "猛者どもの集い" "猛者" "ども" "の" "集い")
   (assert-segment "うまいかまずいか" "うまい" "か" "まずい" "か")
+  (assert-segment "守衛にとがめられた" "守衛" "に" "とがめられた")
   )
 
 (define-test json-consistency-test
