@@ -89,8 +89,12 @@
    ))
 
 (defmethod initialize-instance :after ((cache cache) &key &allow-other-keys)
-  (let ((name (cache-name cache)))
-    (setf (slot-value cache 'lock) (sb-thread:make-mutex :name (symbol-name name)))
+  (let* ((name (cache-name cache))
+         (old-cache (getf (slot-value cache 'mapping) name)))
+    (setf (slot-value cache 'lock)
+          (if old-cache
+              (cache-lock old-cache)
+              (sb-thread:make-mutex :name (symbol-name name))))
     (setf (getf (slot-value cache 'mapping) name) cache)))
 
 (defun all-caches ()
