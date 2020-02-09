@@ -840,6 +840,7 @@
   (set-common 'kana-text 2780660 "もん" 0)
   (set-common 'kana-text 2653620 "がち" 0)
   (set-common 'kana-text 2653620 "ガチ" 0)
+  (set-common 'kana-text 1135480 "モノ" :null)
 
   (set-primary-nokanji 1495000 nil) ;; まずい
 
@@ -851,6 +852,7 @@
   (add-sense-prop 1284270 0 "pos" "ctr") ;; 号車
 
   (delete-sense-prop 1245280 "pos" "adj-no") ;; 空 から (to make it even with そら)
+  (delete-sense-prop 1392570 "pos" "adj-no") ;; 前 ぜん
 
   (add-sense-prop 1429740 0 "pos" "suf") ;; 長
   (add-sense-prop 1429740 1 "pos" "n")
