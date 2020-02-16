@@ -841,6 +841,7 @@
   (set-common 'kana-text 2653620 "がち" 0)
   (set-common 'kana-text 2653620 "ガチ" 0)
   (set-common 'kana-text 1135480 "モノ" :null)
+  (set-common 'kana-text 1003000 "カラカラ" 0)
 
   (set-primary-nokanji 1495000 nil) ;; まずい
 
