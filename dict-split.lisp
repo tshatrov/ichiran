@@ -685,6 +685,11 @@
     (:test (equal txt "もんだ"))
     (1502390 2)
     (2089020))
+
+  (def-simple-split nil 1010105 '(5) (len txt) ;; はぐったり
+    (:test (equal txt "はぐったり"))
+    (2028920 1)
+    (1004070))
   )
 
 (defun get-segsplit (segment &aux (word (segment-word segment)))
