@@ -191,7 +191,7 @@
         (load-kf :chau (get-kana-form 2028920 "は") :class :ha :text "じゃ")
 
         (load-conjs :tai 2017560)
-        (load-conjs :ren 2772730 :nikui)
+        (load-conjs :ren- 2772730 :nikui)
 
         (load-conjs :te 1577985 :oru) ;; おる
 
@@ -362,6 +362,9 @@
 
 (def-simple-suffix suffix-ren :ren (:connector "" :score 5) (root)
   ;; generic ren'youkei suffix
+  (find-word-with-conj-type root 13))
+
+(def-simple-suffix suffix-ren- :ren- (:connector "" :score 0) (root)
   (find-word-with-conj-type root 13))
 
 (def-simple-suffix suffix-neg :neg (:connector "" :score 5) (root)
