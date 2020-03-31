@@ -323,25 +323,27 @@
        (let* ((kanji-readings (remove-duplicates kanji-readings :test 'equal))
               (kana-readings (remove-duplicates kana-readings :test 'equal))
               (seq-candidates
-               (if kanji-readings
-                   (query (:intersect
-                           (:select 'seq :from 'kanji-text
-                                    :where (:in 'text (:set kanji-readings))
-                                    :group-by 'seq
-                                    :having (:= (:count 'id) (length kanji-readings)))
-                           (:select 'seq :from 'kana-text
-                                 :where (:in 'text (:set kana-readings))
-                                 :group-by 'seq
-                                 :having (:= (:count 'id) (length kana-readings))))
-                          :column)
-                   (query (:select 'r.seq
-                                   :from (:as 'kana-text 'r)
-                                   :left-join (:as 'kanji-text 'k) :on (:= 'r.seq 'k.seq)
-                                   :where (:and (:is-null 'k.text)
-                                                (:in 'r.text (:set kana-readings)))
-                                   :group-by 'r.seq
-                                   :having (:= (:count 'r.id) (length kana-readings)))
-                          :column))))
+               (sort
+                (if kanji-readings
+                    (query (:intersect
+                            (:select 'seq :from 'kanji-text
+                                     :where (:in 'text (:set kanji-readings))
+                                     :group-by 'seq
+                                     :having (:= (:count 'id) (length kanji-readings)))
+                            (:select 'seq :from 'kana-text
+                                     :where (:in 'text (:set kana-readings))
+                                     :group-by 'seq
+                                     :having (:= (:count 'id) (length kana-readings))))
+                           :column)
+                    (query (:select 'r.seq
+                                    :from (:as 'kana-text 'r)
+                                    :left-join (:as 'kanji-text 'k) :on (:= 'r.seq 'k.seq)
+                                    :where (:and (:is-null 'k.text)
+                                                 (:in 'r.text (:set kana-readings)))
+                                    :group-by 'r.seq
+                                    :having (:= (:count 'r.id) (length kana-readings)))
+                           :column))
+                '<)))
          (when (or (member from seq-candidates) (member via seq-candidates))
            (return nil))
          (if seq-candidates
