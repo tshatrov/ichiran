@@ -111,3 +111,12 @@
   (loop for kt in (select-dao 'kana-text (:and (:= 'text "じゃ") (:= 'seq seq)))
      do (setf (slot-value kt 'conjugate-p) nil) (update-dao kt))
   (conjugate-entry-outer seq))
+
+(defun fix-da-conjs-2 ()
+  ;; fix for when conjugation だ -> で becomes the same seq as でる -> で
+  (let ((conj-id (car (query (:select 'c1.id :from (:as 'conjugation 'c1) (:as 'conjugation 'c2) :where
+                                      (:and (:= 'c1.from 2089020) (:= 'c2.from 2831062) (:= 'c1.seq 'c2.seq))) :column))))
+    (when conj-id
+      (let ((conj (get-dao 'conjugation conj-id)))
+        (setf (slot-value conj 'seq) 2028980)
+        (update-dao conj)))))
