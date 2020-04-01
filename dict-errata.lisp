@@ -546,6 +546,7 @@
   (add-errata-jan19)
   (add-errata-apr19)
   (add-errata-jan20)
+  (add-errata-apr20)
   (add-errata-counters)
   )
 
@@ -858,6 +859,11 @@
   (add-sense-prop 1429740 0 "pos" "suf") ;; 長
   (add-sense-prop 1429740 1 "pos" "n")
   (delete-sense-prop 2647210 "pos" "suf")
+  )
+
+(defun add-errata-apr20 ()
+  (set-common 'kana-text 1225940 "アリ" 0)
+  (set-common 'kana-text 1568080 "ふくろう" 0)
   )
 
 (defun add-errata-counters ()
