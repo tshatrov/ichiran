@@ -869,7 +869,7 @@
 (:select 'kt.seq 'kt.text :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
                               :where (:and (:= 'kt.seq 'sp.seq)
                                            (:= 'sp.tag "pos")
-                                           (:= 'sp.text "exp")
+                                           (:or (:= 'sp.text "exp") (:= 'sp.text "int"))
                                            (:like 'kt.text "%は%")
                                            (:not (:in 'kt.seq (:set (alexandria:hash-table-keys *hint-map*))))))
 |#
@@ -1334,6 +1334,9 @@
 (def-easy-hint 2841165 "恋 は 闇")
 (def-easy-hint 2841585 "礼 は はずむ")
 (def-easy-hint 2842361 "失敗 は 成功 の 母")
+(def-easy-hint 2843805 "細工 は 流々 仕上げ を 御覧じろ")
+(def-easy-hint 2843453 "立てば 芍薬 座れば 牡丹 歩く姿 は 百合 の 花")
+(def-easy-hint 2843281 "九層 の 台 は 累土 より 起こる")
 
 ;; は は
 
@@ -1438,6 +1441,7 @@
 (def-easy-hint 2417830 "酒 は 百薬 の 長")
 (def-easy-hint 2837015 "落ち武者 は 薄 の 穂 に 怖ず")
 (def-easy-hint 2837756 "風邪 は 万病 の 元")
+(def-easy-hint 2842831 "口 は 災い の 門")
 
 ;; は を
 (def-easy-hint 1213500 "甘言 は 偶人 を 喜ばす")
@@ -1497,6 +1501,7 @@
 (def-easy-hint 2704850 "花泥棒 は 罪 に ならない")
 (def-easy-hint 2837518 "文 は 武 に 勝る")
 (def-easy-hint 2837552 "巧遅 は 拙速 に 如かず")
+(def-easy-hint 2842829 "悪名 は 無名 に 勝る")
 
 ;; に は
 
@@ -1573,5 +1578,6 @@
 (def-easy-hint 2833979 "馬鹿 と 天才 は 紙一重")
 (def-easy-hint 2833939 "長い物 には 巻かれ よ")
 (def-easy-hint 2833938 "長い物 には 巻かれろ")
+(def-easy-hint 2842906 "ない 訳 には 行かない")
 
 (def-easy-hint 2835463 "人目 も はばからず")
