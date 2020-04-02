@@ -681,7 +681,7 @@
     (1002980 2)
     (2086960 2))
 
-  (def-simple-split nil 10393415 '(5) (len txt) ;; もんだ
+  (def-simple-split nil 1567610 '(5) (len txt) ;; もんだ
     (:test (equal txt "もんだ"))
     (1502390 2)
     (2089020))

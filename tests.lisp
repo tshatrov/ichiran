@@ -511,6 +511,8 @@
   (assert-segment "問い合わせがたくさん" "問い合わせ" "が" "たくさん")
   (assert-segment "楽しみがたくさん" "楽しみ" "が" "たくさん")
   (assert-segment "ふくろうは" "ふくろう" "は")
+  (assert-segment "語れるもんだな" "語れる" "もんだ" "な")
+  (assert-segment "筋をもんでくれ" "筋" "を" "もんでくれ")
   )
 
 (define-test json-consistency-test
