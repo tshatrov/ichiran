@@ -221,11 +221,16 @@
 ;; (defmethod r-special or ((method modified-hepburn) word)
 ;;   (when (equal word "を") "o"))
 
-(defun romanize-word (word &key (method *default-romanization-method*) original-spelling)
+(defun romanize-word (word &key (method *default-romanization-method*) original-spelling (normalize t))
   "Romanize a word according to method"
+  (when normalize
+    (setf word (normalize word)))
   (or (r-special method (or original-spelling word))
       (let ((word (process-hints word)))
         (romanize-list (get-character-classes word) :method method))))
+
+(defun romanize-word-geo (input &key (method *hepburn-simple*))
+  (string-capitalize (romanize-word input :method method :normalize t)))
 
 (defun join-parts (parts)
   (with-output-to-string (s)
@@ -246,7 +251,7 @@
     (map-word-info-kana
      (if (eql method :kana)
          (lambda (wk) (strip-hints wk))
-         (lambda (wk) (romanize-word wk :method method :original-spelling orig-text)))
+         (lambda (wk) (romanize-word wk :method method :original-spelling orig-text :normalize nil)))
      word-info)))
 
 (defun romanize (input &key (method *default-romanization-method*) (with-info nil))

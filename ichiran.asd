@@ -31,6 +31,7 @@
                (:file "dict-counters")
                (:file "dict-load")
                (:file "romanize")
+               (:file "dict-custom")
                (:file "deromanize")
                (:file "kanji")
                (:file "ichiran")

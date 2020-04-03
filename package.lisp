@@ -51,10 +51,16 @@
            :process-hints :strip-hints
            :find-kanji-for-pattern))
 
+(defpackage :ichiran/custom
+  (:use :cl :postmodern :ichiran/characters)
+  ;; (:import-from :ichiran-dict )
+  (:export :load-custom-data))
+
 (uiop:define-package :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)
   (:import-from :ichiran/dict :csv-hash)
-  (:export :romanize :romanize-word :romanize* :romanize-word-info
+  (:export :romanize :romanize* :romanize-word-info
+           :romanize-word :romanize-word-geo
            :generic-romanization :generic-hepburn :kana-table
            :simplified-hepburn :simplifications
            :*hepburn-basic* :*hepburn-simple* :*hepburn-passport*
