@@ -639,7 +639,7 @@
 
   (load-entry "
 <entry>
-<ent_seq>99000000</ent_seq>
+<ent_seq></ent_seq>
 <k_ele><keb>お掛け</keb><ke_pri>spec1</ke_pri></k_ele>
 <r_ele><reb>おかけ</reb><re_pri>spec1</re_pri></r_ele>
 <sense>
@@ -654,9 +654,7 @@
 <pos>vs</pos><misc>uk</misc><misc>hum</misc>
 <gloss xml:lang=\"eng\">to spend (time)</gloss>
 </sense>
-</entry>" :if-exists :overwrite)
-
-  (recalc-entry-stats 1029150 1363740 1613860 99000000)
+</entry>" :if-exists :skip :seq "お掛け")
   )
 
 (defun add-errata-jan18 ()

@@ -60,8 +60,10 @@
        when nokanji do (setf primary-nokanji t)
        do (make-dao table :seq seq :text reading-text :ord ord :common common :nokanji nokanji
                     :common-tags pri-tags))
-    (when primary-nokanji
-      (query (:update 'entry :set 'primary-nokanji t :where (:= 'seq seq))))))
+    (query (:update 'entry
+                    :set 'primary-nokanji t
+                    (ecase table (kana-text 'n-kana) (kanji-text 'n-kanji)) (length to-add)
+                    :where (:= 'seq seq)))))
 
 
 (defun insert-sense-traits (sense-node tag sense-id seq)
@@ -77,10 +79,18 @@
                          "s_inf" "stagk" "stagr")
            do (insert-sense-traits node tag sense-id seq)))))
 
-(defun load-entry (content &key if-exists upstream)
+(defun load-entry (content &key if-exists upstream seq)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
-         (entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0))
-         (seq (parse-integer (node-text entseq-node))))
+         (seq (cond
+                ((stringp seq)
+                 ;; if reading exists use its seq, otherwise choose next available seq
+                 (let ((word (find-word seq)))
+                   (if word
+                       (seq (car word))
+                       (1+ (query (:select (:max 'seq) :from 'entry) :single)))))
+                (seq seq)
+                (t (let ((entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0)))
+                     (parse-integer (node-text entseq-node)))))))
     (when upstream
       (let ((entry (get-dao 'entry (car upstream))))
         (when (and entry (equal (get-text entry) (cadr upstream)))
@@ -95,7 +105,8 @@
            (sense-nodes (dom:get-elements-by-tag-name parsed "sense")))
       (insert-readings kanji-nodes "keb" 'kanji-text seq "ke_pri")
       (insert-readings kana-nodes "reb" 'kana-text seq "re_pri")
-      (insert-senses sense-nodes seq))))
+      (insert-senses sense-nodes seq))
+    seq))
 
 (defun fix-entities (source)
   "replaces entity definitions with abbreviations"
