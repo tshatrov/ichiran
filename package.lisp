@@ -49,11 +49,11 @@
            :node-text :get-kanji-words
            :find-word-info :find-word-info-json :simple-word-info
            :process-hints :strip-hints
-           :find-kanji-for-pattern))
+           :find-kanji-for-pattern
+           :match-glosses))
 
 (defpackage :ichiran/custom
-  (:use :cl :postmodern :ichiran/characters)
-  ;; (:import-from :ichiran-dict )
+  (:use :cl :postmodern :split-sequence :ichiran/characters)
   (:export :load-custom-data))
 
 (uiop:define-package :ichiran

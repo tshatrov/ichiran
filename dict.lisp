@@ -1772,3 +1772,47 @@
        finally (return
                  (values (remove-duplicates kanji :test 'equal :from-end t)
                          (remove-duplicates kana :test 'equal :from-end t))))))
+
+(defun get-glosses (seqs)
+  (let ((glosses (query (:order-by
+                         (:select 'sense.seq 'gloss.text :from 'gloss 'sense
+                                  :where (:and (:in 'sense.seq (:set seqs))
+                                               (:= 'gloss.sense-id 'sense.id)))
+                         'sense.seq))))
+    (loop with al
+       for (seq text) in glosses
+       if (eql (caar al) seq) do (push text (cdar al))
+       else do (push (list seq text) al)
+       finally (return (nreverse al)))))
+
+(defun get-candidates (text reading)
+  (let ((is-kana (test-word text :kana)))
+    (if is-kana
+        (query (:order-by
+                (:select 'e.seq :from (:as 'entry 'e)
+                         :left-join (:as 'kana-text 'r) :on (:= 'e.seq 'r.seq)
+                         :left-join (:as 'kanji-text 'k) :on (:= 'e.seq 'k.seq)
+                         :where (:and 'e.root-p (:is-null 'k.text) (:= 'r.text reading) (:= 'r.ord 0)))
+                'e.seq)
+               :column)
+        (query (:order-by
+                (:select 'e.seq :from (:as 'entry 'e)
+                         :left-join (:as 'kana-text 'r) :on (:= 'e.seq 'r.seq)
+                         :left-join (:as 'kanji-text 'k) :on (:= 'e.seq 'k.seq)
+                        :where (:and (:= 'k.text text) (:= 'k.ord 0) (:= 'r.text reading) (:= 'r.ord 0)))
+                'e.seq)
+               :column))))
+
+(defun match-glosses (text reading words &key (normalize 'identity))
+  (with-connection *connection*
+    (let ((candidates (get-candidates text reading))
+          (nwords (mapcar normalize words)))
+      (when candidates
+        (let ((matched (loop for (seq . glosses) in (get-glosses candidates)
+                          for match = (loop for gloss in glosses
+                                         for ngloss = (funcall normalize gloss)
+                                         thereis (loop for word in nwords always (search word ngloss)))
+                          thereis (and match seq))))
+          (if matched
+              (values matched t)
+              (values (car candidates) nil)))))))
