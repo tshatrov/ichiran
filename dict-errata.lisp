@@ -548,6 +548,8 @@
   (add-errata-jan20)
   (add-errata-apr20)
   (add-errata-counters)
+
+  (ichiran/custom:load-custom-data '(:extra) t)
   )
 
 (defun add-errata-feb17 ()
@@ -625,17 +627,6 @@
   (set-common 'kana-text 1158960 "いほう" 0)
 
   (delete-sense-prop 2122310 "pos" "prt") ;; え
-
-  (load-entry "
-<entry>
-<ent_seq>1613860</ent_seq>
-<k_ele><keb>回戦</keb></k_ele>
-<r_ele><reb>かいせん</reb></r_ele>
-<sense>
-<pos>n</pos><pos>ctr</pos>
-<gloss xml:lang=\"eng\">match</gloss><gloss xml:lang=\"eng\">game</gloss>
-</sense>
-</entry>" :if-exists :skip)
 
   (load-entry "
 <entry>

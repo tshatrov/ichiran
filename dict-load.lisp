@@ -80,7 +80,13 @@
            do (insert-sense-traits node tag sense-id seq)))))
 
 (defun load-entry (content &key if-exists upstream seq)
-  (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
+  (let* ((parsed (typecase content
+                   (dom:node
+                    (unless (typep content 'dom:document)
+                      (setf content (rune-dom:create-document content)))
+                    (prog1 content
+                      (setf content (dom:map-document (cxml:make-string-sink) content))))
+                   (t (cxml:parse content (cxml-dom:make-dom-builder)))))
          (seq (cond
                 ((stringp seq)
                  ;; if reading exists use its seq, otherwise choose next available seq
@@ -99,6 +105,7 @@
       (:skip (when (get-dao 'entry seq) (return-from load-entry)))
       (:overwrite (let ((entry (get-dao 'entry seq)))
                     (when entry (delete-dao entry)))))
+
     (make-dao 'entry :seq seq :content content :root-p t)
     (let* ((kanji-nodes (dom:get-elements-by-tag-name parsed "k_ele"))
            (kana-nodes (dom:get-elements-by-tag-name parsed "r_ele"))

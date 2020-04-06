@@ -5,8 +5,14 @@
 (defgeneric slurp (source)
   (:documentation "Read custom data from the source file"))
 
+(defmethod slurp :around (source)
+  (call-next-method)
+  (length (entries source)))
+
 (defgeneric insert (source)
   (:documentation "Insert slurped data into database"))
+
+;; only `slurp` and `insert` are necessary to implement, the others are optional
 
 (defgeneric process-entry (source entry)
   (:documentation "Converts a source chunk into one or several entries")
@@ -20,20 +26,39 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
   (:method (source entry) t))
 
 (defclass custom-source ()
-  ((description :reader description :initform "unknown")))
+  ((description :reader description :initform "unknown")
+   (entries :accessor entries :initform nil)))
+
+
+(defclass xml-loader (custom-source)
+  ((description :initform "extra XML data")
+   (source-file :reader source-file :initarg :source-file)))
+
+(defstruct xml-entry seq content)
+
+(defmethod slurp ((loader xml-loader))
+  (let* ((content (uiop:read-file-string (source-file loader)))
+         (parsed (cxml:parse content (cxml-dom:make-dom-builder))))
+    (dom:do-node-list (entry (dom:get-elements-by-tag-name parsed "entry"))
+      (let* ((seq (ichiran/dict:node-text (dom:item (dom:get-elements-by-tag-name entry "ent_seq") 0)))
+             (nseq (handler-case (parse-integer seq) (error () seq))))
+        (push (make-xml-entry :seq nseq :content (rune-dom:create-document entry)) (entries loader)))))
+  (setf (entries loader) (nreverse (entries loader))))
+
+(defmethod insert ((loader xml-loader))
+  (loop for entry in (entries loader)
+     do (ichiran/dict::load-entry (xml-entry-content entry) :if-exists :skip :seq (xml-entry-seq entry))))
 
 (defclass csv-loader (custom-source)
   ((description :initform "csv")
    (source-file :reader source-file :initarg :source-file)
-   (entries :accessor entries :initform nil)
    (csv-options :reader csv-options :initform '(:separator #\, :skip-first-p nil))
    ))
 
 (defmethod slurp ((loader csv-loader))
   (setf (entries loader)
         (loop for row in (apply 'cl-csv:read-csv (source-file loader) (csv-options loader))
-           nconc (process-entry loader row)))
-  (length (entries loader)))
+           nconc (process-entry loader row))))
 
 (defclass municipality-csv (csv-loader)
   ((description :initform "municipalities")))
@@ -125,6 +150,9 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
           (match-p (values nil seq))
           (t (values t seq)))))
 
+(defmethod insert ((loader municipality-csv))
+  )
+
 (defclass wards-csv (csv-loader)
   ((description :initform "wards")))
 
@@ -134,7 +162,18 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
 
 (defun get-custom-data ()
   (mapcar
-   (lambda (args) (apply 'make-instance args))
-   `((municipality-csv :source-file ,(source-path "jichitai.csv"))
+   (lambda (args) (if (keywordp args) args (apply 'make-instance args)))
+   `(
+     :extra (xml-loader :source-file ,(source-path "extra.xml"))
+     :municipality (municipality-csv :source-file ,(source-path "jichitai.csv"))
      ;; (wards-csv :source-file ,(source-path "gyoseiku.csv"))
      )))
+
+(defun load-custom-data (&optional keys silent-p)
+  (let ((loaders (loop for (key loader . rest) on (get-custom-data) by #'cddr
+                    if (or (not keys) (find key keys)) collect loader)))
+    (dolist (loader loaders)
+      (unless silent-p (format t "Loading ~a~%" (description loader)))
+      (let ((n-entries (slurp loader)))
+        (unless silent-p (format t "Inserting ~a entries~%" n-entries)))
+      (insert loader))))
