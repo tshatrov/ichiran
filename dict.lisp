@@ -1792,7 +1792,7 @@
                 (:select 'e.seq :from (:as 'entry 'e)
                          :left-join (:as 'kana-text 'r) :on (:= 'e.seq 'r.seq)
                          :left-join (:as 'kanji-text 'k) :on (:= 'e.seq 'k.seq)
-                         :where (:and 'e.root-p (:is-null 'k.text) (:= 'r.text reading) (:= 'r.ord 0)))
+                         :where (:and 'e.root-p (:is-null 'k.text) (:= 'r.text text) (:= 'r.ord 0)))
                 'e.seq)
                :column)
         (query (:order-by
@@ -1803,16 +1803,20 @@
                 'e.seq)
                :column))))
 
-(defun match-glosses (text reading words &key (normalize 'identity))
+(defun match-glosses (text reading words &key (normalize 'identity) update-gloss)
   (with-connection *connection*
     (let ((candidates (get-candidates text reading))
-          (nwords (mapcar normalize words)))
+          (nwords (mapcar normalize words))
+          (nupdate (and update-gloss (funcall normalize update-gloss))))
       (when candidates
         (let ((matched (loop for (seq . glosses) in (get-glosses candidates)
                           for match = (loop for gloss in glosses
                                          for ngloss = (funcall normalize gloss)
+                                         when (and nupdate (equal nupdate ngloss))
+                                           do (return gloss)
                                          thereis (loop for word in nwords always (search word ngloss)))
-                          thereis (and match seq))))
+                          thereis (cond ((stringp match) (list seq match))
+                                        (match seq)))))
           (if matched
               (values matched t)
               (values (car candidates) nil)))))))

@@ -2,6 +2,8 @@
 
 (in-package :ichiran/custom)
 
+(defparameter *silent-p* nil)
+
 (defgeneric slurp (source)
   (:documentation "Read custom data from the source file"))
 
@@ -21,9 +23,33 @@
 (defgeneric test-entry (source entry)
   (:documentation "Tests if the entry should be inserted into database
 
-Returns 2 values, whether the entry should be added or updated, and which SEQ to update if any.
+Returns 2 values, whether the entry should be either added or updated, and which SEQ to update if any.
 ")
   (:method (source entry) t))
+
+(defgeneric insert-entry (source entry seq)
+  (:documentation "Insert entry into database"))
+
+(defgeneric update-entry (source entry seq)
+  (:documentation "Update entry in database"))
+
+(defgeneric update-entry-gloss (source entry seq gloss)
+  (:documentation "Update entry gloss in database"))
+
+(defmethod insert (source)
+  (with-connection *connection*
+    (loop
+       with cur-seq = (ichiran/dict::next-seq)
+       for entry in (entries source)
+       do (multiple-value-bind (ok seq) (test-entry source entry)
+            (when ok
+              (cond
+                ((consp seq) (apply 'update-entry-gloss source entry seq))
+                (seq (update-entry source entry seq))
+                (t
+                 (insert-entry source entry cur-seq)
+                 (incf cur-seq))))))))
+
 
 (defclass custom-source ()
   ((description :reader description :initform "unknown")
@@ -104,7 +130,7 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
             (ichiran:romanize-word-geo short-reading)
             (cdr (assoc type *municipality-types-description*)))))
 
-(defstruct municipality text reading definition prefecture-p type)
+(defstruct municipality text reading definition type prefecture)
 
 (defmethod process-entry ((loader municipality-csv) row)
   (destructuring-bind (id pref muni rpref rmuni) row
@@ -114,18 +140,20 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
            (type (char text (1- (length text))))
            (reading (if prefecture-p rpref rmuni))
            (short (municipality-short text reading))
+           (prefecture (unless prefecture-p (romanize-municipality pref rpref)))
            (definition (format nil "~a~@[, ~a~]"
                                (romanize-municipality text reading)
-                               (unless prefecture-p (romanize-municipality pref rpref))
-                               ))
+                               prefecture))
            (muni (make-municipality :text text :type type
                                     :reading (as-hiragana (normalize reading))
-                                    :definition definition :prefecture-p prefecture-p))
+                                    :definition definition
+                                    :prefecture prefecture))
            (muni-short
-            (unless (find type '(#\区 #\道))
+            (unless (find type "区道")
               (make-municipality :text (car short) :type type
                                  :reading (as-hiragana (normalize (cdr short)))
-                                 :definition definition :prefecture-p prefecture-p))))
+                                 :definition definition
+                                 :prefecture prefecture))))
       (if muni-short
           (list muni muni-short)
           (list muni)))))
@@ -137,21 +165,66 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
   (:method ((entry municipality))
     (let* ((typeword (cdr (assoc (municipality-type entry) *municipality-types-description*)))
            (name (car (split-sequence #\Space (municipality-definition entry)))))
-      (if typeword (list name typeword) (list name)))))
+      (remove-if 'null
+                 (list name typeword (municipality-prefecture entry))))))
 
 (defmethod test-entry (loader (entry municipality))
   (multiple-value-bind (seq match-p)
-      (ichiran/dict:match-glosses
-       (municipality-text entry)
-       (municipality-reading entry)
-       (get-words entry)
-       :normalize 'normalize-geo)
+      (let ((words (get-words entry)))
+        (ichiran/dict:match-glosses
+         (municipality-text entry)
+         (municipality-reading entry)
+         words
+         :normalize 'normalize-geo
+         :update-gloss (when (eql (municipality-type entry) #\市)
+                         (apply 'format nil "~a ~a" words))))
     (cond ((not seq) (values t nil))
+          ((consp seq) (values t seq))
           (match-p (values nil seq))
           (t (values t seq)))))
 
-(defmethod insert ((loader municipality-csv))
-  )
+(defgeneric as-xml (entry)
+  (:documentation "Representation of entry as XML to be loaded by load-entry"))
+
+(defmethod as-xml ((entry municipality))
+  (cxml:with-xml-output (cxml-dom:make-dom-builder)
+    (cxml:with-element "entry"
+      (cxml:with-element "ent_seq"
+        (cxml:text ""))
+      (cond ((test-word (municipality-text entry) :kana)
+             (cxml:with-element "r_ele"
+               (cxml:with-element "reb"
+                 (cxml:text (municipality-text entry)))))
+            (t
+             (cxml:with-element "k_ele"
+               (cxml:with-element "keb"
+                 (cxml:text (municipality-text entry))))
+             (cxml:with-element "r_ele"
+               (cxml:with-element "reb"
+                 (cxml:text (municipality-reading entry))))))
+      (cxml:with-element "sense"
+        (cxml:with-element "pos"
+          (cxml:text "n"))
+        (cxml:with-element "gloss"
+          (cxml:attribute "xml:lang" "eng")
+          (cxml:text (municipality-definition entry)))))))
+
+
+(defmethod insert-entry ((loader municipality-csv) entry seq)
+  (unless *silent-p*
+    (format t "Inserting ~a[~a] ~a (seq=~a)~%" (municipality-text entry) (municipality-reading entry) (municipality-definition entry) seq))
+  (ichiran/dict::load-entry (as-xml entry) :seq seq))
+
+(defmethod update-entry ((loader municipality-csv) entry seq)
+  (unless *silent-p*
+    (format t "Updating ~a[~a] ~a (seq=~a)~%" (municipality-text entry) (municipality-reading entry) (municipality-definition entry) seq))
+  (ichiran/dict::add-new-sense seq '("n") (list (municipality-definition entry))))
+
+(defmethod update-entry-gloss ((loader municipality-csv) entry seq gloss)
+  (unless *silent-p*
+    (format t "Updating gloss ~a[~a] ~a -> ~a (seq=~a)~%" (municipality-text entry) (municipality-reading entry) gloss (municipality-definition entry) seq))
+  (query (:update 'gloss :set 'text (municipality-definition entry)
+                  :from 'sense :where (:and (:= 'gloss.sense-id 'sense.id) (:= 'sense.seq seq) (:= 'gloss.text gloss)))))
 
 (defclass wards-csv (csv-loader)
   ((description :initform "wards")))
@@ -171,9 +244,10 @@ Returns 2 values, whether the entry should be added or updated, and which SEQ to
 
 (defun load-custom-data (&optional keys silent-p)
   (let ((loaders (loop for (key loader . rest) on (get-custom-data) by #'cddr
-                    if (or (not keys) (find key keys)) collect loader)))
+                    if (or (not keys) (find key keys)) collect loader))
+        (*silent-p* silent-p))
     (dolist (loader loaders)
-      (unless silent-p (format t "Loading ~a~%" (description loader)))
+      (unless *silent-p* (format t "Loading ~a~%" (description loader)))
       (let ((n-entries (slurp loader)))
-        (unless silent-p (format t "Inserting ~a entries~%" n-entries)))
+        (unless *silent-p* (format t "Inserting ~a entries~%" n-entries)))
       (insert loader))))

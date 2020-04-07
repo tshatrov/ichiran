@@ -53,7 +53,8 @@
            :match-glosses))
 
 (defpackage :ichiran/custom
-  (:use :cl :postmodern :split-sequence :ichiran/characters)
+  (:use :cl :postmodern :split-sequence
+        :ichiran/characters :ichiran/conn)
   (:export :load-custom-data))
 
 (uiop:define-package :ichiran

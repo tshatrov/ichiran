@@ -17,7 +17,7 @@
 (defun add-conj (seq-from options reading-map)
   (unless (find-conj seq-from options)
     (destructuring-bind (conj-type pos neg fml) options
-      (let ((next-seq (1+ (query (:select (:max 'seq) :from 'entry) :single))))
+      (let ((next-seq (next-seq)))
         (make-dao 'entry :seq next-seq :content "")
         (loop with ord-r = 0 and ord-k = 0
            for (src-reading reading) in reading-map

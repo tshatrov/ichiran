@@ -79,6 +79,26 @@
                          "s_inf" "stagk" "stagr")
            do (insert-sense-traits node tag sense-id seq)))))
 
+(defun add-new-sense (seq positions glosses)
+  (let* ((senses (get-senses-raw seq))
+         (last-sense (car (last senses)))
+         (ord (1+ (getf last-sense :ord)))
+         (last-pos (loop for s in (reverse senses)
+                      for props = (getf s :props)
+                      for pos = (cdr (assoc "pos" props :test 'equal))
+                      thereis pos))
+         (sense-id (id (make-dao 'sense :seq seq :ord ord))))
+    (loop for gord from 0
+       for gloss in glosses
+       do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord))
+    (unless (equal last-pos positions)
+      (loop for sord from 0
+         for pos in positions
+         do (make-dao 'sense-prop :sense-id sense-id :tag "pos" :text pos :ord sord :seq seq)))))
+
+(defun next-seq ()
+  (1+ (query (:select (:max 'seq) :from 'entry) :single)))
+
 (defun load-entry (content &key if-exists upstream seq)
   (let* ((parsed (typecase content
                    (dom:node
@@ -93,7 +113,7 @@
                  (let ((word (find-word seq)))
                    (if word
                        (seq (car word))
-                       (1+ (query (:select (:max 'seq) :from 'entry) :single)))))
+                       (next-seq))))
                 (seq seq)
                 (t (let ((entseq-node (dom:item (dom:get-elements-by-tag-name parsed "ent_seq") 0)))
                      (parse-integer (node-text entseq-node)))))))
@@ -300,8 +320,7 @@
   (let* ((seq (or via seq*))
          (conj-matrix (conjugate-entry-inner seq :conj-types conj-types :as-posi as-posi))
          (original-readings (get-all-readings seq))
-         (max-seq (query (:select (:max 'seq) :from 'entry) :single))
-         (next-seq (1+ max-seq)))
+         (next-seq (next-seq)))
     (loop for (pos-id conj-id) being the hash-key of conj-matrix using (hash-value matrix)
        for ignore-neg = (not (or (aref matrix 1 0) (aref matrix 1 1)))
        for ignore-fml = (not (or (aref matrix 0 1) (aref matrix 1 1)))
