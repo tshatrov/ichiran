@@ -164,6 +164,8 @@
   (load-conjugations)
   (format t "Loading secondary conjugations...~%")
   (load-secondary-conjugations)
+  (format t "Loading custom data...~%")
+  (ichiran/custom:load-custom-data nil t)
   (add-errata)
   (recalc-entry-stats-all)
   (query "ANALYZE"))
