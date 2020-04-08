@@ -91,14 +91,14 @@ Returns 2 values, whether the entry should be either added or updated, and which
 
 
 (defparameter *municipality-types*
-  '((#\都 "ﾄ")
-    (#\道 "ﾄﾞｳ")
-    (#\府 "ﾌ")
-    (#\県 "ｹﾝ")
-    (#\市 "ｼ")
-    (#\町 "ﾁｮｳ" "ﾏﾁ")
-    (#\村 "ｿﾝ" "ﾑﾗ")
-    (#\区 "ｸ")))
+  '((#\都 "ﾄ" "と")
+    (#\道 "ﾄﾞｳ" "どう")
+    (#\府 "ﾌ" "ふ")
+    (#\県 "ｹﾝ" "けん")
+    (#\市 "ｼ" "し")
+    (#\町 "ﾁｮｳ" "ﾏﾁ" "ちょう" "まち")
+    (#\村 "ｿﾝ" "ﾑﾗ" "そん" "むら")
+    (#\区 "ｸ" "く")))
 
 (defparameter *municipality-types-description*
   '((#\都 . "Metropolis")
@@ -123,12 +123,13 @@ Returns 2 values, whether the entry should be either added or updated, and which
                               (subseq reading 0 (- (length reading) (length tpr)))))))
         (cons short-text short-reading))))
 
-(defun romanize-municipality (text reading)
+(defun romanize-municipality (text reading &key (include-type t))
   (let ((short-reading (cdr (municipality-short text reading)))
         (type (char text (1- (length text)))))
     (format nil "~a~@[ ~a~]"
             (ichiran:romanize-word-geo short-reading)
-            (cdr (assoc type *municipality-types-description*)))))
+            (and include-type
+                 (cdr (assoc type *municipality-types-description*))))))
 
 (defstruct municipality text reading definition type prefecture)
 
@@ -186,29 +187,31 @@ Returns 2 values, whether the entry should be either added or updated, and which
 (defgeneric as-xml (entry)
   (:documentation "Representation of entry as XML to be loaded by load-entry"))
 
-(defmethod as-xml ((entry municipality))
+(defun as-xml-simple (text reading definition)
   (cxml:with-xml-output (cxml-dom:make-dom-builder)
     (cxml:with-element "entry"
       (cxml:with-element "ent_seq"
         (cxml:text ""))
-      (cond ((test-word (municipality-text entry) :kana)
+      (cond ((test-word text :kana)
              (cxml:with-element "r_ele"
                (cxml:with-element "reb"
-                 (cxml:text (municipality-text entry)))))
+                 (cxml:text text))))
             (t
              (cxml:with-element "k_ele"
                (cxml:with-element "keb"
-                 (cxml:text (municipality-text entry))))
+                 (cxml:text text)))
              (cxml:with-element "r_ele"
                (cxml:with-element "reb"
-                 (cxml:text (municipality-reading entry))))))
+                 (cxml:text reading)))))
       (cxml:with-element "sense"
         (cxml:with-element "pos"
           (cxml:text "n"))
         (cxml:with-element "gloss"
           (cxml:attribute "xml:lang" "eng")
-          (cxml:text (municipality-definition entry)))))))
+          (cxml:text definition))))))
 
+(defmethod as-xml ((entry municipality))
+  (as-xml-simple (municipality-text entry) (municipality-reading entry) (municipality-definition entry)))
 
 (defmethod insert-entry ((loader municipality-csv) entry seq)
   (unless *silent-p*
@@ -226,9 +229,54 @@ Returns 2 values, whether the entry should be either added or updated, and which
   (query (:update 'gloss :set 'text (municipality-definition entry)
                   :from 'sense :where (:and (:= 'gloss.sense-id 'sense.id) (:= 'sense.seq seq) (:= 'gloss.text gloss)))))
 
-(defclass wards-csv (csv-loader)
+(defclass ward-csv (csv-loader)
   ((description :initform "wards")))
 
+(defstruct ward text reading definition city)
+
+(defmethod slurp ((loader ward-csv))
+  (setf (entries loader)
+        (loop
+           with city-text and city-reading and city-romanized
+           for (id text reading) in (apply 'cl-csv:read-csv (source-file loader) (csv-options loader))
+           if (alexandria:ends-with #\区 text)
+           collect
+             (let* ((ward-text (subseq text (length city-text)))
+                    (ward-reading (subseq reading (length city-reading)))
+                    (definition (format nil "~a, ~a" (romanize-municipality ward-text ward-reading) city-romanized)))
+               (make-ward :text ward-text :reading ward-reading :definition definition :city city-romanized))
+           else do (setf city-text text
+                         city-reading reading
+                         city-romanized (romanize-municipality text reading :include-type nil)))))
+
+(defmethod get-words ((entry ward))
+  (let ((name (car (split-sequence #\Space (ward-definition entry)))))
+    (list name "Ward" (ward-city entry))))
+
+(defmethod test-entry (loader (entry ward))
+  (multiple-value-bind (seq match-p)
+      (let ((words (get-words entry)))
+        (ichiran/dict:match-glosses
+         (ward-text entry)
+         (ward-reading entry)
+         words
+         :normalize 'normalize-geo))
+    (cond ((not seq) (values t nil))
+          (match-p (values nil seq))
+          (t (values t seq)))))
+
+(defmethod as-xml ((entry ward))
+  (as-xml-simple (ward-text entry) (ward-reading entry) (ward-definition entry)))
+
+(defmethod insert-entry ((loader ward-csv) entry seq)
+  (unless *silent-p*
+    (format t "Inserting ~a[~a] ~a (seq=~a)~%" (ward-text entry) (ward-reading entry) (ward-definition entry) seq))
+  (ichiran/dict::load-entry (as-xml entry) :seq seq))
+
+(defmethod update-entry ((loader ward-csv) entry seq)
+  (unless *silent-p*
+    (format t "Updating ~a[~a] ~a (seq=~a)~%" (ward-text entry) (ward-reading entry) (ward-definition entry) seq))
+  (ichiran/dict::add-new-sense seq '("n") (list (ward-definition entry))))
 
 (defun source-path (file)
   (asdf:system-relative-pathname :ichiran (format nil "data/sources/~a" file)))
@@ -239,7 +287,7 @@ Returns 2 values, whether the entry should be either added or updated, and which
    `(
      :extra (xml-loader :source-file ,(source-path "extra.xml"))
      :municipality (municipality-csv :source-file ,(source-path "jichitai.csv"))
-     ;; (wards-csv :source-file ,(source-path "gyoseiku.csv"))
+     :ward (ward-csv :source-file ,(source-path "gyoseiku.csv"))
      )))
 
 (defun load-custom-data (&optional keys silent-p)
