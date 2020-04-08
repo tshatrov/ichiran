@@ -111,6 +111,8 @@ Returns 2 values, whether the entry should be either added or updated, and which
     (#\区 . "Ward")
     ))
 
+(defparameter *municipality-types-order* "都道府県市区町村")
+
 (defun municipality-short (text reading)
   (if (alexandria:ends-with #\道 text)
       (cons text reading)
@@ -158,6 +160,11 @@ Returns 2 values, whether the entry should be either added or updated, and which
       (if muni-short
           (list muni muni-short)
           (list muni)))))
+
+(defmethod slurp :after ((loader municipality-csv))
+  (setf (entries loader)
+        (stable-sort (entries loader) '<
+                     :key (lambda (e) (position (municipality-type e) *municipality-types-order*)))))
 
 (defun normalize-geo (word)
   (simplify-ngrams (string-downcase word) '("ū" "u" "ō" "o")))
