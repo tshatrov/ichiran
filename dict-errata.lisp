@@ -627,25 +627,6 @@
   (set-common 'kana-text 1158960 "いほう" 0)
 
   (delete-sense-prop 2122310 "pos" "prt") ;; え
-
-  (load-entry "
-<entry>
-<ent_seq></ent_seq>
-<k_ele><keb>お掛け</keb><ke_pri>spec1</ke_pri></k_ele>
-<r_ele><reb>おかけ</reb><re_pri>spec1</re_pri></r_ele>
-<sense>
-<pos>vs</pos><misc>uk</misc><misc>hum</misc>
-<gloss xml:lang=\"eng\">to cause</gloss>
-</sense>
-<sense>
-<pos>vs</pos><misc>uk</misc><misc>hum</misc>
-<gloss xml:lang=\"eng\">to sit</gloss>
-</sense>
-<sense>
-<pos>vs</pos><misc>uk</misc><misc>hum</misc>
-<gloss xml:lang=\"eng\">to spend (time)</gloss>
-</sense>
-</entry>" :if-exists :skip :seq "お掛け")
   )
 
 (defun add-errata-jan18 ()
