@@ -513,6 +513,7 @@
   (assert-segment "ふくろうは" "ふくろう" "は")
   (assert-segment "語れるもんだな" "語れる" "もんだ" "な")
   (assert-segment "筋をもんでくれ" "筋" "を" "もんでくれ")
+  (assert-segment "いわきからさいたままで" "いわき" "から" "さいたま" "まで")
   )
 
 (define-test json-consistency-test
