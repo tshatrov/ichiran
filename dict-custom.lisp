@@ -150,7 +150,7 @@ Returns 2 values, whether the entry should be either added or updated, and which
                                     :definition definition
                                     :prefecture prefecture))
            (muni-short
-            (unless (find type "区道")
+            (unless (find type "道")
               (make-municipality :text (car short) :type type
                                  :reading (as-hiragana (normalize (cdr short)))
                                  :definition definition
