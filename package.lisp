@@ -34,6 +34,7 @@
            :load-settings :with-log
            :cache  :defcache :all-caches :init-all-caches
            :get-cache :init-cache :reset-cache :ensure
+           :*debug* :dp
            ))
 
 (defpackage :ichiran/dict

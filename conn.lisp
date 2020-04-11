@@ -9,6 +9,8 @@
 (defvar *connections* '((:a "jmdict2" "postgres" "" "localhost")
                         (:b "jmdict3" "postgres" "" "localhost")))
 
+(defvar *debug* nil "Enables debug printouts")
+
 (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
 
 (register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
@@ -136,3 +138,8 @@
   (loop with fn = (if reset 'reset-cache 'ensure)
      for (name . rest) on (all-caches) by #'cddr
      do (funcall fn name)))
+
+(defun dp (value &key (fn 'print))
+  (when *debug*
+    (funcall fn value))
+  value)
