@@ -834,6 +834,8 @@
 (defun add-errata-apr20 ()
   (set-common 'kana-text 1225940 "アリ" 0)
   (set-common 'kana-text 1568080 "ふくろう" 0)
+  (set-common 'kana-text 1025450 "ウイルス" :null)
+  (set-common 'kana-text 1025450 "ウィルス" :null)
   )
 
 (defun add-errata-counters ()
