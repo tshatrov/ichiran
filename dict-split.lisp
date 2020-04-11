@@ -610,6 +610,10 @@
   (1322990 (if (alexandria:starts-with-subseq "もの" txt) 2 1))
   (1234250))
 
+(def-simple-split nil 1006280 30 (len txt) ;; すると
+  (1157170 2)
+  (1008490 1))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function

@@ -515,6 +515,7 @@
   (assert-segment "筋をもんでくれ" "筋" "を" "もんでくれ")
   (assert-segment "いわきからさいたままで" "いわき" "から" "さいたま" "まで")
   (assert-segment "新型コロナウイルス" "新型コロナウイルス")
+  (assert-segment "映画を見るとか食事をするとか" "映画" "を" "見る" "とか" "食事" "を" "する" "とか")
   )
 
 (define-test json-consistency-test
