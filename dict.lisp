@@ -326,10 +326,21 @@
 
 (defstruct conj-data seq from via prop src-map)
 
+(defcache :has-conj-data *has-conj-data*
+  (let ((has-conj-data (make-hash-table :size 1778769)))
+    (dolist (seq (query (:select (:distinct 'seq) :from 'conjugation) :column))
+      (setf (gethash seq has-conj-data) t))
+    has-conj-data))
+
+(defun has-conj-data (seq)
+  (nth-value 1 (gethash seq (ensure :has-conj-data))))
+
 (defun get-conj-data (seq &optional from/conj-ids texts)
   "from/conj-ids can be either from which word to find conjugations or a list of conj-ids
    texts is a string or list of strings, if supplied, only the conjs that have src-map with this text will be collected
 "
+  (unless (has-conj-data seq)
+    (return-from get-conj-data nil))
   (unless (listp texts)
     (setf texts (list texts)))
   (loop for conj in (cond
@@ -376,10 +387,10 @@
              (let ((new-cd (get-conj-data (conj-data-via conj-data) (conj-data-from conj-data))))
                      (get-original-text* new-cd src-text))))))
 
-(defgeneric get-original-text (reading)
+(defgeneric get-original-text (reading &key conj-data)
   (:documentation "Returns unconjugated text(s) for reading")
-  (:method ((reading simple-text))
-    (let ((orig-texts (get-original-text* (word-conj-data reading) (text reading)))
+  (:method ((reading simple-text) &key conj-data)
+    (let ((orig-texts (get-original-text* (or conj-data (word-conj-data reading)) (text reading)))
           (table (case (word-type reading) (:kanji 'kanji-text) (:kana 'kana-text))))
       (loop for (txt seq) in orig-texts
            nconc (select-dao table (:and (:= 'seq seq) (:= 'text txt)))))))
@@ -538,8 +549,8 @@
 (defmethod word-type ((obj proxy-text))
   (word-type (source obj)))
 
-(defmethod get-original-text ((reading proxy-text))
-  (get-original-text (source reading)))
+(defmethod get-original-text ((reading proxy-text) &key conj-data)
+  (get-original-text (source reading) :conj-data conj-data))
 
 (defun find-word-as-hiragana (str &key exclude finder)
   (let* ((as-hiragana (as-hiragana str))
@@ -792,7 +803,8 @@
               (and (not root-p) (skip-by-conj-data conj-data)))
       (return-from calc-score 0))
     (when (and conj-data (not (and (= ord 0) common-p)))
-      (let ((conj-of-data (loop for ot in (get-original-text reading) collect (list (common ot) (ord ot)))))
+      (let ((conj-of-data (loop for ot in (get-original-text reading :conj-data conj-data)
+                             collect (list (common ot) (ord ot)))))
         (when conj-of-data
           (unless common-p
             (let ((conj-of-common (mapcan (lambda (row) (unless (eql (car row) :null) (list (car row)))) conj-of-data)))
