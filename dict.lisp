@@ -641,11 +641,15 @@
     (:tail 4 9 16 24)
     (:ltail 4 12 18 24)))
 
+(declaim (inline length-multiplier-coeff))
+(declaim (ftype (function ((integer 0 10000) (member :strong :weak :tail :ltail)) (integer 0 120000)) length-multiplier-coeff))
 (defun length-multiplier-coeff (length class)
+  (declare (optimize (speed 3) (debug 1) (safety 1)))
   (let ((coeffs (assoc class *length-coeff-sequences*)))
+    (declare (type list coeffs))
     (if (< 0 length (length coeffs))
         (elt coeffs length)
-        (* length (/ (car (last coeffs)) (1- (length coeffs)))))))
+        (* length (the (integer 0 1000) (/ (the integer (car (last coeffs))) (1- (length coeffs))))))))
 
 (defun kanji-break-penalty (kanji-break score &key info text use-length score-mod)
   (let ((end (cond ((cdr kanji-break) :both)
@@ -712,6 +716,8 @@
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-forms* *skip-conj-forms* are defined in dict-errata.lisp
 
 (defun calc-score (reading &key final use-length (score-mod 0) kanji-break &aux ctr-mode)
+  (declare (optimize (speed 3) (debug 3) (safety 1)))
+  (declare (type (or null (integer 0 10000)) use-length))
   (typecase reading
     (compound-text
      (let ((args (list (score-base reading) :use-length (mora-length (text reading)) :score-mod (score-mod reading))))
@@ -724,14 +730,14 @@
     (counter-text
      (setf ctr-mode t)))
 
-  (let* ((score 1) prop-score
+  (let* ((score 1) (prop-score 0)
          (kanji-p (eql (word-type reading) :kanji))
-         (katakana-p (and (not kanji-p) (> (count-char-class (true-text reading) :katakana-uniq) 0)))
+         (katakana-p (and (not kanji-p) (> (the fixnum (count-char-class (true-text reading) :katakana-uniq)) 0)))
          (text (text reading))
          (n-kanji (count-char-class text :kanji))
          ;(kanji-prefix (kanji-prefix text))
-         (len (max 1 (mora-length text)))
-         (seq (seq reading))
+         (len (max 1 (the fixnum (mora-length text))))
+         (seq (the (or null fixnum) (seq reading)))
          (ord (ord reading))
          (entry (and seq (get-dao 'entry seq)))
          (conj-only (let ((wc (word-conjugations reading))) (and wc (not (eql wc :root)))))
@@ -768,7 +774,7 @@
                             (or (and root-p (not conj-data))
                                 (and use-length (member 13 conj-types))))
                        2)
-                      ((and common-p (< 0 common 10)) 2)
+                      ((and common-p (< 0 (the fixnum common) 10)) 2)
                       ((and (intersection '(3 9) conj-types) (not use-length)) 4)
                       (t 3))))
          (no-common-bonus (or particle-p
@@ -777,6 +783,10 @@
          (primary-p nil)
          (use-length-bonus 0)
          split-info)
+    (declare (type (integer 0 1000000) score prop-score use-length-bonus)
+             (type (integer 0 10000) len ord n-kanji)
+             (type (or fixnum (eql :null)) common)
+             (type string text))
     (when (or (intersection seq-set *skip-words*)
               (and (not final) (member seq *final-prt*))
               (and (not root-p) (skip-by-conj-data conj-data)))
@@ -786,9 +796,11 @@
         (when conj-of-data
           (unless common-p
             (let ((conj-of-common (mapcan (lambda (row) (unless (eql (car row) :null) (list (car row)))) conj-of-data)))
+              (declare (type list conj-of-common))
               (when conj-of-common
                 (setf common 0 common-p t common-of (car (sort conj-of-common #'compare-common))))))
           (let ((conj-of-ord (reduce 'min conj-of-data :key 'second)))
+            (declare (type fixnum conj-of-ord))
             (when (< conj-of-ord ord) (setf ord conj-of-ord))))))
 
     (unless is-arch
@@ -802,7 +814,7 @@
                      (or kanji-p conj-types-p)
                      (or (and kanji-p (not prefer-kana))
                          (and common-p pronoun-p)
-                         (= (n-kanji entry) 0)))
+                         (= (the fixnum (n-kanji entry)) 0)))
                 (and prefer-kana kanji-p (= ord 0)
                      (not (query (:select 'id :from 'sense
                                           :where (:and (:in 'id (:set (mapcar 'sense-id prefer-kana)))
@@ -813,7 +825,7 @@
       (incf score (cond (long-p 10)
                         ((and secondary-conj-p (not kanji-p)) 2)
                         ((and common-p conj-types-p) 5)
-                        ((or prefer-kana (not entry) (= (n-kanji entry) 0)) 3)
+                        ((or prefer-kana (not entry) (= (the fixnum (n-kanji entry)) 0)) 3)
                         (t 2))))
     (when (and particle-p (or final (not semi-final-particle-p)))
       (incf score 2)
@@ -834,6 +846,7 @@
                (primary-p 4)
                ((or (> len 2) (< 0 common 10)) 3)
                (t 2))))
+        (declare (type fixnum common-bonus))
         (when (and (>= common-bonus 10) (find 10 conj-types))
           (decf common-bonus 4))
         (incf score common-bonus)))
@@ -854,33 +867,35 @@
             (* prop-score (length-multiplier-coeff (- use-length len)
                                                    (if (and (> len 3) (or kanji-p katakana-p)) :ltail :tail))))
       (incf use-length-bonus
-            (apply-score-mod score-mod prop-score (- use-length len)))
+            (the (integer 0 10000) (apply-score-mod score-mod prop-score (- use-length len))))
       (incf score use-length-bonus))
 
     (unless ctr-mode
       (multiple-value-bind (split score-mod-split) (get-split reading conj-of)
+        (declare (type (or null (integer -10000 10000)) score-mod-split))
         (cond
           ((member :score split)
            (incf score score-mod-split)
            (setf split-info score-mod-split))
           ((member :pscore split)
            (let ((new-prop-score (max 1 (+ prop-score score-mod-split))))
-             (setf score (ceiling (* (/ score prop-score) new-prop-score))
+             (setf score (ceiling (* score new-prop-score) prop-score)
                    prop-score new-prop-score)))
           (split
            (setf score
                  (+ score-mod-split
                     (loop with nparts = (length split)
                        for part in split
-                       for cnt from 1
+                       for cnt of-type fixnum from 1
                        for last = (= cnt nparts)
-                       for plen = (length (text part))
-                       for slen = plen then (+ slen plen)
-                       for pmlen = (mora-length (text part))
-                       for smlen = pmlen then (+ smlen pmlen)
+                       for ptext of-type vector = (text part)
+                       for plen of-type fixnum = (length ptext)
+                       for slen of-type fixnum = plen then (+ slen plen)
+                       for pmlen of-type (integer 0 10000) = (mora-length (text part))
+                       for smlen of-type (integer 0 10000) = pmlen then (+ smlen pmlen)
                        for tpart = (if (and last (> slen (length text)))
                                        (let ((new-len (max 1 (+ plen (- (length text) slen)))))
-                                         (make-instance 'proxy-text :source part :text (subseq (text part) 0 new-len) :kana ""))
+                                         (make-instance 'proxy-text :source part :text (subseq ptext 0 new-len) :kana ""))
                                        part)
                        for part-score = (calc-score tpart
                                                     :final (and final last)
@@ -890,7 +905,7 @@
                        collect part-score into part-scores
                        finally
                          (setf split-info (cons score-mod-split part-scores))
-                         (return (reduce '+ part-scores)))))))))
+                         (return (the fixnum (reduce '+ part-scores))))))))))
 
     (let ((info (list :posi posi :seq-set (if ctr-mode seq-set (cons seq conj-of))
                       :conj conj-data
