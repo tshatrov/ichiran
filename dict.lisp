@@ -326,20 +326,24 @@
 
 (defstruct conj-data seq from via prop src-map)
 
-(defcache :has-conj-data *has-conj-data*
-  (let ((has-conj-data (make-hash-table :size 1778769)))
-    (dolist (seq (query (:select (:distinct 'seq) :from 'conjugation) :column))
-      (setf (gethash seq has-conj-data) t))
-    has-conj-data))
+(defcache :no-conj-data *no-conj-data*
+  ;; seq's that DON'T have conj data are calculated here
+  ;; both because there's less of them, and it's generally safer when new conjs are added
+  (let ((no-conj-data (make-hash-table :size 200000)))
+    (dolist (seq (query (:select (:distinct 'entry.seq) :from 'entry
+                                 :left-join (:as 'conjugation 'c) :on (:= 'entry.seq 'c.seq)
+                                 :where (:and (:is-null 'c.seq))) :column))
+      (setf (gethash seq no-conj-data) t))
+    no-conj-data))
 
-(defun has-conj-data (seq)
-  (nth-value 1 (gethash seq (ensure :has-conj-data))))
+(defun no-conj-data (seq)
+  (nth-value 1 (gethash seq (ensure :no-conj-data))))
 
 (defun get-conj-data (seq &optional from/conj-ids texts)
   "from/conj-ids can be either from which word to find conjugations or a list of conj-ids
    texts is a string or list of strings, if supplied, only the conjs that have src-map with this text will be collected
 "
-  (unless (has-conj-data seq)
+  (when (no-conj-data seq)
     (return-from get-conj-data nil))
   (unless (listp texts)
     (setf texts (list texts)))
