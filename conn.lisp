@@ -119,10 +119,9 @@
   (:method (cache-name)
     (let ((cache (get-cache cache-name)))
       (or (symbol-value (cache-var cache))
-          (let ((val (init-cache cache-name))
-                (cache (get-cache cache-name)))
-            (sb-thread:with-mutex ((cache-lock cache))
-              (or (symbol-value (cache-var cache))
+          (sb-thread:with-mutex ((cache-lock cache))
+            (or (symbol-value (cache-var cache))
+                (let ((val (init-cache cache-name)))
                   (setf (symbol-value (cache-var cache)) val))))))))
 
 (defmacro defcache (name var &body init-body)
