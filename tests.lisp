@@ -519,6 +519,7 @@
   (assert-segment "さもうれしそうに笑う" "さも" "うれしそう" "に" "笑う")
   (assert-segment "出しなに客が来る" "出しな" "に" "客" "が" "来る")
   (assert-segment "出しながら飛んで" "出し" "ながら" "飛んで")
+  (assert-segment "正直言いたい" "正直" "言いたい")
   )
 
 (define-test json-consistency-test

@@ -1003,6 +1003,7 @@
     2028980 ;; で
     1423000 ;; 着る
     1164690 ;; 一段
+    1587040 ;; 言う
     )
   "Words that get no kanji break penalty")
 
