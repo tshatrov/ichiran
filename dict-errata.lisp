@@ -836,6 +836,7 @@
   (set-common 'kana-text 1568080 "ふくろう" 0)
   (set-common 'kana-text 1025450 "ウイルス" :null)
   (set-common 'kana-text 1025450 "ウィルス" :null)
+  (set-common 'kana-text 1004320 "こうゆう" 0)
 
   (add-sense-prop 1219510 0 "misc" "uk")
   (add-sense-prop 1616370 0 "misc" "uk")
