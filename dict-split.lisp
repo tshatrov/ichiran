@@ -614,6 +614,10 @@
   (1157170 2)
   (1008490 1))
 
+(def-simple-split nil 2757540 90 () ;; 出しな
+  (1896380 1)
+  (2728200))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function

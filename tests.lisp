@@ -517,6 +517,8 @@
   (assert-segment "新型コロナウイルス" "新型コロナウイルス")
   (assert-segment "映画を見るとか食事をするとか" "映画" "を" "見る" "とか" "食事" "を" "する" "とか")
   (assert-segment "さもうれしそうに笑う" "さも" "うれしそう" "に" "笑う")
+  (assert-segment "出しなに客が来る" "出しな" "に" "客" "が" "来る")
+  (assert-segment "出しながら飛んで" "出し" "ながら" "飛んで")
   )
 
 (define-test json-consistency-test
