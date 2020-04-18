@@ -3,28 +3,39 @@
 (defvar *delays* nil)
 (defvar *msg-lock* (sb-thread:make-mutex :name "test-msg-lock"))
 
-(defun test-progress ()
+(defun test-progress (result &optional err)
+  "result indicates whether test passed or not. err indicates execution error"
   (sb-thread:with-mutex (*msg-lock*)
-    (princ ".")
+    (princ (cond
+             (err "E")
+             (result ".")
+             (t "F")))
     (force-output)))
 
-(defun assert-segment (str &rest segmentation)
-  (push
-   (let ((future (lparallel:future
-                   (prog1
-                       (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
-                                                (word-info-text wi)))
-                               (simple-segment str))
-                     (test-progress)))))
-     (lparallel:delay
-       (assert-equal segmentation (lparallel:force future))))
-   *delays*))
+(defmacro test-job ((result-var) tester &body worker)
+  (alexandria:with-gensyms (future error)
+    `(push
+      (let ((,future (lparallel:future (ignore-errors ,@worker))))
+        (lparallel:delay
+          (multiple-value-bind (,result-var ,error) (lparallel:force ,future)
+            (cond (,error
+                   (test-progress nil t)
+                   (error ,error))
+                  (t (test-progress ,tester))))))
+      *delays*)))
 
 (defmacro define-parallel-test (name &body body)
   `(define-test ,name
      (let ((*delays* nil))
        ,@body
        (map nil 'lparallel:force (reverse *delays*)))))
+
+
+(defun assert-segment (str &rest segmentation)
+  (test-job (result) (assert-equal segmentation result)
+    (mapcar (lambda (wi) (if (eql (word-info-type wi) :gap) :gap
+                             (word-info-text wi)))
+            (simple-segment str))))
 
 (define-parallel-test segmentation-test
   (assert-segment "ご注文はうさぎですか" "ご注文" "は" "うさぎ" "です" "か")
@@ -574,14 +585,17 @@
 
 ;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
-(defun run-all-tests ()
-  (init-all-caches)
-  (init-suffixes t)
 
+(defun run-parallel-tests (&optional (tests :all) (pkg :ichiran/test))
   (let* ((lparallel:*kernel* (lparallel:make-kernel 4))
          (res (unwind-protect
-                   (run-tests :all :ichiran/test)
+                   (run-tests tests pkg)
                 (lparallel:end-kernel))))
     (print-failures res)
     (print-errors res)
     res))
+
+(defun run-all-tests ()
+  (init-all-caches)
+  (init-suffixes t)
+  (run-parallel-tests))
