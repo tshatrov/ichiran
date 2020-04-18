@@ -1,16 +1,13 @@
 (in-package :ichiran/test)
 
 (defvar *delays* nil)
-(defvar *msg-lock* (sb-thread:make-mutex :name "test-msg-lock"))
 
 (defun test-progress (result &optional err)
   "result indicates whether test passed or not. err indicates execution error"
-  (sb-thread:with-mutex (*msg-lock*)
-    (princ (cond
-             (err "E")
-             (result ".")
-             (t "F")))
-    (force-output)))
+  (princ (cond
+           (err "E")
+           (result ".")
+           (t "F"))))
 
 (defmacro test-job ((result-var) tester &body worker)
   (alexandria:with-gensyms (future error)
