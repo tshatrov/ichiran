@@ -88,4 +88,4 @@
 
 (defpackage :ichiran/test
   (:use :cl :ichiran/all :lisp-unit)
-  (:export :run-all-tests))
+  (:export :run-all-tests :*test-thread-count* :run-parallel-tests))

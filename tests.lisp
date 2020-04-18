@@ -1,5 +1,6 @@
 (in-package :ichiran/test)
 
+(defparameter *test-thread-count* 4)
 (defvar *delays* nil)
 
 (defun test-progress (result &optional err)
@@ -580,11 +581,10 @@
         (unless (and (equal ctr "つ") (equal n "十一"))
           (assert-segment s s))))))
 
-;; (lisp-unit:run-tests '(ichiran/test::match-readings-test) :ichiran/test)
-
+;; (run-parallel-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-parallel-tests (&optional (tests :all) (pkg :ichiran/test))
-  (let* ((lparallel:*kernel* (lparallel:make-kernel 4))
+  (let* ((lparallel:*kernel* (lparallel:make-kernel *test-thread-count*))
          (res (unwind-protect
                    (run-tests tests pkg)
                 (lparallel:end-kernel))))
