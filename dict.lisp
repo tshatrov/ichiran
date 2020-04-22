@@ -482,12 +482,12 @@
 ;; > (query (:select (:max (:length 'text)) :from 'kanji-text) :single)
 ;; 27
 (defparameter *max-word-length* 50)
-(defparameter *substring-hash* (make-hash-table :test 'equal))
+(defparameter *substring-hash* nil)
 
 (defun find-word (word &key root-only)
   (when (<= (length word) *max-word-length*)
-    (multiple-value-bind (inits present-p) (gethash word *substring-hash*)
-      (if present-p
+    (multiple-value-bind (inits present-p) (and *substring-hash* (gethash word *substring-hash*))
+      (if (and present-p (not root-only))
           (loop for init in inits collect (apply 'make-instance init))
           (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
             (if root-only
@@ -497,16 +497,20 @@
                 (select-dao table (:= 'text word))))))))
 
 (defun find-substring-words (str &key sticky)
-  (let ((substring-hash (make-hash-table :test 'equal)))
+  (let ((substring-hash (make-hash-table :test 'equal))
+        kana-keys kanji-keys)
     (loop
        for start from 0 below (length str)
        unless (member start sticky)
        do (loop for end from (1+ start) upto (min (length str) (+ start *max-word-length*))
              unless (member end sticky)
-             do (setf (gethash (subseq str start end) substring-hash) nil)))
+             do (let ((part (subseq str start end)))
+                  (setf (gethash part substring-hash) nil)
+                  (if (test-word part :kana) (push part kana-keys) (push part kanji-keys)))))
     (loop
-       with keys = (alexandria:hash-table-keys substring-hash)
        for table in '(kana-text kanji-text)
+       for keys in (mapcar 'remove-duplicates (list kana-keys kanji-keys))
+       when keys
        do (loop for kt in (query (:select '* :from table :where (:in 'text (:set keys))) :plists)
              do (push (cons table kt) (gethash (getf kt :text) substring-hash))))
     substring-hash))
