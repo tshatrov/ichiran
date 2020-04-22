@@ -476,13 +476,40 @@
 
 ;;;
 
+
+;; > (query (:select (:max (:length 'text)) :from 'kana-text) :single)
+;; 37
+;; > (query (:select (:max (:length 'text)) :from 'kanji-text) :single)
+;; 27
+(defparameter *max-word-length* 50)
+(defparameter *substring-hash* (make-hash-table :test 'equal))
+
 (defun find-word (word &key root-only)
-  (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
-    (if root-only
-        (query-dao table (:select 'wt.* :from (:as table 'wt) :inner-join 'entry :on (:= 'wt.seq 'entry.seq)
-                                  :where (:and (:= 'text word)
-                                               'root-p)))
-        (select-dao table (:= 'text word)))))
+  (when (<= (length word) *max-word-length*)
+    (multiple-value-bind (inits present-p) (gethash word *substring-hash*)
+      (if present-p
+          (loop for init in inits collect (apply 'make-instance init))
+          (let ((table (if (test-word word :kana) 'kana-text 'kanji-text)))
+            (if root-only
+                (query-dao table (:select 'wt.* :from (:as table 'wt) :inner-join 'entry :on (:= 'wt.seq 'entry.seq)
+                                          :where (:and (:= 'text word)
+                                                       'root-p)))
+                (select-dao table (:= 'text word))))))))
+
+(defun find-substring-words (str &key sticky)
+  (let ((substring-hash (make-hash-table :test 'equal)))
+    (loop
+       for start from 0 below (length str)
+       unless (member start sticky)
+       do (loop for end from (1+ start) upto (min (length str) (+ start *max-word-length*))
+             unless (member end sticky)
+             do (setf (gethash (subseq str start end) substring-hash) nil)))
+    (loop
+       with keys = (alexandria:hash-table-keys substring-hash)
+       for table in '(kana-text kanji-text)
+       do (loop for kt in (query (:select '* :from table :where (:in 'text (:set keys))) :plists)
+             do (push (cons table kt) (gethash (getf kt :text) substring-hash))))
+    substring-hash))
 
 (defun find-words-seqs (words seqs)
   "generalized version of find-word-seq from dict-grammar"
@@ -1016,25 +1043,26 @@
 
 (defun join-substring-words* (str)
   (loop with sticky = (find-sticky-positions str)
+        with substring-hash = (find-substring-words str :sticky sticky)
         with katakana-groups = (consecutive-char-groups :katakana str)
         with number-groups = (consecutive-char-groups :number str)
         and kanji-break and ends
-        and slice = (make-slice)
        with suffix-map = (get-suffix-map str)
        for start from 0 below (length str)
        for katakana-group-end = (cdr (assoc start katakana-groups))
        for number-group-end = (cdr (assoc start number-groups))
        unless (member start sticky)
        nconcing
-       (loop for end from (1+ start) upto (length str)
+       (loop for end from (1+ start) upto (min (length str) (+ start *max-word-length*))
             unless (member end sticky)
             nconcing
-            (let* ((part (subseq-slice slice str start end))
+            (let* ((part (subseq str start end))
                    (segments (mapcar
                               (lambda (word)
                                 (make-segment :start start :end end :word word))
                               (let ((*suffix-map-temp* suffix-map)
-                                    (*suffix-next-end* end))
+                                    (*suffix-next-end* end)
+                                    (*substring-hash* substring-hash))
                                 (find-word-full part
                                                 :as-hiragana (and katakana-group-end (= end katakana-group-end))
                                                 :counter (and number-group-end
