@@ -343,12 +343,11 @@
   "from/conj-ids can be either from which word to find conjugations or a list of conj-ids
    texts is a string or list of strings, if supplied, only the conjs that have src-map with this text will be collected
 "
-  (when (no-conj-data seq)
+  (when (or (eql from/conj-ids :root) (no-conj-data seq))
     (return-from get-conj-data nil))
   (unless (listp texts)
     (setf texts (list texts)))
   (loop for conj in (cond
-                      ((eql from/conj-ids :root) nil)
                       ((null from/conj-ids)
                        (select-dao 'conjugation (:= 'seq seq)))
                       ((listp from/conj-ids)
