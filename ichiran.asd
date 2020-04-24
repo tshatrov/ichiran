@@ -17,7 +17,6 @@
                #:lisp-unit
                #:bordeaux-threads
                #:jsown
-               #:str
                #:lparallel
                )
   :components ((:file "package")

@@ -340,9 +340,15 @@
               (when match
                 (values (cons (subseq s1 0 m) match) (+ value m))))))))))
 
-
 (defun safe-subseq (sequence start &optional end)
   (let ((len (length sequence)))
     (when (and (<= 0 start len)
                (or (not end) (<= start end len)))
       (subseq sequence start end))))
+
+(defun join (separator strings)
+  (with-output-to-string (out)
+    (loop for string in strings
+       for mid = nil then t
+       if mid do (princ separator out)
+       do (princ string out))))

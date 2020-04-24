@@ -709,8 +709,8 @@
           (destructuring-bind (score &key (primary 0) (connector " ") root) attrs
             (let* ((word
                     (make-instance 'compound-text
-                                   :text (str:join "" (mapcar 'get-text split))
-                                   :kana (str:join connector (mapcar 'get-kana split))
+                                   :text (join "" (mapcar 'get-text split))
+                                   :kana (join connector (mapcar 'get-kana split))
                                    :primary (elt split primary)
                                    :words split
                                    :score-mod score))
