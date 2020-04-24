@@ -1471,7 +1471,7 @@
           for i from 1
           for rpos = pos then (if (equal pos "[]") rpos pos)
           for inf = (cdr (assoc "s_inf" props :test 'equal))
-          for rinf = (when inf (format nil "~{~a~^; ~}" inf))
+          for rinf = (when inf (join "; " inf))
           when (> i 1) do (terpri s)
           do (format s "~a. ~a ~@[《~a》 ~]~a" i rpos rinf gloss))))
 
@@ -1513,7 +1513,7 @@
      for rpos = pos then (if emptypos rpos pos)
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
      for inf = (cdr (assoc "s_inf" props :test 'equal))
-     for rinf = (when inf (format nil "~{~a~^; ~}" inf))
+     for rinf = (when inf (join "; " inf))
      when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
                (or (not (or reading-getter reading))
                    (not (or (assoc "stagk" props :test 'equal)
@@ -1672,11 +1672,7 @@
 (defun map-word-info-kana (fn word-info &key (separator "/")
                            &aux (wkana (word-info-kana word-info)))
   (if (listp wkana)
-      (with-output-to-string (s)
-        (loop for str in (simplify-reading-list (mapcar fn wkana))
-             for first = t then nil
-             unless first do (princ separator s)
-             do (princ str s)))
+      (join separator (simplify-reading-list (mapcar fn wkana)))
       (funcall fn wkana)))
 
 (defun word-info-reading-str (word-info)
