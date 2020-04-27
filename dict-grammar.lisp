@@ -18,10 +18,14 @@
 
 (defun get-kana-forms* (seq)
   (loop for kt in
-       (query-dao 'kana-text (:select 'kt.* :distinct :from (:as 'kana-text 'kt)
-                                      :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
-                                      :where (:or (:= 'kt.seq seq)
-                                                  (:= 'conj.from seq))))
+       (query-dao 'kana-text
+                  (:union
+                   (:select 'kt.* :from (:as 'kana-text 'kt)
+                            :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
+                            :where (:= 'kt.seq seq))
+                   (:select 'kt.* :from (:as 'kana-text 'kt)
+                            :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
+                            :where (:= 'conj.from seq))))
        if (= (seq kt) seq)
        do (setf (word-conjugations kt) :root) and collect kt
        else if (let ((conj-ids (get-kana-forms-conj-data-filter (get-conj-data (seq kt) seq))))
