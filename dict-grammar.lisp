@@ -20,9 +20,7 @@
   (loop for kt in
        (query-dao 'kana-text
                   (:union
-                   (:select 'kt.* :from (:as 'kana-text 'kt)
-                            :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
-                            :where (:= 'kt.seq seq))
+                   (:select 'kt.* :from (:as 'kana-text 'kt) :where (:= 'kt.seq seq))
                    (:select 'kt.* :from (:as 'kana-text 'kt)
                             :left-join (:as 'conjugation 'conj) :on (:= 'conj.seq 'kt.seq)
                             :where (:= 'conj.from seq))))
