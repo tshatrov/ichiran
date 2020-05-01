@@ -330,9 +330,9 @@
   ;; seq's that DON'T have conj data are calculated here
   ;; both because there's less of them, and it's generally safer when new conjs are added
   (let ((no-conj-data (make-hash-table :size 200000)))
-    (dolist (seq (query (:select (:distinct 'entry.seq) :from 'entry
+    (dolist (seq (query (:select 'entry.seq :from 'entry
                                  :left-join (:as 'conjugation 'c) :on (:= 'entry.seq 'c.seq)
-                                 :where (:and (:is-null 'c.seq))) :column))
+                                 :where (:is-null 'c.seq)) :column))
       (setf (gethash seq no-conj-data) t))
     no-conj-data))
 
