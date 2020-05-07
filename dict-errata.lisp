@@ -712,7 +712,7 @@
   (add-sense-prop 1241380 0 "pos" "ctr") ;; 斤
 
   ;;; add sense for な
-  (add-sense 2029110 5 "indicates な-adjective")
+  (add-new-sense* 2029110 "prt" "indicates な-adjective")
 
   (add-reading 2757120 "問うは一度の恥問わぬは末代の恥")
   )
@@ -842,6 +842,12 @@
   (add-sense-prop 1616370 0 "misc" "uk")
 
   (add-new-sense* 1315920 "ctr" "hours (period of)")
+
+  (add-new-sense 1220540 '("ctr" "n") '("season (of a TV show)"))
+  (add-sense-prop 1220540 0 "pos" "ctr")
+  (add-sense-prop 1220540 3 "pos" "ctr")
+  (add-sense-prop 1220540 4 "pos" "ctr")
+  (add-sense-prop 1220540 5 "pos" "ctr")
   )
 
 (defun add-errata-counters ()
@@ -864,19 +870,13 @@
   (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
   (add-sense-prop 1100380 3 "pos" "ctr") ;; パー
 
-  (add-sense 1215240 1 "counter for rooms") ;; 間
   (add-sense-prop 1215240 1 "pos" "ctr")
-  (add-sense 1583470 3 "counter for dishes") ;; 品（しな）
-  (add-sense-prop 1583470 3 "pos" "ctr")
+  (add-new-sense* 1583470 "ctr" "counter for dishes") ;; 品（しな）
 
   (add-sense-prop 1411070 0 "pos" "ctr") ;; 袋
   (add-sense-prop 1411070 1 "pos" "n")
 
   (add-sense-prop 1328810 0 "pos" "ctr") ;; 種
-
-  (add-sense 1220540 5 "season (of a TV show)")
-  (add-sense-prop 1220540 5 "pos" "n")
-  (add-sense-prop 1220540 5 "pos" "ctr") ;; 期
 
   (add-sense-prop 1284220 0 "pos" "ctr") ;; 号
   (add-sense-prop 1284220 1 "pos" "n")
@@ -930,8 +930,7 @@
 
   (add-sense-prop 1297240 0 "pos" "ctr") ;; 作
 
-  (add-sense 2262420 4 "counter for strings") ;; 弦
-  (add-sense-prop 2262420 4 "pos" "ctr")
+  (add-new-sense* 2262420 "ctr" "counter for strings") ;; 弦
 
   (add-sense-prop 1368480 0 "pos" "ctr") ;; 人前
   (add-gloss 1368480 0 "for N people")
