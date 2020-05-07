@@ -79,9 +79,21 @@
                          "s_inf" "stagk" "stagr")
            do (insert-sense-traits node tag sense-id seq)))))
 
-(defun add-new-sense (seq positions glosses)
-  (let* ((senses (get-senses-raw seq))
-         (last-sense (car (last senses)))
+(defun sense-exists-p (senses positions glosses)
+  (loop
+     with glosses-str = (join "; " glosses)
+     for sense in senses
+     for props = (getf sense :props)
+     for gloss = (getf sense :gloss)
+     for pos = (cdr (assoc "pos" props :test 'equal))
+     for rpos = pos then (or pos rpos)
+     thereis (and (equal rpos positions)
+                  (equal glosses-str gloss))))
+
+(defun add-new-sense (seq positions glosses &aux (senses (get-senses-raw seq)))
+  (when (sense-exists-p senses positions glosses)
+    (return-from add-new-sense nil))
+  (let* ((last-sense (car (last senses)))
          (ord (1+ (getf last-sense :ord)))
          (last-pos (loop for s in (reverse senses)
                       for props = (getf s :props)
@@ -94,7 +106,8 @@
     (unless (equal last-pos positions)
       (loop for sord from 0
          for pos in positions
-         do (make-dao 'sense-prop :sense-id sense-id :tag "pos" :text pos :ord sord :seq seq)))))
+         do (make-dao 'sense-prop :sense-id sense-id :tag "pos" :text pos :ord sord :seq seq)))
+    (values sense-id ord)))
 
 (defun next-seq ()
   (1+ (query (:select (:max 'seq) :from 'entry) :single)))

@@ -131,6 +131,9 @@
            for gloss in glosses
            do (make-dao 'gloss :sense-id sense-id :text gloss :ord gord)))))
 
+(defun add-new-sense* (seq pos &rest glosses)
+  (add-new-sense seq (list pos) glosses))
+
 (defun add-gloss (seq ord &rest texts)
   (let* ((sense-id (query (:select 'id :from 'sense :where (:and (:= 'seq seq) (:= 'ord ord))) :single))
          (glosses (select-dao 'gloss (:= 'sense-id sense-id) (:desc :ord)))
@@ -678,9 +681,6 @@
   (set-primary-nokanji 1258330 nil) ;; いぬ
   (set-primary-nokanji 1588930 nil) ;; おかず
 
-  (add-sense 1315920 2 "hours (period of)") ;; 時間
-  (add-sense-prop 1315920 2 "pos" "ctr")
-
   (add-sense-prop 1445160 0 "pos" "ctr") ;; 度
   )
 
@@ -840,6 +840,8 @@
 
   (add-sense-prop 1219510 0 "misc" "uk")
   (add-sense-prop 1616370 0 "misc" "uk")
+
+  (add-new-sense* 1315920 "ctr" "hours (period of)")
   )
 
 (defun add-errata-counters ()
