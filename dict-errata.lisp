@@ -848,6 +848,9 @@
   (add-sense-prop 1220540 3 "pos" "ctr")
   (add-sense-prop 1220540 4 "pos" "ctr")
   (add-sense-prop 1220540 5 "pos" "ctr")
+
+  (add-sense-prop 2842087 0 "pos" "ctr") ;; パー
+  (set-common 'kana-text 2842087 "パー" 0)
   )
 
 (defun add-errata-counters ()
@@ -868,7 +871,6 @@
   (add-sense-prop 1281690 1 "pos" "n")
   (add-sense-prop 1042610 1 "pos" "ctr") ;; キロ
   (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
-  (add-sense-prop 1100380 3 "pos" "ctr") ;; パー
 
   (add-sense-prop 1215240 1 "pos" "ctr")
   (add-new-sense* 1583470 "ctr" "counter for dishes") ;; 品（しな）
