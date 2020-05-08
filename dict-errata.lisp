@@ -851,6 +851,9 @@
 
   (add-sense-prop 2842087 0 "pos" "ctr") ;; パー
   (set-common 'kana-text 2842087 "パー" 0)
+
+  (add-sense-prop 1956530 1 "pos" "n")
+
   )
 
 (defun add-errata-counters ()
