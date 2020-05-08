@@ -1566,6 +1566,9 @@
       (format s "~a : " (reading-str-seq seq))
       (when sense-str (princ sense-str s)))))
 
+(defun entry-info-long (seq)
+  (format nil "~a~@[ ~a~%~]~a" seq (reading-str-seq seq) (get-senses-str seq)))
+
 (defun select-conjs (seq &optional conj-ids)
   (if conj-ids
       (unless (eql conj-ids :root)

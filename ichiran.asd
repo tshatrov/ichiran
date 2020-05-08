@@ -18,6 +18,7 @@
                #:bordeaux-threads
                #:jsown
                #:lparallel
+               #:diff
                )
   :components ((:file "package")
                (:file "characters")

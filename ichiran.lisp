@@ -1,11 +1,12 @@
 (defpackage :ichiran/maintenance
   (:nicknames :ichiran/mnt)
   (:use :cl :postmodern :ichiran/conn)
+  (:import-from :ichiran/characters :split-by-regex)
   (:import-from :ichiran/dict :load-jmdict :load-best-readings
                 :add-errata :recalc-entry-stats
                 :init-suffixes :init-suffixes-running-p
                 :find-word :find-word-full :dict-segment :calc-score
-                :entry-info-short)
+                :entry-info-short :entry-info-long)
   (:import-from :ichiran/kanji :load-kanjidic :load-kanji-stats)
   (:export
    #:full-init
@@ -18,7 +19,11 @@
    #:custom-init
    #:compare-queries
    #:display-seq-set
-   #:switch-connection))
+   #:switch-connection
+   #:diff-content
+   #:show-missing-constants
+   #:get-seq-changes
+   #:show-diffs))
 
 (in-package :ichiran/maintenance)
 
@@ -83,8 +88,8 @@
     (ppcre:all-matches-as-strings regex contents)))
 
 
-(defun get-hardcoded-constants ()
-  (loop with regex = "\\b\\d{7,}\\b"
+(defun get-hardcoded-constants (&key regex)
+  (loop with regex = (or regex "\\b\\d{7,}\\b")
      for component in (asdf:component-children (asdf:find-system :ichiran))
      for name = (asdf:component-name component)
      for filename = (asdf:component-pathname component)
@@ -104,3 +109,34 @@
 
 (defun show-missing-constants (old-conn new-conn)
   (display-seq-set (collect-entries (get-hardcoded-constants) :conn new-conn) () :conn old-conn))
+
+
+;; (get-seq-changes old new :regex "(?<=\\(add-sense-prop )\\d{7,}") to find seq changes in sense-prop stuff
+
+(defun get-seq-changes (old-conn new-conn &key regex seqs)
+  (let ((seqs (or seqs (get-hardcoded-constants :regex regex)))
+        (diffs (make-hash-table :test 'equal)))
+    (multiple-value-bind (old new)
+        (compare-queries old-conn new-conn
+          (:select 'seq 'content :from 'entry :where (:in 'seq (:set seqs))))
+      (loop for (seq content) in old
+         do (setf (gethash seq diffs) (cons content nil)))
+      (loop for (seq content) in new
+         for diff = (gethash seq diffs)
+         if diff do (setf (cdr (gethash seq diffs)) content)
+         else do (setf (gethash seq diffs) (cons nil content))))
+    diffs))
+
+(defun diff-content (old new &key (short t))
+  (let* ((re-newline "[\\r\\n]+")
+         (old (and old (split-by-regex re-newline old)))
+         (new (and new (split-by-regex re-newline new))))
+    (cond ((and short (not new)) :gone)
+          ((and short (not old)) :new)
+          (t (with-output-to-string (s)
+               (diff:render-diff (diff:generate-seq-diff 'diff:unified-diff old new) s))))))
+
+(defun show-diffs (diffs &key (short t) (entry-info t))
+  (loop for seq in (sort (alexandria:hash-table-keys diffs) '<)
+     for (old . new) = (gethash seq diffs)
+     collect (cons (if entry-info (entry-info-long seq) seq) (diff-content old new :short short))))
