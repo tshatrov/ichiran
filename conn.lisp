@@ -135,7 +135,7 @@
 
 (defun init-all-caches (&optional reset)
   (loop with fn = (if reset 'reset-cache 'ensure)
-     for (name . rest) on (all-caches) by #'cddr
+     for (name) on (all-caches) by #'cddr
      do (funcall fn name)))
 
 (defun dp (value &key (fn 'print))

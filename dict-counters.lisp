@@ -94,7 +94,7 @@
 (defun get-digit (n)
   (let ((digit (mod n 10)))
     (if (zerop digit)
-        (loop for (p pn . rest) on '(10 100 1000 10000 #10r100000000)
+        (loop for (p pn) on '(10 100 1000 10000 #10r100000000)
            when (and pn (not (zerop (mod n pn)))) do (return p))
         digit)))
 

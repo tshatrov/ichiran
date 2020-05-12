@@ -298,7 +298,7 @@ Returns 2 values, whether the entry should be either added or updated, and which
      )))
 
 (defun load-custom-data (&optional keys silent-p)
-  (let ((loaders (loop for (key loader . rest) on (get-custom-data) by #'cddr
+  (let ((loaders (loop for (key loader) on (get-custom-data) by #'cddr
                     if (or (not keys) (find key keys)) collect loader))
         (*silent-p* silent-p))
     (dolist (loader loaders)
