@@ -348,7 +348,6 @@
 
 (defun join (separator strings)
   (with-output-to-string (out)
-    (loop for string in strings
-       for mid = nil then t
-       if mid do (princ separator out)
-       do (princ string out))))
+    (loop for (string . more) on strings
+       do (princ string out)
+       if more do (princ separator out))))
