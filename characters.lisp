@@ -346,8 +346,9 @@
                (or (not end) (<= start end len)))
       (subseq sequence start end))))
 
-(defun join (separator strings)
+(defun join (separator list &key key)
   (with-output-to-string (out)
-    (loop for (string . more) on strings
+    (loop for (obj . more) on list
+       for string = (if key (funcall key obj) obj)
        do (princ string out)
        if more do (princ separator out))))

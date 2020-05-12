@@ -133,9 +133,6 @@
      finally (push (nreverse cur-group) groups)
        (return
          (if separator
-             (with-output-to-string (out)
-               (loop for (group . more) on (nreverse groups)
-                  do (princ (group-to-kana group) out)
-                  when more do (princ separator out)))
+             (join separator (nreverse groups) :key 'group-to-kana)
              (loop for group in (nreverse groups)
                 collect (group-to-kana group))))))
