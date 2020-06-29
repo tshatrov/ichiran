@@ -48,7 +48,7 @@
    (text :reader text :col-type string :initarg :text)
    (suffixp :reader suffixp :col-type boolean :initarg :suffixp :initform nil)
    (prefixp :reader prefixp :col-type boolean :initarg :prefixp :initform nil)
-   
+
    (stat-common :documentation "Number of common words that use this reading"
                 :accessor stat-common :col-type integer :initform 0))
   (:metaclass dao-class)
@@ -103,7 +103,7 @@
   (with-connection *connection*
     (let ((tables '(kanji reading okurigana meaning)))
       (loop for table in (reverse tables)
-         do (query (:drop-table :if-exists table)))
+         do (drop-table table :if-exists t))
       (loop for table in tables
          do (create-table table)))))
 
@@ -148,11 +148,11 @@
        (let ((okuri (getf rinfo :okuri)))
          (remf rinfo :okuri)
          (let ((robj (apply #'make-dao 'reading :text text :kanji-id kanji-id rinfo)))
-           (loop with rid = (id robj) 
+           (loop with rid = (id robj)
               for of in okuri
               do (make-dao 'okurigana :text of :reading-id rid)))))
      readings)))
-  
+
 
 (defun load-kanji (content)
   (let* ((parsed (cxml:parse content (cxml-dom:make-dom-builder)))
@@ -211,7 +211,7 @@
                                                      (:not (:in 'r.type (:set typeset))))))))
             (setf (gethash key *reading-cache*) result))
           val))))
-  
+
 (defun get-readings (char &key names)
   (let ((str (if (typep char 'character) (make-string 1 :initial-element char) char))
         (typeset (if names nil '("ja_na"))))
@@ -271,7 +271,7 @@
                      (if (eql match :none) :none
                          (values (cons item match) score)))
                  :none)))))
-   
+
 (defun make-rmap (str)
   (loop with prev-kanji
      for start from 0 below (length str)
@@ -306,7 +306,7 @@
          finally
            (when charbag (push (coerce (nreverse charbag) 'string) result))
            (return (nreverse result))))))
-               
+
 (defun get-original-reading (rtext &optional rendaku geminated)
   (when rendaku
     (setf rtext (unrendaku rtext :fresh t)))
@@ -322,7 +322,7 @@
          (irregular 0))
     (loop for (seq k r common) in words
          for reading = (assoc str (remove-if-not 'listp (match-readings k r)) :test 'equal)
-         if reading do 
+         if reading do
          (destructuring-bind (rtext rtype &rest options) (cdr reading)
            (if (equal rtype "irr")
                (incf irregular)
@@ -330,7 +330,7 @@
                  (incf (gethash key r-stat 0)))))
          else do (incf irregular))
     (values (alexandria:hash-table-alist r-stat) irregular (length words))))
-         
+
 (defun load-kanji-stats ()
   (with-connection *connection*
     (query (:update 'kanji :set 'stat-common 0 'stat-irregular 0))
@@ -456,7 +456,7 @@
        (let ((match (match-readings str reading)))
          (when match
            (process-match-json match)))))
-         
+
 (defmacro query-kanji-json (var query &body extra-fields)
   (alexandria:with-gensyms  (js)
     `(with-connection *connection*

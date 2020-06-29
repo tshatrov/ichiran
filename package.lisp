@@ -40,6 +40,7 @@
 (defpackage :ichiran/dict
   (:use :cl :postmodern :split-sequence
         :ichiran/characters :ichiran/conn :ichiran/numbers)
+  (:import-from :postmodern :drop-table)
   (:export :simple-segment :dict-segment :word-info-from-text
            :word-info :word-info-type :word-info-text
            :word-info-kana :word-info-score :map-word-info-kana
@@ -73,6 +74,7 @@
 
 (defpackage :ichiran/kanji
   (:use :cl :postmodern :ichiran/conn :ichiran :ichiran/characters :ichiran/dict)
+  (:import-from :postmodern :drop-table)
   (:export
    :kanji-info-json
    :match-readings

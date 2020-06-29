@@ -9,7 +9,7 @@
     (let ((tables '(entry kanji-text kana-text sense gloss sense-prop conjugation conj-prop
                     conj-source-reading restricted-readings)))
       (loop for table in (reverse tables)
-         do (query (:drop-table :if-exists table)))
+         do (drop-table table :if-exists t))
       (loop for table in tables
          do (create-table table)))))
 
