@@ -888,14 +888,9 @@
   (add-sense-prop 1284220 1 "pos" "n")
   (add-sense-prop 1284220 1 "pos" "n-suf")
   (add-sense-prop 1482360 0 "pos" "ctr") ;; 番地
-  (add-sense-prop 1473230 1 "pos" "ctr") ;; 倍
   (add-sense-prop 2022640 0 "pos" "ctr") ;; 番
-  (add-sense-prop 2022640 1 "pos" "n")
   (add-sense-prop 1175570 0 "pos" "ctr") ;; 円
   (add-sense-prop 1175570 1 "pos" "n")
-  (add-sense-prop 1270910 1 "pos" "ctr") ;; 語
-  (add-sense-prop 1270910 1 "pos" "n")
-  (add-sense-prop 1270910 1 "pos" "n-suf")
   (add-sense-prop 1315130 0 "pos" "ctr") ;; 字
   (add-sense-prop 1315130 1 "pos" "n")
   (add-sense-prop 1199640 0 "pos" "ctr") ;; 回転
@@ -903,7 +898,6 @@
   (add-sense-prop 1047880 0 "pos" "ctr") ;; ケース
   (add-sense-prop 1047880 1 "pos" "n")
 
-  (add-sense-prop 1214540 0 "pos" "ctr") ;; 缶
   (add-sense-prop 1244080 0 "pos" "ctr") ;; 区
   (add-sense-prop 1239700 0 "pos" "ctr") ;; 曲
 
