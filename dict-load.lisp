@@ -61,7 +61,7 @@
        do (make-dao table :seq seq :text reading-text :ord ord :common common :nokanji nokanji
                     :common-tags pri-tags))
     (query (:update 'entry
-                    :set 'primary-nokanji t
+                    :set 'primary-nokanji primary-nokanji
                     (ecase table (kana-text 'n-kana) (kanji-text 'n-kanji)) (length to-add)
                     :where (:= 'seq seq)))))
 
