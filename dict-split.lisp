@@ -996,11 +996,19 @@
      2840063 ;; に当たっては
      2841096 ;; と言うものは
      2841959 ;; 詳しくは
+     2844687 ;; 我こそは
+     2844836 ;; ようによっては
      )
     (l k)
   (:test (alexandria:ends-with #\は k))
   (:space (- l 1))
   (:mod (- l 1)))
+
+(def-simple-hint (2844416 ;;　へと
+                  )
+    (l k)
+  (:space (- l 1))
+  (:mod 0))
 
 (def-simple-hint
     (2097010 ;; ところへ
@@ -1232,6 +1240,7 @@
      2831359 ;; "無くてはいけません" "なくてはいけません")
      2833597 ;; "君子は豹変す" "くんしはひょうへんす")
      2839953 ;; それはそれとして
+     2844002 ;; ルールはルール
      )
     (l k)
   (ha (search "は" k :from-end t))
@@ -1250,6 +1259,19 @@
   (:space (1+ ha))
   (:space no)
   (:space (1+ no)))
+
+(def-simple-hint (2845260) ;; "他所 は 他所 うち は うち"
+    (l k)
+  (ha1 (search "は" k))
+  (ha2 (search "は" k :from-end t))
+  (uu (search "う" k))
+  (:space ha1)
+  (:mod ha1)
+  (:space (1+ ha1))
+  (:space uu)
+  (:space ha2)
+  (:mod ha2)
+  (:space (1+ ha2)))
 
 
 ;; Easy hints!
@@ -1382,6 +1404,12 @@
 (def-easy-hint 2843805 "細工 は 流々 仕上げ を 御覧じろ")
 (def-easy-hint 2843453 "立てば 芍薬 座れば 牡丹 歩く姿 は 百合 の 花")
 (def-easy-hint 2843281 "九層 の 台 は 累土 より 起こる")
+(def-easy-hint 2844718 "老いて は 益々壮ん なるべし") ;; 益々 is irr match
+(def-easy-hint 2844721 "若い時 は 二度ない")
+(def-easy-hint 2844870 "習わぬ 経 は 読めぬ")
+(def-easy-hint 2844963 "避けて は 通れない")
+(def-easy-hint 2844990 "戴くもの は 夏 も 小袖")
+(def-easy-hint 2845002 "魚 は 頭 から 腐る")
 
 ;; は は
 
@@ -1426,6 +1454,8 @@
 (def-easy-hint 2836731 "男 は 松 女 は 藤")
 (def-easy-hint 2839233 "転がる 石 に は 苔 は 付かない")
 (def-easy-hint 2835297 "此れ は 此れ は")
+(def-easy-hint 2845254 "上戸 は 毒 を 知らず 下戸 は 薬 を 知らず")
+(def-easy-hint 2845255 "文 は やりたし 書く手 は 持たぬ")
 
 ;; には には
 
@@ -1457,6 +1487,7 @@
 (def-easy-hint 2838865 "だけ の 事 は ある")
 (def-easy-hint 2838606 "今日 の ところ は")
 (def-easy-hint 2838426 "木 の 実 は 本 へ 落つ")
+(def-easy-hint 2845252 "下戸 の 建てた 蔵 は ない")
 
 ;; は の
 (def-easy-hint 1487700 "必要 は 発明 の 母")
@@ -1488,6 +1519,7 @@
 (def-easy-hint 2837015 "落ち武者 は 薄 の 穂 に 怖ず")
 (def-easy-hint 2837756 "風邪 は 万病 の 元")
 (def-easy-hint 2842831 "口 は 災い の 門")
+(def-easy-hint 2843962 "生 は 死 の 始め")
 
 ;; は を
 (def-easy-hint 1213500 "甘言 は 偶人 を 喜ばす")
@@ -1512,6 +1544,9 @@
 (def-easy-hint 2419440 "敗軍 の 将 は 兵 を 語らず")
 (def-easy-hint 2834645 "飢えたる 犬 は 棒 を 恐れず")
 (def-easy-hint 2836094 "満 は 損 を 招く")
+(def-easy-hint 2844015 "大徳 は 小怨 を 滅す")
+(def-easy-hint 2844292 "氷 は 水 より 出でて 水 よりも 寒し")
+(def-easy-hint 2845250 "芸 は 身 を 助ける")
 
 ;; と は
 (def-easy-hint 2095170 "天才 と 狂人 は 紙一重")
@@ -1548,6 +1583,8 @@
 (def-easy-hint 2837518 "文 は 武 に 勝る")
 (def-easy-hint 2837552 "巧遅 は 拙速 に 如かず")
 (def-easy-hint 2842829 "悪名 は 無名 に 勝る")
+(def-easy-hint 2845256 "志 は 松 の 葉 に 包め")
+(def-easy-hint 2845443 "天災 は 忘れた頃 に やってくる")
 
 ;; に は
 
@@ -1594,6 +1631,7 @@
 (def-easy-hint 2017030 "次 から 次 へ と")
 (def-easy-hint 2098540 "中 へ 中 へ")
 (def-easy-hint 2102190 "上 を 下 へ の 大騒ぎ")
+(def-easy-hint 2845308 "寺 から 里 へ")
 
 ;; unsorted
 

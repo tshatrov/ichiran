@@ -863,6 +863,18 @@
 
   (add-sense-prop 1586290 0 "misc" "uk")
 
+  (add-reading 2844015 "だいとくはしょうえんをめっす")
+  (delete-reading 2844015 "だいとくはしょうえんめっす")
+  (add-reading 2844292 "こおりはみずよりいでてみずよりもさむし")
+  (delete-reading 2844292 "はみずよりいでてみずよりもさむし")
+  (add-reading 2844870 "ならわぬきょうはよめぬ")
+  (delete-reading 2844870 "ならわぬきょうはよまぬ")
+
+  (add-reading 2845255 "文はやりたし書く手は持たぬ")
+  (add-reading 2845255 "文は遣りたし書く手は持たぬ")
+  (delete-reading 2845255 "文はやりたし書く手は待たぬ")
+  (delete-reading 2845255 "文は遣りたし書く手は待たぬ")
+
   (rearrange-readings-conj 1980880 'kanji-text "かけ直")
   )
 
