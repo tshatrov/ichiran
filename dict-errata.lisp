@@ -550,6 +550,7 @@
   (add-errata-apr19)
   (add-errata-jan20)
   (add-errata-apr20)
+  (add-errata-jul20)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -855,6 +856,10 @@
 
   (add-sense-prop 1956530 1 "pos" "n")
 
+  )
+
+(defun add-errata-jul20 ()
+  (set-common 'kana-text 2101130 "し" :null)
   )
 
 (defun add-errata-counters ()
