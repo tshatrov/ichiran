@@ -788,8 +788,13 @@
          (conj-only (let ((wc (word-conjugations reading))) (and wc (not (eql wc :root)))))
          (root-p (or ctr-mode (and (not conj-only) (root-p entry))))
          (conj-data (word-conj-data reading))
+
+         (secondary-conj-p (and conj-data
+                                (or (every 'conj-data-via conj-data)
+                                    ;; if this is nil, delete all secondary conjugations from conj data
+                                    (and (setf conj-data (delete-if 'conj-data-via (the cons conj-data))) nil))))
+
          (conj-of (mapcar #'conj-data-from conj-data))
-         (secondary-conj-p (and conj-data (every #'conj-data-via conj-data)))
          (conj-props (mapcar 'conj-data-prop conj-data))
          (conj-types (mapcar 'conj-type conj-props))
          (conj-types-p (or root-p use-length
