@@ -860,6 +860,8 @@
 
 (defun add-errata-jul20 ()
   (set-common 'kana-text 2101130 "し" :null)
+
+  (add-sense-prop 1586290 0 "misc" "uk")
   )
 
 (defun add-errata-counters ()

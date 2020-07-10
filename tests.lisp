@@ -531,6 +531,7 @@
   (assert-segment "正直言いたい" "正直" "言いたい")
   (assert-segment "おとめにふさわしい振る舞い" "おとめ" "に" "ふさわしい" "振る舞い")
   (assert-segment "気がないのよ" "気がない" "の" "よ")
+  (assert-segment "口論のあげくに殴り合いになった" "口論" "の" "あげく" "に" "殴り合い" "に" "なった")
   )
 
 (define-test json-consistency-test
