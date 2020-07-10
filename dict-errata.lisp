@@ -862,6 +862,8 @@
   (set-common 'kana-text 2101130 "し" :null)
 
   (add-sense-prop 1586290 0 "misc" "uk")
+
+  (rearrange-readings-conj 1980880 'kanji-text "かけ直")
   )
 
 (defun add-errata-counters ()
