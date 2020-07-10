@@ -665,6 +665,15 @@
 (def-special-counter 1515340 ()
   (args 'counter-hifumi "包み" "つつみ" :digit-set '(1 2 3)))
 
+(def-special-counter 2452360 ()
+  (args 'counter-hifumi "片" "ひら" :digit-set '(1 2 3)))
+
+(def-special-counter 2844070 ()
+  (args 'counter-hifumi "腰" "こし" :digit-set '(1 2 3)))
+
+(def-special-counter 2844196 ()
+  (args 'counter-hifumi "緡" "さし" :digit-set '(1 2 3)))
+
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
 
