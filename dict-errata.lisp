@@ -860,6 +860,7 @@
 
 (defun add-errata-jul20 ()
   (set-common 'kana-text 2101130 "し" :null)
+  (set-common 'kanji-text 1982860 "代" 0)
 
   (add-sense-prop 1586290 0 "misc" "uk")
 
