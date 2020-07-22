@@ -623,6 +623,10 @@
   (1896380 1)
   (2728200))
 
+(def-simple-split nil 1606530 100 (len txt) ;;　わかりきる
+  (("分かり" 1606560) 3)
+  (1384830 nil t))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
