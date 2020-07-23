@@ -862,6 +862,14 @@
   (set-common 'kana-text 2101130 "し" :null)
   (set-common 'kanji-text 1982860 "代" 0)
   (set-common 'kana-text 1367020 "ひとけ" 0)
+  (set-common 'kana-text 1002190 "おしり" 0)
+
+  (add-reading 2217330 "ワイ")
+  (add-primary-nokanji 2217330 "ワイ")
+  (add-sense-prop 2217330 0 "misc" "uk")
+  (delete-sense-prop 2217330 "misc" "arch")
+
+  (add-reading 1103270 "ぱんつ")
 
   (add-sense-prop 1586290 0 "misc" "uk")
 
