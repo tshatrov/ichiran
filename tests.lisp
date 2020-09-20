@@ -539,6 +539,7 @@
   (assert-segment "どうせいやがらせでする" "どうせ" "いやがらせ" "で" "する")
   (assert-segment "芝居もどきのせりふを言う" "芝居" "もどき" "の" "せりふ" "を" "言う")
   (assert-segment "がんもどきという食品" "がんもどき" "と" "いう" "食品")
+  (assert-segment "落ちこぼれている" "落ちこぼれている")
   )
 
 (define-test json-consistency-test
