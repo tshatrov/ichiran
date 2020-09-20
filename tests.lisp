@@ -540,6 +540,7 @@
   (assert-segment "芝居もどきのせりふを言う" "芝居" "もどき" "の" "せりふ" "を" "言う")
   (assert-segment "がんもどきという食品" "がんもどき" "と" "いう" "食品")
   (assert-segment "落ちこぼれている" "落ちこぼれている")
+  (assert-segment "1話しか見てない" "1話" "しか" "見てない")
   )
 
 (define-test json-consistency-test
