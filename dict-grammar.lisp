@@ -391,9 +391,10 @@
 
 (def-simple-suffix suffix-te-ren :teren (:connector "" :score 4) (root)
   (and (not (equal root "で"))
-       (if (find (char root (1- (length root))) "てで")
-           (find-word-with-conj-type root 3)
-           (find-word-with-conj-type root 13))))
+       (cond ((find (char root (1- (length root))) "てで")
+              (find-word-with-conj-type root 3))
+             ((not (member root '("い") :test 'equal))
+              (find-word-with-conj-type root 13)))))
 
 (def-simple-suffix suffix-teii :teii (:connector " " :score 1) (root)
   (and (find (char root (1- (length root))) "てで")

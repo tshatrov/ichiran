@@ -536,6 +536,7 @@
   (assert-segment "30分後におかけ直しください" "30分" "後" "に" "お" "かけ直し" "ください")
   (assert-segment "わかりきった" "わかりきった")
   (assert-segment "最良の方法は何だと思いますか" "最良" "の" "方法" "は" "何" "だ" "と" "思います" "か")
+  (assert-segment "どうせいやがらせでする" "どうせ" "いやがらせ" "で" "する")
   )
 
 (define-test json-consistency-test

@@ -871,7 +871,9 @@
 
   (add-reading 1103270 "ぱんつ")
 
-  (add-sense-prop 1586290 0 "misc" "uk")
+  (add-sense-prop 1586290 0 "misc" "uk") ;; あげく
+
+  (add-sense-prop 1257260 0 "misc" "uk") ;; いやがらせ
 
   (add-reading 2844015 "だいとくはしょうえんをめっす")
   (delete-reading 2844015 "だいとくはしょうえんめっす")
