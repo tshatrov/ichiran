@@ -537,6 +537,8 @@
   (assert-segment "わかりきった" "わかりきった")
   (assert-segment "最良の方法は何だと思いますか" "最良" "の" "方法" "は" "何" "だ" "と" "思います" "か")
   (assert-segment "どうせいやがらせでする" "どうせ" "いやがらせ" "で" "する")
+  (assert-segment "芝居もどきのせりふを言う" "芝居" "もどき" "の" "せりふ" "を" "言う")
+  (assert-segment "がんもどきという食品" "がんもどき" "と" "いう" "食品")
   )
 
 (define-test json-consistency-test

@@ -863,6 +863,9 @@
   (set-common 'kanji-text 1982860 "代" 0)
   (set-common 'kana-text 1367020 "ひとけ" 0)
   (set-common 'kana-text 1002190 "おしり" 0)
+  (set-common 'kana-text 2085020 "もどき" 0)
+
+  (set-primary-nokanji 1756600 nil) ;; がんもどき
 
   (add-reading 2217330 "ワイ")
   (add-primary-nokanji 2217330 "ワイ")
