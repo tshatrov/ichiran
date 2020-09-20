@@ -1054,6 +1054,12 @@
   (filter-in-seq-set 1601080)
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-toomou (l r)
+  ;; split と before 思う 言う
+  (complement (filter-in-seq-set 2837117 1007420)) ;; 何だと　だと
+  (filter-in-seq-set 1589350 1587040)
+  :allow-first t)
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*
