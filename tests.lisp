@@ -541,6 +541,8 @@
   (assert-segment "がんもどきという食品" "がんもどき" "と" "いう" "食品")
   (assert-segment "落ちこぼれている" "落ちこぼれている")
   (assert-segment "1話しか見てない" "1話" "しか" "見てない")
+  (assert-segment "忙しくてろくに更新もできず" "忙しくて" "ろくに" "更新" "も" "できず")
+  (assert-segment "だまってろって" "だまってろ" "って")
   )
 
 (define-test json-consistency-test

@@ -1040,6 +1040,11 @@
   (filter-in-seq-set 2221640)
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-roku (l r)
+  (complement (filter-is-compound-end-text "いろ"))
+  (lambda (segment) (alexandria:starts-with #\く (get-text segment)))
+  :allow-first t)
+
 (def-segfilter-must-follow segfilter-sae (l r)
   (complement (filter-is-compound-end 2029120))
   (lambda (segment) (alexandria:starts-with #\え (get-text segment)))
