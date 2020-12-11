@@ -9,6 +9,7 @@
                 :entry-info-short :entry-info-long)
   (:import-from :ichiran/kanji :load-kanjidic :load-kanji-stats)
   (:export
+   #:with-db
    #:full-init
    #:load-jmdict
    #:load-best-readings
