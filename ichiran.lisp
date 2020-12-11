@@ -3,7 +3,7 @@
   (:use :cl :postmodern :ichiran/conn)
   (:import-from :ichiran/characters :split-by-regex)
   (:import-from :ichiran/dict :load-jmdict :load-best-readings
-                :add-errata :recalc-entry-stats
+                :recalc-entry-stats
                 :init-suffixes :init-suffixes-running-p
                 :find-word :find-word-full :dict-segment :calc-score
                 :entry-info-short :entry-info-long)
@@ -141,3 +141,8 @@
   (loop for seq in (sort (alexandria:hash-table-keys diffs) '<)
      for (old . new) = (gethash seq diffs)
      collect (cons (if entry-info (entry-info-long seq) seq) (diff-content old new :short short))))
+
+(defun add-errata (&optional conn)
+  "Public-facing version of ichiran/dict::add-errata"
+  (with-db conn
+    (ichiran/dict::add-errata)))
