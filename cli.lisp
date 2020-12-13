@@ -35,6 +35,10 @@
 (defmethod jsown:to-json ((word-info word-info))
   (jsown:to-json (word-info-gloss-json word-info)))
 
+(defun print-romanize-info (info)
+  (loop for (word . gloss) in info
+        do (format t "~%~%* ~a  ~a" word gloss)))
+
 (defun main ()
   (multiple-value-bind (options free-args)
       (handler-case
@@ -62,10 +66,13 @@
         :args     "[input]"))
       ((getf options :eval)
        (let ((input (car free-args)))
-         (print (eval (read-from-string input)))))
+         (use-package :ichiran/all)
+         (mapcar 'print (multiple-value-list (eval (read-from-string input))))))
       ((getf options :info)
        (let ((input (join " " free-args)))
-         (princ (romanize input :with-info t))))
+         (multiple-value-bind (r info) (romanize input :with-info t)
+           (princ r)
+           (print-romanize-info info))))
       ((getf options :full)
        (let* ((input (join " " free-args))
               (result (romanize* input :limit 1)))  ;; TODO: option for limit > 1
