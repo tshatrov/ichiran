@@ -85,6 +85,7 @@
    :query-kanji-json))
 
 (uiop:define-package :ichiran/all
+    (:use :cl)
     (:use-reexport :ichiran/characters :ichiran/numbers
                    :ichiran/conn :ichiran/dict :ichiran :ichiran/kanji))
 
