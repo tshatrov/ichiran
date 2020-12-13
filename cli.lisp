@@ -71,9 +71,9 @@
               (result (romanize* input :limit 1)))  ;; TODO: option for limit > 1
          (princ (jsown:to-json result))))
       (t (let ((input (join " " free-args)))
-           (format t "~s~%" sb-ext:*posix-argv*)
            (princ (romanize input :with-info t))))
       ))
+  (terpri)
   (finish-output))
 
 
@@ -88,6 +88,11 @@
   (format t "Initializing caches~%")
   (init-all-caches)
   (init-suffixes t)
+
+  ;; remove references to db connections which become obsolete once the image is loaded
+  (postmodern:clear-connection-pool)
+
   (unless debug
     (setup-debugger))
+
   (asdf:make :ichiran/cli))
