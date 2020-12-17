@@ -53,3 +53,8 @@
   :build-pathname "ichiran-cli"
   :entry-point "ichiran/cli::main"
   :components ((:file "cli")))
+
+
+#+sb-core-compression
+(defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
+  (uiop:dump-image (asdf:output-file o c) :executable t :compression t))
