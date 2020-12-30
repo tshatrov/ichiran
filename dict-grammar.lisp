@@ -809,7 +809,7 @@
 
 (def-generic-synergy synergy-no-da (l r)
   (filter-in-seq-set 1469800 2139720)
-  (filter-in-seq-set 2089020 1007370 1007420 1928670)
+  (filter-in-seq-set 2089020 1007370 1928670)
   :description "no da/desu"
   :score 15
   :connector " ")
@@ -1062,7 +1062,7 @@
 
 (def-segfilter-must-follow segfilter-toomou (l r)
   ;; split と before 思う 言う
-  (complement (filter-in-seq-set 2837117 1007420)) ;; 何だと　だと
+  (complement (filter-in-seq-set 2837117)) ;; 何だと
   (filter-in-seq-set 1589350 1587040)
   :allow-first t)
 
