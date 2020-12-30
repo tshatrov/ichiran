@@ -551,6 +551,7 @@
   (add-errata-jan20)
   (add-errata-apr20)
   (add-errata-jul20)
+  (add-errata-jan21)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -891,6 +892,13 @@
   (delete-reading 2845255 "文は遣りたし書く手は待たぬ")
 
   (rearrange-readings-conj 1980880 'kanji-text "かけ直")
+  )
+
+(defun add-errata-jan21 ()
+  (set-common 'kana-text 2124820 "コロナウイルス" :null)
+  (set-common 'kana-text 2846738 "なん" :null)
+
+  (add-sense-prop 1411570 0 "pos" "vs") ;; 変わり映え
   )
 
 (defun add-errata-counters ()
