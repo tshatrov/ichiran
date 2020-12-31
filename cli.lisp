@@ -91,7 +91,10 @@
           (print-error "ERROR: ~a" condition)
           (opts:exit 2))))
 
-(defun build (&key debug)
+(defun build (&key conn debug)
+  (when conn
+    (switch-conn-vars conn))
+
   (format t "Initializing caches~%")
   (init-all-caches)
   (init-suffixes t)
