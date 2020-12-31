@@ -727,8 +727,6 @@
 
   ;;; add sense for な
   (add-new-sense* 2029110 "prt" "indicates な-adjective")
-
-  (add-reading 2757120 "問うは一度の恥問わぬは末代の恥")
   )
 
 (defun add-errata-aug18 ()
@@ -765,13 +763,8 @@
   (add-conj-reading 1572760 "クドい")
   (add-reading 1003620 "ギュっと")
 
-  (add-reading 2833957 "ろうへいはしなずただきえさるのみ")
-  (delete-reading 2833957 "ろうへいはしなずきえさるのみ")
-
   (delete-reading 2424520 "去る者は追わず、来たる者は拒まず")
   (delete-reading 2570040 "朝焼けは雨、夕焼けは晴れ")
-  (add-reading 2757120 "問うは一度の恥問わぬは末代の恥")
-  (delete-reading 2757120 "問うは一度の恥、問わぬは末代の恥")
   (delete-reading 2833961 "梅は食うとも核食うな、中に天神寝てござる")
   (delete-reading 2834318 "二人は伴侶、三人は仲間割れ")
   (delete-reading 2834363 "墨は餓鬼に磨らせ、筆は鬼に持たせよ")
@@ -893,18 +886,6 @@
 
   (add-sense-prop 1257260 0 "misc" "uk") ;; いやがらせ
 
-  (add-reading 2844015 "だいとくはしょうえんをめっす")
-  (delete-reading 2844015 "だいとくはしょうえんめっす")
-  (add-reading 2844292 "こおりはみずよりいでてみずよりもさむし")
-  (delete-reading 2844292 "はみずよりいでてみずよりもさむし")
-  (add-reading 2844870 "ならわぬきょうはよめぬ")
-  (delete-reading 2844870 "ならわぬきょうはよまぬ")
-
-  (add-reading 2845255 "文はやりたし書く手は持たぬ")
-  (add-reading 2845255 "文は遣りたし書く手は持たぬ")
-  (delete-reading 2845255 "文はやりたし書く手は待たぬ")
-  (delete-reading 2845255 "文は遣りたし書く手は待たぬ")
-
   (rearrange-readings-conj 1980880 'kanji-text "かけ直")
   )
 
@@ -922,6 +903,7 @@
   (delete-sense-prop 1215240 "pos" "ctr")
   (add-sense-prop 2145410 0 "pos" "ctr") ;;　間
 
+  (replace-reading 2847494 "いきはよいといかえりはこわい" "いきはよいよいかえりはこわい")
   )
 
 (defun add-errata-counters ()
