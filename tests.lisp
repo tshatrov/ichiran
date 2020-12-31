@@ -544,6 +544,8 @@
   (assert-segment "1話しか見てない" "1話" "しか" "見てない")
   (assert-segment "忙しくてろくに更新もできず" "忙しくて" "ろくに" "更新" "も" "できず")
   (assert-segment "だまってろって" "だまってろ" "って")
+  (assert-segment "しっぽく蕎麦" "しっぽく" "蕎麦")
+  (assert-segment "猫はしっぽをぴんと立てて歩いた" "猫" "は" "しっぽ" "を" "ぴんと" "立てて" "歩いた")
   )
 
 (define-test json-consistency-test

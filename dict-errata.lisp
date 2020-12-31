@@ -897,8 +897,12 @@
 (defun add-errata-jan21 ()
   (set-common 'kana-text 2124820 "コロナウイルス" :null)
   (set-common 'kana-text 2846738 "なん" :null)
+  (set-common 'kana-text 2083720 "っぽい" :null)
 
   (add-sense-prop 1411570 0 "pos" "vs") ;; 変わり映え
+
+  (add-sense-prop 2679820 0 "misc" "uk") ;; しっぽく
+  (delete-sense-prop 1426680 "misc" "uk") ;; 虫
   )
 
 (defun add-errata-counters ()
