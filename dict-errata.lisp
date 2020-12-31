@@ -48,6 +48,17 @@
         (update-dao entry)))
     entry))
 
+(defun replace-reading (seq reading-from reading-to)
+  (let* ((is-kana (test-word reading-from :kana))
+         (table (if is-kana 'kana-text 'kanji-text))
+         (updated
+           (nth-value 1
+                      (query (:update table
+                              :set 'text reading-to
+                              :where (:and (:= 'seq seq) (:= 'text reading-from)))))))
+    (unless (zerop updated)
+      (reset-readings seq))))
+
 (defun reset-readings (&rest seqs)
   (let ((readings (nconc
                    (select-dao 'kana-text (:in 'seq (:set seqs)))
