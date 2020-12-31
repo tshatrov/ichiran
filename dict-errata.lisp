@@ -712,6 +712,7 @@
 
   (add-sense-prop 1468900 0 "pos" "ctr") ;; 年生
   (add-sense-prop 1241380 0 "pos" "ctr") ;; 斤
+  (add-sense-prop 1241380 1 "pos" "ctr")
 
   ;;; add sense for な
   (add-new-sense* 2029110 "prt" "indicates な-adjective")
@@ -823,6 +824,8 @@
 
   (add-sense-prop 1468900 0 "pos" "ctr") ;; 年生
   (add-sense-prop 1469050 0 "pos" "ctr") ;; 年度
+  (add-sense-prop 1469050 1 "pos" "ctr") ;; 年度
+  (add-sense-prop 1469050 2 "pos" "ctr")
   (add-sense-prop 1284270 0 "pos" "ctr") ;; 号車
 
   (delete-sense-prop 1245280 "pos" "adj-no") ;; 空 から (to make it even with そら)
@@ -846,11 +849,11 @@
 
   (add-new-sense* 1315920 "ctr" "hours (period of)")
 
-  (add-new-sense 1220540 '("ctr" "n") '("season (of a TV show)"))
   (add-sense-prop 1220540 0 "pos" "ctr")
   (add-sense-prop 1220540 3 "pos" "ctr")
   (add-sense-prop 1220540 4 "pos" "ctr")
   (add-sense-prop 1220540 5 "pos" "ctr")
+  (add-sense-prop 1220540 6 "pos" "ctr")
 
   (add-sense-prop 2842087 0 "pos" "ctr") ;; パー
   (set-common 'kana-text 2842087 "パー" 0)
@@ -900,9 +903,14 @@
   (set-common 'kana-text 2083720 "っぽい" :null)
 
   (add-sense-prop 1411570 0 "pos" "vs") ;; 変わり映え
+  (add-sense-prop 1613860 0 "pos" "ctr") ;; 回戦
 
   (add-sense-prop 2679820 0 "misc" "uk") ;; しっぽく
   (delete-sense-prop 1426680 "misc" "uk") ;; 虫
+
+  (delete-sense-prop 1215240 "pos" "ctr")
+  (add-sense-prop 2145410 0 "pos" "ctr") ;;　間
+
   )
 
 (defun add-errata-counters ()
@@ -913,18 +921,21 @@
 
   (add-sense-prop 1427420 0 "pos" "ctr") ;; 丁目
   (add-sense-prop 1397450 0 "pos" "ctr") ;; 組
+  (add-sense-prop 1397450 1 "pos" "ctr") ;; 組
   (add-sense-prop 1351270 0 "pos" "ctr") ;; 章
   (add-sense-prop 1351270 1 "pos" "n") ;; 章
   (add-sense-prop 1490430 0 "pos" "ctr") ;; 秒
+  (add-sense-prop 1490430 1 "pos" "ctr") ;; 秒
   (add-sense-prop 2020680 0 "pos" "ctr") ;; 時
   (add-sense-prop 1502840 0 "pos" "ctr") ;; 分
+  (add-sense-prop 1502840 1 "pos" "ctr") ;; 分
   (add-sense-prop 1373990 0 "pos" "ctr") ;; 世紀
   (add-sense-prop 1281690 0 "pos" "ctr") ;; 行
   (add-sense-prop 1281690 1 "pos" "n")
   (add-sense-prop 1042610 1 "pos" "ctr") ;; キロ
+  (add-sense-prop 1042610 2 "pos" "ctr")
   (add-sense-prop 1100610 0 "pos" "ctr") ;; パーセント
 
-  (add-sense-prop 1215240 1 "pos" "ctr")
   (add-new-sense* 1583470 "ctr" "counter for dishes") ;; 品（しな）
 
   (add-sense-prop 1411070 0 "pos" "ctr") ;; 袋
@@ -947,6 +958,7 @@
   (add-sense-prop 1047880 1 "pos" "n")
 
   (add-sense-prop 1244080 0 "pos" "ctr") ;; 区
+  (add-sense-prop 1244080 1 "pos" "ctr") ;; 区
   (add-sense-prop 1239700 0 "pos" "ctr") ;; 曲
 
   (add-sense-prop 1294940 0 "pos" "ctr") ;; 才 歳
@@ -966,15 +978,16 @@
   (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
   (add-sense-prop 1333450 0 "pos" "ctr") ;; 週
   (add-sense-prop 1480050 0 "pos" "ctr") ;; 反
-  (add-sense-prop 1558330 0 "pos" "ctr") ;; 列
+  (add-sense-prop 1480050 1 "pos" "ctr") ;; 反
+  (add-sense-prop 1480050 2 "pos" "ctr") ;; 反
 
   (add-sense-prop 1956530 0 "pos" "ctr") ;; 寸
   (add-sense-prop 1324110 0 "pos" "ctr") ;; 尺
   (add-sense-prop 1324110 1 "pos" "n")
   (add-sense-prop 1382450 0 "pos" "ctr") ;; 石
+  (add-sense-prop 1382450 1 "pos" "ctr")
 
   (add-sense-prop 1253800 1 "pos" "ctr") ;; 桁
-  (add-sense-prop 1253800 1 "pos" "n")
 
   (add-sense-prop 1297240 0 "pos" "ctr") ;; 作
 
