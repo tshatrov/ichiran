@@ -636,6 +636,21 @@
   (("落ち" 1548550) 2)
   (1557650 nil t))
 
+(def-simple-split nil 1532270 100 (len txt) ;; あけましておめでとうございます
+  (("あけまして" 10449092) 5)
+  (1001540))
+
+(def-simple-split nil 1863230 15 (len txt r) ;; 俺たち
+  (:test (eql (word-type r) :kana))
+  (1576870 2)
+  (1416220))
+
+(def-simple-split nil 2834051 15 (len txt r) ;; お前たち
+  (:test (eql (word-type r) :kana))
+  (1002290 3)
+  (1416220))
+
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function
