@@ -1872,13 +1872,12 @@
 (defun match-glosses (text reading words &key (normalize 'identity) update-gloss)
   (with-connection *connection*
     (let ((candidates (get-candidates text reading))
-          (nwords (mapcar normalize words))
-          (nupdate (and update-gloss (funcall normalize update-gloss))))
+          (nwords (mapcar normalize words)))
       (when candidates
         (let ((matched (loop for (seq . glosses) in (get-glosses candidates)
-                          for match = (loop for gloss in glosses
-                                         for ngloss = (funcall normalize gloss)
-                                         when (and nupdate (equal nupdate ngloss))
+                          for match = (loop for gloss in (nreverse glosses)
+                                            for ngloss = (funcall normalize gloss)
+                                         when (and update-gloss (ppcre:scan update-gloss ngloss))
                                            do (return gloss)
                                          thereis (loop for word in nwords always (search word ngloss)))
                           thereis (cond ((stringp match) (list seq match))

@@ -120,3 +120,21 @@
       (let ((conj (get-dao 'conjugation conj-id)))
         (setf (slot-value conj 'seq) 2028980)
         (update-dao conj)))))
+
+
+(defun fix-duplicate-cities ()
+  (loop for (seq text) in (query (:select 'sense.seq 'gloss.text
+                                  :from 'gloss :inner-join 'sense
+                                  :on (:= 'gloss.sense-id 'sense.id)
+                                  :where (:like 'gloss.text "% (city)%")
+                                  :group-by 'sense.seq 'gloss.text
+                                  :having (:> (:count 'gloss.id) 1)))
+        for sense-ids = (query (:order-by
+                                (:select 'sense.id :from 'gloss :inner-join 'sense
+                                 :on (:= 'gloss.sense-id 'sense.id)
+                                 :where (:and (:= 'sense.seq seq) (:= 'gloss.text text)))
+                                'sense.ord)
+                               :column)
+        for to-delete = (subseq sense-ids 1)
+        do (format t "Deleting extra senses ~a for '~a'~%" to-delete text)
+           (query (:delete-from 'sense :where (:in 'id (:set to-delete))))))

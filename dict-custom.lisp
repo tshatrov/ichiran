@@ -173,8 +173,10 @@ Returns 2 values, whether the entry should be either added or updated, and which
   (:method ((entry municipality))
     (let* ((typeword (cdr (assoc (municipality-type entry) *municipality-types-description*)))
            (name (car (split-sequence #\Space (municipality-definition entry)))))
-      (remove-if 'null
-                 (list name typeword (municipality-prefecture entry))))))
+      (when (and typeword (alexandria:ends-with #\) typeword))
+        (setf typeword (subseq typeword 0 (1- (length typeword)))))
+
+      (remove-if 'null (list name typeword (municipality-prefecture entry))))))
 
 (defmethod test-entry (loader (entry municipality))
   (multiple-value-bind (seq match-p)
@@ -184,8 +186,28 @@ Returns 2 values, whether the entry should be either added or updated, and which
          (municipality-reading entry)
          words
          :normalize 'normalize-geo
-         :update-gloss (when (eql (municipality-type entry) #\市)
-                         (apply 'format nil "~a ~a" words))))
+         :update-gloss (case (municipality-type entry)
+                         (#\市
+                          `(:sequence
+                            :case-insensitive-p
+                            :start-anchor
+                            ,(car words)
+                            " (city"
+                            (:alternation
+                            :void
+                            (:sequence " in " ,(car (split-sequence #\Space (municipality-prefecture entry))))
+                            )
+                           ")"
+                            :end-anchor))
+                         (#\県
+                          `(:sequence
+                            :case-insensitive-p
+                            :start-anchor
+                            ,(car words)
+                            " ("
+                            (:alternation :void "city, ")
+                            "prefecture)"
+                            :end-anchor)))))
     (cond ((not seq) (values t nil))
           ((consp seq) (values t seq))
           (match-p (values nil seq))
@@ -231,10 +253,11 @@ Returns 2 values, whether the entry should be either added or updated, and which
   (ichiran/dict::add-new-sense seq '("n") (list (municipality-definition entry))))
 
 (defmethod update-entry-gloss ((loader municipality-csv) entry seq gloss)
-  (unless *silent-p*
-    (format t "Updating gloss ~a[~a] ~a -> ~a (seq=~a)~%" (municipality-text entry) (municipality-reading entry) gloss (municipality-definition entry) seq))
-  (query (:update 'gloss :set 'text (municipality-definition entry)
-                  :from 'sense :where (:and (:= 'gloss.sense-id 'sense.id) (:= 'sense.seq seq) (:= 'gloss.text gloss)))))
+  (let ((new-gloss (municipality-definition entry)))
+    (unless *silent-p*
+      (format t "Updating gloss ~a[~a] ~a -> ~a (seq=~a)~%" (municipality-text entry) (municipality-reading entry) gloss new-gloss seq))
+    (query (:update 'gloss :set 'text new-gloss
+                    :from 'sense :where (:and (:= 'gloss.sense-id 'sense.id) (:= 'sense.seq seq) (:= 'gloss.text gloss))))))
 
 (defclass ward-csv (csv-loader)
   ((description :initform "wards")))
