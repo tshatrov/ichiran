@@ -236,11 +236,11 @@
             forms)))
     `(progn ,@(nreverse forms))))
 
-(csv-hash *pos-index* ("kwpos.csv")
+(csv-hash *pos-index* ("kwpos.csv" :skip-first t)
           ((pos-id pos description) pos (cons (parse-integer pos-id) description))
           (val (car val)))
 
-(csv-hash *pos-by-index* ("kwpos.csv")
+(csv-hash *pos-by-index* ("kwpos.csv" :skip-first t)
           ((pos-id pos description) (parse-integer pos-id) pos)
           (get-pos val val))
 
