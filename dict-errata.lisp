@@ -900,6 +900,7 @@
 
   (add-sense-prop 2679820 0 "misc" "uk") ;; しっぽく
   (delete-sense-prop 1426680 "misc" "uk") ;; 虫
+  (add-sense-prop 1590390 0 "misc" "uk") ;; かたどる
 
   (delete-sense-prop 1215240 "pos" "ctr")
   (add-sense-prop 2145410 0 "pos" "ctr") ;;　間
