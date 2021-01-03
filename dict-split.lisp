@@ -640,6 +640,10 @@
   (("あけまして" 10449092) 5)
   (1001540))
 
+(def-simple-split nil 2133750 100 (len txt) ;; よろしくおねがいします
+  (1224890 (1+ (position #\く txt)))
+  (1001720))
+
 (def-simple-split nil 1863230 15 (len txt r) ;; 俺たち
   (:test (eql (word-type r) :kana))
   (1576870 2)

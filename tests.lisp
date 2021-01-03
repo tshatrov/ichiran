@@ -549,6 +549,7 @@
   (assert-segment "やる気はない" "やる気" "は" "ない")
   (assert-segment "あけましておめでとうございます" "あけましておめでとうございます")
   (assert-segment "おれたちは行くのにおまえたちは行かぬ" "おれたち" "は" "行く" "のに" "おまえたち" "は" "行かぬ")
+  (assert-segment "よろしくおねがいします" "よろしくおねがいします")
   )
 
 (define-test json-consistency-test
