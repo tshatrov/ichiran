@@ -893,6 +893,7 @@
   (set-common 'kana-text 2124820 "コロナウイルス" :null)
   (set-common 'kana-text 2846738 "なん" :null)
   (set-common 'kana-text 2083720 "っぽい" :null)
+  (set-common 'kanji-text 1012980 "遣る" :null)
 
   (add-sense-prop 1411570 0 "pos" "vs") ;; 変わり映え
   (add-sense-prop 1613860 0 "pos" "ctr") ;; 回戦
