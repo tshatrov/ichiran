@@ -1037,7 +1037,7 @@
 
 (def-segfilter-must-follow segfilter-itsu (l r)
   (complement (filter-is-compound-end-text "い"))
-  (filter-in-seq-set 2221640)
+  (filter-in-seq-set 2221640 1013250)
   :allow-first t)
 
 (def-segfilter-must-follow segfilter-roku (l r)
