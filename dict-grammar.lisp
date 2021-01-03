@@ -241,6 +241,7 @@
         (load-conjs :suru 1005160 :saseru) ;; させる
 
         (load-conjs :sou 1006610) ;; そう
+        (load-conjs :sou+ 2141080) ;; そうにない
 
         (load-kf :rou (get-kana-form 1928670 "だろう") :text "ろう")
 
@@ -420,17 +421,27 @@
 (defun apply-patch (root patch)
   (concatenate 'string (subseq root 0 (- (length root) (length (cdr patch)))) (car patch)))
 
-(def-simple-suffix suffix-sou :sou (:score (constantly (if (equal root "から") 40 60))
-                                    :connector "")
-    (root suf patch)
+(defun suffix-sou-base (root patch)
   (cond ((alexandria:ends-with-subseq "なさ" root)
          (setf patch '("い" . "さ"))
          (let ((root (apply-patch root patch))
                (*suffix-map-temp* nil))
            (find-word-with-conj-prop root (lambda (cdata)
                                             (conj-neg (conj-data-prop cdata))))))
-        ((not (member root '("な" "い" "よ" "よさ" "に" "き") :test 'equal))
+        ((not (member root '("な" "よ" "よさ" "に" "き") :test 'equal))
          (find-word-with-conj-type root 13 +conj-adjective-stem+ +conj-adverbial+))))
+
+(def-simple-suffix suffix-sou :sou (:score (constantly (cond
+                                                         ((equal root "から") 40)
+                                                         ((equal root "い") 0)
+                                                         (t 60)))
+                                    :connector "")
+    (root suf patch)
+  (suffix-sou-base root patch))
+
+(def-simple-suffix suffix-sou+ :sou+ (:connector "" :score 1)
+    (root suf patch)
+  (suffix-sou-base root patch))
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
   (find-word-with-conj-type root 2))
@@ -1016,6 +1027,7 @@
 
 (defparameter *aux-verbs*
   '(1342560 ;; 初める/そめる
+    ;; 2141080 ;; そうにない
     ))
 
 (def-segfilter-must-follow segfilter-aux-verb (l r)
