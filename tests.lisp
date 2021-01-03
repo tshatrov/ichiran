@@ -8,7 +8,8 @@
   (princ (cond
            (err "E")
            (result ".")
-           (t "F"))))
+           (t "F")))
+  (force-output))
 
 (defmacro test-job ((result-var) tester &body worker)
   (alexandria:with-gensyms (future error)
