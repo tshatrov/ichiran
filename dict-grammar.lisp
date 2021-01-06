@@ -201,11 +201,10 @@
 
         (loop for kf in (get-kana-forms 1577980) ;; いる (る)
            for tkf = (text kf)
-           for val = (list :te+ kf)
-           do (setf (gethash tkf *suffix-cache*) val
+           do (setf (gethash tkf *suffix-cache*) (list (if (> (length tkf) 1) :te++ :te+) kf)
                     (gethash (seq kf) *suffix-class*) :iru)
              (when (> (length tkf) 1)
-               (setf (gethash (subseq tkf 1) *suffix-cache*) val)))
+               (setf (gethash (subseq tkf 1) *suffix-cache*) (list :te+ kf))))
 
         (load-conjs :te 1547720 :kuru) ;; くる
 
@@ -382,6 +381,9 @@
   (te-check root))
 
 (def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
+  (te-check root))
+
+(def-simple-suffix suffix-te++ :te++ (:connector "" :score 6) (root)
   (te-check root))
 
 (def-simple-suffix suffix-te+space :te+space (:connector " " :score 3) (root)
@@ -1076,6 +1078,11 @@
   ;; split と before 思う 言う
   (complement (filter-in-seq-set 2837117)) ;; 何だと
   (filter-in-seq-set 1589350 1587040)
+  :allow-first t)
+
+(def-segfilter-must-follow segfilter-totte (l r)
+  (complement (filter-in-seq-set 1008490))
+  (filter-in-seq-set 2086960)
   :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)

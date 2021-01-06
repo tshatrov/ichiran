@@ -555,6 +555,7 @@
   (assert-segment "太陽をかたどったしるし" "太陽" "を" "かたどった" "しるし")
   (assert-segment "間違えていらっしゃるのかしら" "間違えて" "いらっしゃる" "の" "かしら")
   (assert-segment "ヤツはいそうにないな" "ヤツ" "は" "いそうにない" "な")
+  (assert-segment "確認をとっています" "確認" "を" "とっています")
   )
 
 (define-test json-consistency-test
