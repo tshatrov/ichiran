@@ -16,4 +16,15 @@
       <gloss xml:lang="eng">to spend (time)</gloss>
     </sense>
   </entry>
+  <entry>
+    <ent_seq>せず</ent_seq>
+    <r_ele>
+      <reb>せず</reb>
+    </r_ele>
+    <sense>
+      <pos>prt</pos>
+      <pos>suf</pos>
+      <gloss xml:lang="eng">without</gloss>
+    </sense>
+  </entry>
 </outer>
