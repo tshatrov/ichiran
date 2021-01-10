@@ -572,7 +572,7 @@
    :allow-root t))
 
 (def-abbr-suffix abbr-nx :nai-x 2 (root suf patch)
-  (cond ((and (equal root "せ") (equal suf "ぬ"))
+  (cond ((equal root "せ")
          (setf patch '("しない" . "せ"))
          (find-word-conj-of "しない" 1157170))
         (t
