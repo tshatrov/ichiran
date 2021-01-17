@@ -1002,7 +1002,7 @@
                                      filter-left filter-right &key allow-first)
   "This segfilter is for when segments that satisfy filter-right MUST follow segments that
    satisfy filter-left"
-  (alexandria:with-gensyms (satisfies-left satisfies-right contradicts-right result)
+  (alexandria:with-gensyms (satisfies-left contradicts-left satisfies-right contradicts-right result)
     `(defsegfilter ,name (,segment-list-left ,segment-list-right)
        (multiple-value-bind (,satisfies-right ,contradicts-right)
            (classify ,filter-right (segment-list-segments ,segment-list-right))
@@ -1014,17 +1014,21 @@
             (when ,contradicts-right
               (list (list ,segment-list-left
                           (make-segment-list-from ,segment-list-right ,contradicts-right)))))
-           (t (let ((,satisfies-left (classify ,filter-left (segment-list-segments ,segment-list-left)))
-                    (,result (when ,contradicts-right
-                               (list
-                                (list ,segment-list-left
-                                      (make-segment-list-from ,segment-list-right ,contradicts-right))))))
-                (when ,satisfies-left
-                  (push
-                   (list (make-segment-list-from ,segment-list-left ,satisfies-left)
-                         (make-segment-list-from ,segment-list-right ,satisfies-right))
-                   ,result))
-                ,result)))))))
+           (t
+            (multiple-value-bind (,satisfies-left ,contradicts-left)
+                (classify ,filter-left (segment-list-segments ,segment-list-left))
+              (if ,contradicts-left
+                  (let ((,result (when ,contradicts-right
+                                   (list
+                                    (list ,segment-list-left
+                                          (make-segment-list-from ,segment-list-right ,contradicts-right))))))
+                    (when ,satisfies-left
+                      (push
+                       (list (make-segment-list-from ,segment-list-left ,satisfies-left)
+                             (make-segment-list-from ,segment-list-right ,satisfies-right))
+                       ,result))
+                    ,result)
+                  (list (list ,segment-list-left ,segment-list-right))))))))))
 
 
 (defparameter *aux-verbs*
@@ -1083,6 +1087,13 @@
 (def-segfilter-must-follow segfilter-totte (l r)
   (complement (filter-in-seq-set 1008490))
   (filter-in-seq-set 2086960)
+  :allow-first t)
+
+(def-segfilter-must-follow segfilter-dashi (l r)
+  (lambda (segment &aux (seq-set (getf (segment-info segment) :seq-set)))
+    (or (not (find 2089020 seq-set)) ;; だ
+        (find 2028980 seq-set))) ;; で
+  (filter-in-seq-set 1157170 2424740 1305070) ;; する　して
   :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)

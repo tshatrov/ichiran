@@ -558,6 +558,10 @@
   (assert-segment "確認をとっています" "確認" "を" "とっています")
   (assert-segment "人口10万人以上の都市の中で唯一旅客を扱う鉄道駅が存在せず"
                   "人口" "10万人" "以上" "の" "都市" "の" "中" "で" "唯一" "旅客" "を" "扱う" "鉄道駅" "が" "存在" "せず")
+  (assert-segment "だし" "だ" "し")
+  (assert-segment "だしはおいしい" "だし" "は" "おいしい")
+  (assert-segment "だして" "だして")
+  (assert-segment "だしといて" "だしといて")
   )
 
 (define-test json-consistency-test
