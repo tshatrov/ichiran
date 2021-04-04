@@ -654,6 +654,13 @@
   (1002290 3)
   (1416220))
 
+(def-simple-split nil 1207840 50 (len) ;; 割り切れる
+  (("割り" 1208000) 2)
+  (1384860 nil t))
+
+(def-simple-split nil 2109610 50 (len) ;; あり得ない
+  (("有り" 1296400) 2)
+  (1588760 nil t))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
