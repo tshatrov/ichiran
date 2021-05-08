@@ -448,19 +448,20 @@
 
 
 (defun load-secondary-conjugations ()
-  (let ((to-conj (query-dao 'conjugation
-                            (:select 'conj.* :distinct :from (:as 'conjugation 'conj)
-                                     :left-join 'conj-prop :on (:= 'conj.id 'conj-prop.conj-id)
-                                     :where (:and (:in 'conj-prop.conj-type (:set *secondary-conjugation-types-from*))
-                                                  (:not (:in 'conj-prop.pos (:set "vs-i" "vs-s")))
-                                                  (:or (:not 'neg) (:is-null 'neg))
-                                                  (:or (:not 'fml) (:is-null 'fml)))))))
+  (let ((to-conj (query (:select 'conj.from 'conj.seq 'conj-prop.conj-type
+                         :distinct-on 'conj.from 'conj.seq
+                         :from (:as 'conjugation 'conj)
+                         :left-join 'conj-prop :on (:= 'conj.id 'conj-prop.conj-id)
+                                                    :where (:and (:in 'conj-prop.conj-type (:set *secondary-conjugation-types-from*))
+                                                                 (:not (:in 'conj-prop.pos (:set "vs-i" "vs-s")))
+                                                                 (:or (:not 'neg) (:is-null 'neg))
+                                                                 (:or (:not 'fml) (:is-null 'fml)))))))
     (loop for cnt from 1
-       for conj in to-conj
-       do (conjugate-entry-outer (seq-from conj) :via (seq conj) :as-posi '("v1")
-                                 :conj-types *secondary-conjugation-types*)
-       if (zerop (mod cnt 1000)) do (format t "~a entries processed~%" cnt))
-    ))
+          for (seq-from seq conj-type) in to-conj
+          do (conjugate-entry-outer seq-from :via seq
+                                             :as-posi (list (if (= conj-type +conj-causative-su+) "v5s" "v1"))
+                                             :conj-types *secondary-conjugation-types*)
+          if (zerop (mod cnt 1000)) do (format t "~a entries processed~%" cnt))))
 
 ;;; end conjugations
 
