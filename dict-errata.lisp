@@ -1072,7 +1072,7 @@
 (defconstant +conj-adverbial+ 50)
 (defconstant +conj-adjective-stem+ 51)
 (defconstant +conj-negative-stem+ 52)
-(defconstant +conj-causative-su+ 52)
+(defconstant +conj-causative-su+ 53)
 
 (defun errata-conj-description-hook (hash)
   (setf (gethash +conj-adverbial+ hash) "Adverbial")

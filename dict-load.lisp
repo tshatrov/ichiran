@@ -299,7 +299,7 @@
    "v5b" "v5g" "v5k" "v5k-s" "v5m" "v5n" "v5r" "v5r-i" "v5s"
    "v5t" "v5u" "v5u-s" "vk" "vs-s" "vs-i"))
 
-(defparameter *secondary-conjugation-types-from* '(5 6 7 8))
+(defparameter *secondary-conjugation-types-from* '(5 6 7 8 +conj-causative-su+))
 
 (defparameter *secondary-conjugation-types* '(2 3 4 9 10 11 12 13))
 
