@@ -563,6 +563,7 @@
   (add-errata-apr20)
   (add-errata-jul20)
   (add-errata-jan21)
+  (add-errata-may21)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -658,7 +659,6 @@
   (set-common 'kana-text 2812650 "ゲー" 0)
   (set-common 'kana-text 2083340 "やろう" 0)
   (set-common 'kana-text 2083340 "やろ" 0)
-  (set-common 'kana-text 2122590 "てか" 0)
   (set-common 'kana-text 1008730 "とろ" :null)
   (set-common 'kana-text 1457840 "ないかい" :null)
   (set-common 'kana-text 2829697 "いかん" 0)
@@ -906,6 +906,12 @@
   (add-sense-prop 2145410 0 "pos" "ctr") ;;　間
 
   (replace-reading 2847494 "いきはよいといかえりはこわい" "いきはよいよいかえりはこわい")
+  )
+
+(defun add-errata-may21 ()
+  (set-common 'kana-text 2848303 "てか" 0)
+
+  (delete-sense-prop 1547720 "misc" "uk")
   )
 
 (defun add-errata-counters ()
