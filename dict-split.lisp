@@ -261,7 +261,7 @@
 
 (def-simple-split split-kawaribae 1411570 10 (len txt) ;; 代わり映え
   ((1590770 1510720) (1+ (position #\り txt)))
-  (1600610 2 nil t))
+  (("映え" 1600620) 2))
 
 (def-simple-split split-hayaimonode 2815260 100 (len txt) ;; 早いもので
   (1404975 (1+ (position #\い txt)))
