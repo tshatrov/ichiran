@@ -564,6 +564,7 @@
   (assert-segment "だしといて" "だしといて")
   (assert-segment "割り切れたら" "割り切れたら")
   (assert-segment "あり得なかったり" "あり得なかったり")
+  (assert-segment "代わり映え" "代わり映え")
   )
 
 (define-test json-consistency-test

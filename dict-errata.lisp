@@ -998,6 +998,7 @@
   (add-gloss 1368480 0 "for N people")
 
   (add-sense-prop 1732510 1 "pos" "ctr") ;; 番手
+  (add-sense-prop 1732510 2 "pos" "ctr")
   (add-sense-prop 2086480 1 "pos" "ctr") ;; 頭身
   )
 
