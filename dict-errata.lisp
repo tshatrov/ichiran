@@ -911,7 +911,9 @@
 (defun add-errata-may21 ()
   (set-common 'kana-text 2848303 "てか" 0)
 
-  (delete-sense-prop 1547720 "misc" "uk")
+  (delete-sense-prop 1547720 "misc" "uk") ;; 来る
+  (delete-sense-prop 1495770 "misc" "uk") ;; 付ける
+  (delete-sense-prop 2611890 "misc" "uk") ;; 蒔く
   )
 
 (defun add-errata-counters ()
