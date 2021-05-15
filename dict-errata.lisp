@@ -897,6 +897,7 @@
 
   (add-sense-prop 1411570 0 "pos" "vs") ;; 変わり映え
   (add-sense-prop 1613860 0 "pos" "ctr") ;; 回戦
+  (add-sense-prop 1613860 1 "pos" "ctr")
 
   (add-sense-prop 2679820 0 "misc" "uk") ;; しっぽく
   (delete-sense-prop 1426680 "misc" "uk") ;; 虫
@@ -909,7 +910,10 @@
   )
 
 (defun add-errata-may21 ()
+  (add-reading 1089590 "どんまい")
+
   (set-common 'kana-text 2848303 "てか" 0)
+  (set-common 'kanji-text 1979920 "貴方" :null)
 
   (delete-sense-prop 1547720 "misc" "uk") ;; 来る
   (delete-sense-prop 1495770 "misc" "uk") ;; 付ける
