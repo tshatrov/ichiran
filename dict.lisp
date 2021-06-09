@@ -757,6 +757,19 @@
 (defun is-arch (seq)
   (nth-value 1 (gethash seq (ensure :is-arch))))
 
+(defun get-non-arch-posi (seq-set)
+  (query
+   (:select 'sp1.text :distinct
+            :from (:as 'sense-prop 'sp1)
+            :left-join (:as 'sense-prop 'sp2)
+            :on (:and (:= 'sp1.sense-id 'sp2.sense-id)
+                      (:= 'sp2.tag "misc")
+                      (:or (:= 'sp2.text "arch")
+                           (:= 'sp2.text "obsc")))
+            :where (:and (:in 'sp1.seq (:set seq-set))
+                         (:= 'sp1.tag "pos")
+                         (:is-null 'sp2.id)))
+   :column))
 
 ;; *skip-words* *(semi-/non-)final-prt* *weak-conj-forms* *skip-conj-forms* are defined in dict-errata.lisp
 
@@ -808,8 +821,7 @@
                                         (:= 'tag "misc") (:= 'text "uk"))))
          (is-arch (every 'is-arch sp-seq-set))
          (posi (if ctr-mode (list "ctr")
-                   (query (:select 'text :distinct :from 'sense-prop
-                                   :where (:and (:in 'seq (:set seq-set)) (:= 'tag "pos"))) :column)))
+                   (get-non-arch-posi seq-set)))
          (common (if conj-only :null (common reading)))
          (common-of common)
          (common-p (not (eql common :null)))
