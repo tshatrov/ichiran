@@ -128,8 +128,6 @@
 
 (def-de-split 1510140 1680900) ;; 別封で
 
-(def-de-split 1510170 1510160) ;; 別便で
-
 (def-de-split 1518550 1529560) ;; 無しで
 
 (def-de-split 1531420 1531410) ;; 名義で
@@ -1693,7 +1691,6 @@
 (def-easy-hint 2831475 "脇 へ それる")
 (def-easy-hint 2219570 "元 へ")
 (def-easy-hint 2017030 "次 から 次 へ と")
-(def-easy-hint 2098540 "中 へ 中 へ")
 (def-easy-hint 2102190 "上 を 下 へ の 大騒ぎ")
 (def-easy-hint 2845308 "寺 から 里 へ")
 

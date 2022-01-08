@@ -491,8 +491,6 @@
   (set-common 'kana-text 1204090 "がいまい" :null)
   (set-common 'kana-text 1459170 "ないほう" :null)
 
-  (set-common 'kana-text 2827401 "ほうがいい" 0)
-  (set-common 'kanji-text 2827401 "方がいい" 0)
   (set-common 'kana-text 2457920 "ですか" :null)
   (set-common 'kana-text 1228390 "すいもの" :null)
   (set-common 'kana-text 1423240 "きもの" 0)
