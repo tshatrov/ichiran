@@ -562,6 +562,7 @@
   (add-errata-jul20)
   (add-errata-jan21)
   (add-errata-may21)
+  (add-errata-jan22)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -917,6 +918,13 @@
   (delete-sense-prop 1495770 "misc" "uk") ;; 付ける
   (delete-sense-prop 2611890 "misc" "uk") ;; 蒔く
   )
+
+(defun add-errata-jan22 ()
+  (set-common 'kana-text  2008650 "そうした" :null)
+  (add-sense-prop 1188270 0 "pos" "n") ;; 何か
+  (delete-sense-prop 1188270 "pos" "pn")
+  )
+
 
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
