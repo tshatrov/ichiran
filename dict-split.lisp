@@ -1706,6 +1706,7 @@
 (def-easy-hint 2017030 "次 から 次 へ と")
 (def-easy-hint 2102190 "上 を 下 へ の 大騒ぎ")
 (def-easy-hint 2845308 "寺 から 里 へ")
+(def-easy-hint 2849371 "何処 へ やら")
 
 ;; unsorted
 
