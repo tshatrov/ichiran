@@ -923,6 +923,8 @@
   (set-common 'kana-text  2008650 "そうした" :null)
   (add-sense-prop 1188270 0 "pos" "n") ;; 何か
   (delete-sense-prop 1188270 "pos" "pn")
+
+  (delete-sense-prop 1240530 "pos" "ctr") ;; 玉
   )
 
 
