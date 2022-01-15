@@ -925,6 +925,9 @@
   (delete-sense-prop 1188270 "pos" "pn")
 
   (delete-sense-prop 1240530 "pos" "ctr") ;; 玉
+
+  (add-sense-prop 1247260 0 "pos" "n-suf") ;; 君　くん
+
   )
 
 

@@ -1103,3 +1103,11 @@
               (loop for (seg-left seg-right) in splits
                  nconc (funcall segfilter seg-left seg-right)))
      finally (return splits)))
+
+(defparameter *honorifics*
+  '(1247260 ;; 君
+    ))
+
+(def-segfilter-must-follow segfilter-honorific (l r)
+  (complement (filter-in-seq-set *noun-particles*))
+  (filter-in-seq-set *honorifics*))
