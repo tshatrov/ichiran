@@ -662,6 +662,15 @@
 ;;   (2029110 1)
 ;;   (1009970 2))
 
+(def-simple-split nil 1322560 -10 (len txt r) ;; につまる
+  (:test (eql (word-type r) :kana))
+  (2028990 1)
+  (1226480 nil t))
+
+(def-simple-split nil 1006880 50 (len) ;; その上
+  (1006830 2)
+  (1352130))
+
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
 (defparameter *segsplit-map* (make-hash-table)) ;; seq -> split function

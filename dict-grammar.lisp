@@ -436,6 +436,7 @@
 (def-simple-suffix suffix-sou :sou (:score (constantly (cond
                                                          ((equal root "から") 40)
                                                          ((equal root "い") 0)
+                                                         ((equal root "出来") 100)
                                                          (t 60)))
                                     :connector "")
     (root suf patch)
