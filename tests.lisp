@@ -570,6 +570,7 @@
   (assert-segment "動画につまってる" "動画" "に" "つまってる")
   (assert-segment "出来そう" "出来そう")
   (assert-segment "その上着貸してください" "その" "上着" "貸してください")
+  (assert-segment "幸多き" "幸" "多き")
   )
 
 (define-test json-consistency-test
