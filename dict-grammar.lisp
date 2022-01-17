@@ -1052,12 +1052,12 @@
 
 (def-segfilter-must-follow segfilter-badend (l r)
   (constantly nil)
-  (filter-is-compound-end-text "ちゃい" "いか" "とか" "とき"))
+  (filter-is-compound-end-text "ちゃい" "いか" "とか" "とき" "い"))
 
-(def-segfilter-must-follow segfilter-itsu (l r)
-  (complement (filter-is-compound-end-text "い"))
-  (filter-in-seq-set 2221640 1013250)
-  :allow-first t)
+;; (def-segfilter-must-follow segfilter-itsu (l r)
+;;   (complement (filter-is-compound-end-text "い"))
+;;   (filter-in-seq-set 2221640 1013250)
+;;   :allow-first t)
 
 (def-segfilter-must-follow segfilter-roku (l r)
   (complement (filter-is-compound-end-text "いろ"))
