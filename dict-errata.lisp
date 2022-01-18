@@ -929,6 +929,7 @@
   (add-sense-prop 1247260 0 "pos" "n-suf") ;; 君　くん
 
   (set-common 'kana-text 1001840 "おにいちゃん" 0)
+  (set-common 'kana-text 1806840 "がいそう" :null)
 
   )
 

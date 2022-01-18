@@ -572,6 +572,7 @@
   (assert-segment "その上着貸してください" "その" "上着" "貸してください")
   (assert-segment "幸多き" "幸" "多き")
   (assert-segment "きっと気に入っていつかまた来てくれるよ" "きっと" "気に入って" "いつか" "また" "来てくれる" "よ")
+  (assert-segment "私がいそうな場所知ってたんだから" "私" "が" "いそう" "な" "場所" "知ってた" "ん" "だから")
   )
 
 (define-test json-consistency-test
