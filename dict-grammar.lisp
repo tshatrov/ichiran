@@ -137,6 +137,7 @@
    :ra "pluralizing suffix (not polite)"
    :kudasai "please do ..."
    :yagaru "indicates disdain or contempt"
+   :naru "to become ..."
    :desu "formal copula"
    :desho "it seems/perhaps/don't you think?"
    :tosuru "to try to .../to be about to..."
@@ -253,6 +254,8 @@
 
         (load-kf :ren (get-kana-form 1454500 "うる") :class :uru)
         (load-kf :neg (car (find-word-conj-of "なく" 1529520)) :class :nai)
+
+        (load-conjs :adv 1375610 :naru) ;; なる
 
         (load-conjs :teren 1012740 :yagaru)
 
@@ -436,6 +439,7 @@
 (def-simple-suffix suffix-sou :sou (:score (constantly (cond
                                                          ((equal root "から") 40)
                                                          ((equal root "い") 0)
+                                                         ((equal root "出来") 100)
                                                          (t 60)))
                                     :connector "")
     (root suf patch)
@@ -447,6 +451,9 @@
 
 (def-simple-suffix suffix-rou :rou (:connector "" :score 1) (root)
   (find-word-with-conj-type root 2))
+
+(def-simple-suffix suffix-adv :adv (:connector "" :score 1) (root)
+  (find-word-with-conj-type root +conj-adverbial+))
 
 (def-simple-suffix suffix-sugiru :sugiru (:stem 1 :connector "" :score 5) (root suf patch)
   (let ((root (cond ((equal root "い") nil)
@@ -916,6 +923,13 @@
   :score 50
   :connector " ")
 
+(def-generic-synergy synergy-no-toori (l r)
+  (filter-in-seq-set 1469800)
+  (filter-in-seq-set 1432920)
+  :description "no toori"
+  :score 50
+  :connector " ")
+
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))
@@ -1051,12 +1065,12 @@
 
 (def-segfilter-must-follow segfilter-badend (l r)
   (constantly nil)
-  (filter-is-compound-end-text "ちゃい" "いか" "とか" "とき"))
+  (filter-is-compound-end-text "ちゃい" "いか" "とか" "とき" "い"))
 
-(def-segfilter-must-follow segfilter-itsu (l r)
-  (complement (filter-is-compound-end-text "い"))
-  (filter-in-seq-set 2221640 1013250)
-  :allow-first t)
+;; (def-segfilter-must-follow segfilter-itsu (l r)
+;;   (complement (filter-is-compound-end-text "い"))
+;;   (filter-in-seq-set 2221640 1013250)
+;;   :allow-first t)
 
 (def-segfilter-must-follow segfilter-roku (l r)
   (complement (filter-is-compound-end-text "いろ"))
@@ -1103,3 +1117,11 @@
               (loop for (seg-left seg-right) in splits
                  nconc (funcall segfilter seg-left seg-right)))
      finally (return splits)))
+
+(defparameter *honorifics*
+  '(1247260 ;; 君
+    ))
+
+(def-segfilter-must-follow segfilter-honorific (l r)
+  (complement (filter-in-seq-set *noun-particles*))
+  (filter-in-seq-set *honorifics*))

@@ -491,8 +491,6 @@
   (set-common 'kana-text 1204090 "がいまい" :null)
   (set-common 'kana-text 1459170 "ないほう" :null)
 
-  (set-common 'kana-text 2827401 "ほうがいい" 0)
-  (set-common 'kanji-text 2827401 "方がいい" 0)
   (set-common 'kana-text 2457920 "ですか" :null)
   (set-common 'kana-text 1228390 "すいもの" :null)
   (set-common 'kana-text 1423240 "きもの" 0)
@@ -564,6 +562,7 @@
   (add-errata-jul20)
   (add-errata-jan21)
   (add-errata-may21)
+  (add-errata-jan22)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -920,6 +919,26 @@
   (delete-sense-prop 2611890 "misc" "uk") ;; 蒔く
   )
 
+(defun add-errata-jan22 ()
+
+  (add-reading 1566420 "ハメる")
+  (add-conj-reading 1566420 "ハメる")
+
+  (set-common 'kana-text  2008650 "そうした" :null)
+  (add-sense-prop 1188270 0 "pos" "n") ;; 何か
+  (delete-sense-prop 1188270 "pos" "pn")
+
+  (delete-sense-prop 1240530 "pos" "ctr") ;; 玉
+
+  (add-sense-prop 1247260 0 "pos" "n-suf") ;; 君　くん
+
+  (set-common 'kana-text 1001840 "おにいちゃん" 0)
+  (set-common 'kana-text 1806840 "がいそう" :null)
+  (set-common 'kana-text 1639750 "こだから" :null)
+
+  )
+
+
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
   (mapc 'set-reading (select-dao 'kanji-text (:= 'seq 1299960)))
@@ -1087,12 +1106,14 @@
 (defconstant +conj-adjective-stem+ 51)
 (defconstant +conj-negative-stem+ 52)
 (defconstant +conj-causative-su+ 53)
+(defconstant +conj-adjective-literary+ 54)
 
 (defun errata-conj-description-hook (hash)
   (setf (gethash +conj-adverbial+ hash) "Adverbial")
   (setf (gethash +conj-adjective-stem+ hash) "Adjective Stem")
   (setf (gethash +conj-negative-stem+ hash) "Negative Stem")
   (setf (gethash +conj-causative-su+ hash) "Causative (~su)")
+  (setf (gethash +conj-adjective-literary+ hash) "Old/literary form")
   )
 
 (defun errata-conj-rules-hook (hash)
@@ -1100,7 +1121,9 @@
          (rules (list (make-conjugation-rule pos +conj-adverbial+ nil nil 1
                                              1 "く" "" "")
                       (make-conjugation-rule pos +conj-adjective-stem+ nil nil 1
-                                             1 "" "" ""))))
+                                             1 "" "" "")
+                      (make-conjugation-rule pos +conj-adjective-literary+ nil nil 1
+                                             1 "き" "" ""))))
     (dolist (rule rules)
       (push rule (gethash pos hash nil))))
 
@@ -1153,6 +1176,7 @@
   `((,+conj-adjective-stem+ :any :any)
     (,+conj-negative-stem+ :any :any)
     (,+conj-causative-su+ :any :any)
+    (,+conj-adjective-literary+ :any :any)
     (9 t :any)))
 
 (defun test-conj-prop (prop forms)

@@ -138,3 +138,15 @@
         for to-delete = (subseq sense-ids 1)
         do (format t "Deleting extra senses ~a for '~a'~%" to-delete text)
            (query (:delete-from 'sense :where (:in 'id (:set to-delete))))))
+
+
+(defun add-ki-conjs ()
+  (let ((seqs (query (:select 'seq :distinct :from 'sense-prop
+                                             :where (:and (:not (:in 'seq (:set *do-not-conjugate-seq*)))
+                                             (:= 'tag "pos")
+                                             (:= 'text "adj-i")))
+                     :column)))
+    (loop for cnt from 1
+          for seq in seqs
+          do (conjugate-entry-outer seq :conj-types (list +conj-adjective-literary+) :as-posi '("adj-i"))
+          if (zerop (mod cnt 100)) do (format t "~a entries processed~%" cnt))))
