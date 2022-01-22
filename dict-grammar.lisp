@@ -923,6 +923,13 @@
   :score 50
   :connector " ")
 
+(def-generic-synergy synergy-no-toori (l r)
+  (filter-in-seq-set 1469800)
+  (filter-in-seq-set 1432920)
+  :description "no toori"
+  :score 50
+  :connector " ")
+
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))

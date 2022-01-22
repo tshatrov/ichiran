@@ -920,6 +920,10 @@
   )
 
 (defun add-errata-jan22 ()
+
+  (add-reading 1566420 "ハメる")
+  (add-conj-reading 1566420 "ハメる")
+
   (set-common 'kana-text  2008650 "そうした" :null)
   (add-sense-prop 1188270 0 "pos" "n") ;; 何か
   (delete-sense-prop 1188270 "pos" "pn")
@@ -930,6 +934,7 @@
 
   (set-common 'kana-text 1001840 "おにいちゃん" 0)
   (set-common 'kana-text 1806840 "がいそう" :null)
+  (set-common 'kana-text 1639750 "こだから" :null)
 
   )
 
