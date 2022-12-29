@@ -9,7 +9,7 @@
 
 (defparameter *jmdict-path* #p"/home/you/dump/JMdict_e")
 
-(defparameter *jmdict-data* #p"/root/jmdictdb/jmdictdb/data")
+(defparameter *jmdict-data* #p"/root/jmdictdb/jmdictdb/data/")
 
 (in-package #:ichiran/kanji)
 

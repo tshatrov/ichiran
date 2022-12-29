@@ -57,5 +57,6 @@ RUN        service postgresql start \
 # ichiran-cli
 RUN    service postgresql start \
     && sbcl --non-interactive \
-            --eval "(ql:quickload :ichiran)" \
+            --eval "(ql:quickload :ichiran/cli)" \
             --eval "(ichiran/cli:build)"
+RUN    ln -s /root/quicklisp/local-projects/ichiran/ichiran-cli /usr/local/bin/ichiran-cli
