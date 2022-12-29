@@ -24,11 +24,10 @@ To build/install the dockerized version:
 docker build --tag ichiran .
 ```
 
-It will take a bit long, but should run without any errors. To verify that everything went well you can run the following, which should result in the same as below:
+It might take a bit long, but should run without any errors. Alternatively, you can download my build (it was uploaded to potentially save time for people so they can skip building, but the image turned out to be pretty big so it is only worth it to go with this option if you have a fast connection); in that case you can skip the above step and substitute the image in the below commands from `ichiran` to `edvtaz/ichiran:latest` to get the same results. To verify that everything went well you can run the following, which should result in the same as below:
 
 ```
-$ docker run -it --rm --name ichiran ichiran /bin/bash -c "service postgresql start && sbcl --non-interactive --eval '(ql:quickload :ichiran)' --eval '(ichiran/test:run-all-tests)
-'"
+$ docker run -it --rm --name ir ichiran /bin/bash -c "service postgresql start && sbcl --non-interactive --eval '(ql:quickload :ichiran)' --eval '(ichiran/test:run-all-tests)'"
  * Starting PostgreSQL 14 database server           [ OK ]
 This is SBCL 2.2.11, an implementation of ANSI Common Lisp
 [...]
@@ -44,19 +43,19 @@ Unit Test Summary
 In order to avoid having to start up postgres server every time you want to use it you can run the following command to start up the container and keep it running:
 
 ```
-$ docker run -it --rm --name ichiran ichiran /bin/bash -c "service postgresql start && echo 'Backend running. Press enter to exit...' && read"
+$ docker run -it --rm --name ir ichiran /bin/bash -c "service postgresql start && echo 'Backend running. Press enter to exit...' && read"
 ```
 
-After that, you can access the sbcl prompt with ichiran loaded:
+While the above is active, you can access the sbcl prompt with ichiran loaded:
 
 ```
-docker exec -it ichiran /bin/bash -c "sbcl --eval '(ql:quickload :ichiran)'"
+docker exec -it ir /bin/bash -c "sbcl --eval '(ql:quickload :ichiran)'"
 ```
 
-And finally using the cli tool directly:
+Or use the cli tool directly:
 
 ```
-docker exec ichiran ichiran-cli -i "一覧は最高だぞ"
+docker exec ir ichiran-cli -i "一覧は最高だぞ"
 ```
 
 ## Documentation
