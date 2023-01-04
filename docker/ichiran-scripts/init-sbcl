@@ -1,0 +1,2 @@
+#!/bin/bash
+sbcl --non-interactive --eval "(ql:quickload :ichiran)" --eval "(ichiran/mnt:add-errata)"
