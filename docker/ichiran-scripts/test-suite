@@ -1,2 +1,2 @@
 #!/bin/bash
-sbcl --non-interactive --eval "(ql:quickload :ichiran)" --eval "(ichiran/test:run-all-tests)"
+sbcl --core /root/ichiran.core --non-interactive  --eval "(ichiran/test:run-all-tests)"

@@ -18,34 +18,120 @@ The web interface is under development right now. You can try it at [ichi.moe](h
 
 ## Dockerized version
 
-Build:
+Build (executed from the root of this repo):
 
 ```
 docker compose build
 ```
 
-If there were errors while importing db, or you want to import a new database you need to delete postgres data, so the postgres docker initdb scripts get called (if the folder is not empty it won't get called):
-
-```
-sudo rm -rf docker/pgdata
-```
-
-Start containers (this will take longer for the first time, because the db will get imported from the dump here):
+Start containers (this will take longer for the first time, because the db will get imported from the dump here, and other ichiran initializations will also get done here):
 
 ```
 docker compose up
 ```
 
-Run initializations (applies errata and builds cli, for other options, see docker/ichiran-scripts/):
+If there were errors while importing db, or you want to import a new database you need to delete postgres data, so the postgres docker initdb scripts get called (if the folder is not empty it won't get called), and after this you can call `docker compose up` again:
 
 ```
-docker exec -it ichiran-main-1 init-all
+sudo rm -rf docker/pgdata
+```
+
+Test suite:
+
+```
+$ docker exec -it ichiran-main-1 test-suite
+This is SBCL 2.2.4, an implementation of ANSI Common Lisp.
+More information about SBCL is available at <http://www.sbcl.org/>.
+
+SBCL is free software, provided as is, with absolutely no warranty.
+It is mostly in the public domain; some portions are provided under
+BSD-style licenses.  See the CREDITS and COPYING files in the
+distribution for more information.
+......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+Unit Test Summary
+ | 748 assertions total
+ | 748 passed
+ | 0 failed
+ | 0 execution errors
+ | 0 missing tests
+```
+
+Enter the sbcl interpreter (with ichiran already initialized):
+
+```
+$ docker exec -it ichiran-main-1 ichiran-sbcl
+This is SBCL 2.2.4, an implementation of ANSI Common Lisp.
+More information about SBCL is available at <http://www.sbcl.org/>.
+
+SBCL is free software, provided as is, with absolutely no warranty.
+It is mostly in the public domain; some portions are provided under
+BSD-style licenses.  See the CREDITS and COPYING files in the
+distribution for more information.
+* (romanize "一覧は最高だぞ" :with-info t)
+"ichiran wa saikō da zo"
+(("ichiran" . "一覧 【いちらん】
+1. [n,vs] look; glance; sight; inspection
+2. [n] summary; list; table; catalog; catalogue")
+ ("wa" . "は
+1. [prt] 《pronounced わ in modern Japanese》 indicates sentence topic
+2. [prt] indicates contrast with another option (stated or unstated)
+3. [prt] adds emphasis")
+ ("saikō" . "最高 【さいこう】
+1. [adj-no,adj-na,n] best; supreme; wonderful; finest
+2. [n,adj-na,adj-no] highest; maximum; most; uppermost; supreme")
+ ("da" . "だ
+1. [cop,cop-da] 《plain copula》 be; is
+2. [aux-v] 《た after certain verb forms; indicates past or completed action》 did; (have) done
+3. [aux-v] 《indicates light imperative》 please; do")
+ ("zo" . "ぞ
+1. [prt] 《used at sentence end》 adds force or indicates command"))
+* (ichiran:romanize "一覧は最高だぞ" :with-info t)
+"ichiran wa saikō da zo"
+(("ichiran" . "一覧 【いちらん】
+1. [n,vs] look; glance; sight; inspection
+2. [n] summary; list; table; catalog; catalogue")
+ ("wa" . "は
+1. [prt] 《pronounced わ in modern Japanese》 indicates sentence topic
+2. [prt] indicates contrast with another option (stated or unstated)
+3. [prt] adds emphasis")
+ ("saikō" . "最高 【さいこう】
+1. [adj-no,adj-na,n] best; supreme; wonderful; finest
+2. [n,adj-na,adj-no] highest; maximum; most; uppermost; supreme")
+ ("da" . "だ
+1. [cop,cop-da] 《plain copula》 be; is
+2. [aux-v] 《た after certain verb forms; indicates past or completed action》 did; (have) done
+3. [aux-v] 《indicates light imperative》 please; do")
+ ("zo" . "ぞ
+1. [prt] 《used at sentence end》 adds force or indicates command"))
+*
 ```
 
 Ichiran cli:
 
 ```
-docker exec -it ichiran-main-1 ichiran-cli -i "むかしむかし、あるところに、おじいさんとおばあさんが住んでいました。"
+$ docker exec -it ichiran-main-1 ichiran-cli -i "一覧は最高だぞ"
+ichiran wa saikō da zo
+
+* ichiran  一覧 【いちらん】
+1. [n,vs] look; glance; sight; inspection
+2. [n] summary; list; table; catalog; catalogue
+
+* wa  は
+1. [prt] 《pronounced わ in modern Japanese》 indicates sentence topic
+2. [prt] indicates contrast with another option (stated or unstated)
+3. [prt] adds emphasis
+
+* saikō  最高 【さいこう】
+1. [adj-no,adj-na,n] best; supreme; wonderful; finest
+2. [n,adj-na,adj-no] highest; maximum; most; uppermost; supreme
+
+* da  だ
+1. [cop,cop-da] 《plain copula》 be; is
+2. [aux-v] 《た after certain verb forms; indicates past or completed action》 did; (have) done
+3. [aux-v] 《indicates light imperative》 please; do
+
+* zo  ぞ
+1. [prt] 《used at sentence end》 adds force or indicates command
 ```
 
 ## Documentation

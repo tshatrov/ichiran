@@ -1,2 +1,2 @@
 #!/bin/bash
-sbcl --eval "(ql:quickload :ichiran)" 
+sbcl --core /root/ichiran.core

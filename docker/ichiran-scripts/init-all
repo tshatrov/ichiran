@@ -2,7 +2,7 @@
 
 if [ ! -e /root/.initialized ] ; then
     set -e
-    init-all;
+    init-all-force;
     set +e
     touch /root/.initialized;
 fi
