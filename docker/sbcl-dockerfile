@@ -1,5 +1,10 @@
 FROM clfoundation/sbcl:latest
 
+RUN    DEBIAN_FRONTEND=noninteractive \
+       apt-get update \
+    && apt-get install -y wget postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
 # quicklisp
 WORKDIR /root
 RUN wget https://beta.quicklisp.org/quicklisp.lisp
@@ -19,3 +24,4 @@ RUN     sbcl --non-interactive --eval "(ql:quickload :ichiran)"
 
 ENV PATH=/root/quicklisp/local-projects/ichiran/docker/ichiran-scripts:$PATH
 
+ENTRYPOINT entrypoint.sh

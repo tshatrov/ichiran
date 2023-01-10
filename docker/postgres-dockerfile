@@ -10,4 +10,6 @@ RUN    DEBIAN_FRONTEND=noninteractive \
 
 RUN localedef -i ja_JP -c -f UTF-8 -A /usr/share/locale/locale.alias ja_JP.UTF-8
 
+RUN    wget $ICHIRAN_DB_URL --quiet -O /ichiran.pgdump \
+    && chmod o+r /ichiran.pgdump 
 COPY docker/postgres-initdb/ichiran-db.sh /docker-entrypoint-initdb.d/ichiran-db.sh

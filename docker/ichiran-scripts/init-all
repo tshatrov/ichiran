@@ -1,4 +1,8 @@
 #!/bin/bash
 
-init-sbcl
-init-cli
+if [ ! -e /root/.initialized ] ; then
+    set -e
+    init-all;
+    set +e
+    touch /root/.initialized;
+fi
