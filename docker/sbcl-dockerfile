@@ -1,5 +1,14 @@
 FROM clfoundation/sbcl:latest
 
+RUN apt update && apt -y install locales
+RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+RUN echo "LANG=en_US.UTF-8" > /etc/locale.conf
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 RUN    DEBIAN_FRONTEND=noninteractive \
        apt-get update \
     && apt-get install -y wget postgresql-client \
@@ -20,7 +29,6 @@ COPY    ./  /root/quicklisp/local-projects/ichiran/
 WORKDIR /root/quicklisp/local-projects/ichiran
 RUN     cp docker/settings.lisp settings.lisp
 RUN     sbcl --non-interactive --eval "(ql:quickload :ichiran)"
-
 
 ENV PATH=/root/quicklisp/local-projects/ichiran/docker/ichiran-scripts:$PATH
 
