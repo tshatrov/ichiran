@@ -165,7 +165,6 @@
 
 (defun init-suffixes-thread ()
   (sb-thread:with-mutex (*init-suffixes-lock* :wait-p nil)
-    (init-suffix-hashtables)
     (with-connection *connection*
       (labels ((update-suffix-cache (text new &key join)
                  (let ((old (gethash text *suffix-cache*)))
@@ -310,6 +309,7 @@
 
 (defun init-suffixes (&optional blocking reset)
   (when (or reset (not *suffix-cache*))
+    (init-suffix-hashtables)
     (if blocking
         (init-suffixes-thread)
         (sb-thread:make-thread #'init-suffixes-thread)))
