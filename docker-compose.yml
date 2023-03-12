@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  pg:
+    build:
+      dockerfile: ./docker/postgres-dockerfile
+      context: .
+      args:
+        ICHIRAN_DB_URL: "https://github.com/tshatrov/ichiran/releases/download/ichiran-230122/ichiran-230122.pgdump"
+    shm_size: "1gb"
+    environment:
+      POSTGRES_PASSWORD: "password"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ${PWD}/docker/pgdata:/var/lib/postgresql/data
+
+  main:
+    build:
+      dockerfile: ./docker/sbcl-dockerfile
+      context: .

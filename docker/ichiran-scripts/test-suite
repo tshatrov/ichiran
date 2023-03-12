@@ -1,0 +1,2 @@
+#!/bin/bash
+sbcl --core /root/ichiran.core --non-interactive  --eval "(ichiran/test:run-all-tests)"

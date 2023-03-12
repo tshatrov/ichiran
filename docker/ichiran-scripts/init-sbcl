@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+sbcl --non-interactive --eval "(ql:quickload :ichiran)" \
+                       --eval "(ichiran/mnt:add-errata)" \
+                       --eval "(in-package :ichiran/all)" \
+                       --eval "(init-all-caches)" \
+                       --eval "(init-suffixes t)" \
+                       --eval "(postmodern:clear-connection-pool)" \
+                       --eval "(uiop:dump-image \"/root/ichiran.core\" :executable nil :compression t)"

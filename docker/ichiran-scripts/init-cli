@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+sbcl --core /root/ichiran.core --non-interactive --eval "(ql:quickload :ichiran/cli)" --eval "(ichiran/cli:build)"
+ln -s /root/quicklisp/local-projects/ichiran/ichiran-cli /usr/local/bin/ichiran-cli
