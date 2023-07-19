@@ -44,13 +44,13 @@
           (switch-conn-vars *connection*)))))
 
 (defun get-ichiran-connection ()
-    (let*
-        ((env-connection
-            (uiop:getenv "ICHIRAN_CONNECTION"))
+  (let*
+    ((env-connection
+      (uiop:getenv "ICHIRAN_CONNECTION"))
         (connection
-            (if env-connection
-                (cl-ppcre:split "\\s+" env-connection)
-                nil)))
+          (if env-connection
+            (cl-ppcre:split "\\s+" env-connection)
+            nil)))
     (unless
       (and connection (= (length connection) 4))
         (error (format nil "Invalid environment variable ICHIRAN_CONNECTION=~a. Expected the value to be in the form \"database-name database-user database-password database-host\"" env-connection))
@@ -59,15 +59,15 @@
 (defun set-ichiran-ssl ()
   (setf postmodern:*default-use-ssl*
     (let* ((env-ssl (uiop:getenv "ICHIRAN_SSL")))
-        (if env-ssl
-            (cond
-                ((string= env-ssl "no") :no)
-                ((string= env-ssl "try") :try)
-                ((string= env-ssl "require") :require)
-                ((string= env-ssl "yes") :yes)
-                ((string= env-ssl "full") :full)
-                (t (error (format nil "Invalid environment variable ICHIRAN_SSL=~a. Expected no, try, require, yes or full." env-ssl))))
-            :no))))
+      (if env-ssl
+        (cond
+          ((string= env-ssl "no") :no)
+          ((string= env-ssl "try") :try)
+          ((string= env-ssl "require") :require)
+          ((string= env-ssl "yes") :yes)
+          ((string= env-ssl "full") :full)
+          (t (error (format nil "Invalid environment variable ICHIRAN_SSL=~a. Expected no, try, require, yes or full." env-ssl))))
+        :no))))
 
 (load-settings)
 
