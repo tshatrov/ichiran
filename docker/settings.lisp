@@ -1,6 +1,16 @@
 (in-package #:ichiran/conn)
 
-(defparameter *connection* '("jmdict0122" "postgres" "password" "pg"))
+(defparameter *default-connection* '("jmdict0122" "postgres" "password" "pg"))
+
+(defparameter *connection*
+    (let*
+        ((env-connection
+            (uiop:getenv "ICHIRAN_CONNECTION"))
+        (connection
+            (if env-connection
+                (cl-ppcre:split "\\s+" env-connection)
+                *default-connection*)))
+    connection))
 
 (defparameter *connections* '((:old "jmdict_old" "postgres" "password" "localhost")
                               (:test "jmdict_test" "postgres" "password" "localhost")))
