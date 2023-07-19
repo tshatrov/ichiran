@@ -11,6 +11,19 @@
 
 (defvar *debug* nil "Enables debug printouts")
 
+(defun set-ichiran-ssl ()
+  (setf postmodern:*default-use-ssl*
+    (let* ((env-ssl (uiop:getenv "ICHIRAN_SSL")))
+        (if env-ssl
+            (cond
+                ((string= env-ssl "no") :no)
+                ((string= env-ssl "try") :try)
+                ((string= env-ssl "require") :require)
+                ((string= env-ssl "yes") :yes)
+                ((string= env-ssl "full") :full)
+                (t (error (format nil "Invalid environment variable ICHIRAN_SSL=~a. Expected no, try, require, yes or full." env-ssl))))
+            :no))))
+
 (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
 
 (register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
@@ -68,6 +81,7 @@
 (def-conn-var *test-var* 10)
 
 (defun load-settings (&key keep-connection)
+  (set-ichiran-ssl)
   (let ((old-connection *connection*))
     (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
     (if (and old-connection keep-connection)
