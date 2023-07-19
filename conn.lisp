@@ -11,10 +11,18 @@
 
 (defvar *debug* nil "Enables debug printouts")
 
-(load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+(defvar *conn-vars* nil)
 
-(register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
-(register-sql-operators :2+-ary (:=/= "IS DISTINCT FROM"))
+(defvar *conn-var-cache* (make-hash-table :test 'equal))
+
+(defun switch-conn-vars (dbid)
+  (setf *connection* (get-spec dbid))
+  (loop
+     for (var . iv) in *conn-vars*
+     for key = (cons var *connection*)
+     for (val exists) = (multiple-value-list (gethash key *conn-var-cache*))
+     for value = (if exists val iv)
+     do (setf (symbol-value var) value)))
 
 (defun get-spec (dbid)
   (cond ((not dbid) *connection*)
@@ -23,14 +31,49 @@
              (if spec spec
                  (error "Invalid connection!"))))))
 
+(defun load-settings (&key keep-connection)
+  (set-ichiran-ssl)
+  (let ((old-connection *connection*))
+    (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+    (let ((env-connection (get-ichiran-connection)))
+      (if env-connection
+          (setf *connection* env-connection)))
+    (if (and old-connection keep-connection)
+        (setf *connection* old-connection)
+        (unless (equal old-connection *connection*)
+          (switch-conn-vars *connection*)))))
+
+(defun get-ichiran-connection ()
+    (let*
+        ((env-connection
+            (uiop:getenv "ICHIRAN_CONNECTION"))
+        (connection
+            (if env-connection
+                (cl-ppcre:split "\\s+" env-connection)
+                nil)))
+    connection))
+
+(defun set-ichiran-ssl ()
+  (setf postmodern:*default-use-ssl*
+    (let* ((env-ssl (uiop:getenv "ICHIRAN_SSL")))
+        (if env-ssl
+            (cond
+                ((string= env-ssl "no") :no)
+                ((string= env-ssl "try") :try)
+                ((string= env-ssl "require") :require)
+                ((string= env-ssl "yes") :yes)
+                ((string= env-ssl "full") :full)
+                (t (error (format nil "Invalid environment variable ICHIRAN_SSL=~a. Expected no, try, require, yes or full." env-ssl))))
+            :no))))
+
+(load-settings)
+
+(register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
+(register-sql-operators :2+-ary (:=/= "IS DISTINCT FROM"))
+
 (defmacro let-db (dbid &body body)
   `(let ((*connection* (get-spec ,dbid)))
      ,@body))
-
-
-(defvar *conn-vars* nil)
-
-(defvar *conn-var-cache* (make-hash-table :test 'equal))
 
 (defmacro def-conn-var (name initial-value &rest args)
   `(progn
@@ -56,25 +99,7 @@
               for ,key = (cons ,var *connection*)
               do (setf (gethash ,key *conn-var-cache*) (symbol-value ,var))))))))
 
-(defun switch-conn-vars (dbid)
-  (setf *connection* (get-spec dbid))
-  (loop
-     for (var . iv) in *conn-vars*
-     for key = (cons var *connection*)
-     for (val exists) = (multiple-value-list (gethash key *conn-var-cache*))
-     for value = (if exists val iv)
-     do (setf (symbol-value var) value)))
-
 (def-conn-var *test-var* 10)
-
-(defun load-settings (&key keep-connection)
-  (let ((old-connection *connection*))
-    (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
-    (if (and old-connection keep-connection)
-        (setf *connection* old-connection)
-        (unless (equal old-connection *connection*)
-          (switch-conn-vars *connection*)))))
-
 
 (defmacro with-log ((path &key (if-exists :append)) &body body)
   (alexandria:with-gensyms (stream)

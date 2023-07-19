@@ -4,7 +4,7 @@
 
 (defvar *connection* '("jmdict" "postgres" "" "localhost"))
 
-(load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+(load-settings)
 
 (defgeneric to-json (obj &key &allow-other-keys)
   (:documentation "Convert object to json"))
