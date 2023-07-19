@@ -51,7 +51,10 @@
             (if env-connection
                 (cl-ppcre:split "\\s+" env-connection)
                 nil)))
-    connection))
+    (unless
+      (and connection (= (length connection) 4))
+        (error (format nil "Invalid environment variable ICHIRAN_CONNECTION=~a. Expected the value to be in the form \"database-name database-user database-password database-host\"" env-connection))
+        connection)))
 
 (defun set-ichiran-ssl ()
   (setf postmodern:*default-use-ssl*
