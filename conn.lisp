@@ -11,18 +11,10 @@
 
 (defvar *debug* nil "Enables debug printouts")
 
-(defvar *conn-vars* nil)
+(load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
 
-(defvar *conn-var-cache* (make-hash-table :test 'equal))
-
-(defun switch-conn-vars (dbid)
-  (setf *connection* (get-spec dbid))
-  (loop
-     for (var . iv) in *conn-vars*
-     for key = (cons var *connection*)
-     for (val exists) = (multiple-value-list (gethash key *conn-var-cache*))
-     for value = (if exists val iv)
-     do (setf (symbol-value var) value)))
+(register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
+(register-sql-operators :2+-ary (:=/= "IS DISTINCT FROM"))
 
 (defun get-spec (dbid)
   (cond ((not dbid) *connection*)
@@ -31,38 +23,14 @@
              (if spec spec
                  (error "Invalid connection!"))))))
 
-(defun load-settings (&key keep-connection)
-  (let ((old-connection *connection*))
-    (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
-    (let ((env-connection (get-ichiran-connection)))
-      (if env-connection
-          (setf *connection* env-connection)))
-    (if (and old-connection keep-connection)
-        (setf *connection* old-connection)
-        (unless (equal old-connection *connection*)
-          (switch-conn-vars *connection*)))))
-
-(defun get-ichiran-connection ()
-  (let*
-    ((env-connection
-      (uiop:getenv "ICHIRAN_CONNECTION"))
-        (connection
-          (if env-connection
-            (cl-ppcre:split "\\s+" env-connection)
-            nil)))
-    (when
-      (and connection (/= (length connection) 4))
-        (error (format nil "Invalid environment variable ICHIRAN_CONNECTION=~a. Expected the value to be in the form \"database-name database-user database-password database-host\"" connection)))
-    connection))
-
-(load-settings)
-
-(register-sql-operators :2+-ary (:=== "IS NOT DISTINCT FROM"))
-(register-sql-operators :2+-ary (:=/= "IS DISTINCT FROM"))
-
 (defmacro let-db (dbid &body body)
   `(let ((*connection* (get-spec ,dbid)))
      ,@body))
+
+
+(defvar *conn-vars* nil)
+
+(defvar *conn-var-cache* (make-hash-table :test 'equal))
 
 (defmacro def-conn-var (name initial-value &rest args)
   `(progn
@@ -88,7 +56,26 @@
               for ,key = (cons ,var *connection*)
               do (setf (gethash ,key *conn-var-cache*) (symbol-value ,var))))))))
 
+(defun switch-conn-vars (dbid)
+  (setf *connection* (get-spec dbid))
+  (loop
+     for (var . iv) in *conn-vars*
+     for key = (cons var *connection*)
+     for (val exists) = (multiple-value-list (gethash key *conn-var-cache*))
+     for value = (if exists val iv)
+     do (setf (symbol-value var) value)))
+
 (def-conn-var *test-var* 10)
+
+(defun load-settings (&key keep-connection)
+  (let ((old-connection *connection*))
+    (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+    (load-connection-from-env)
+    (if (and old-connection keep-connection)
+        (setf *connection* old-connection)
+        (unless (equal old-connection *connection*)
+          (switch-conn-vars *connection*)))))
+
 
 (defmacro with-log ((path &key (if-exists :append)) &body body)
   (alexandria:with-gensyms (stream)
@@ -156,3 +143,21 @@
   (when *debug*
     (funcall fn value))
   value)
+
+(defun get-ichiran-connection-env ()
+  (let*
+    ((env-connection
+      (uiop:getenv "ICHIRAN_CONNECTION"))
+        (connection
+          (if env-connection
+            (cl-ppcre:split "\\s+" env-connection)
+            nil)))
+    (when
+      (and connection (/= (length connection) 4))
+        (error (format nil "Invalid environment variable ICHIRAN_CONNECTION=~a. Expected the value to be in the form \"database-name database-user database-password database-host\"" connection)))
+    connection))
+
+(defun load-connection-from-env ()
+  (let ((ichiran-connection (get-ichiran-connection-env)))
+    (if ichiran-connection
+      (setf *connection* ichiran-connection))))
