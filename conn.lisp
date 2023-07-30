@@ -5,6 +5,14 @@
 ;; main connection
 (defvar *connection* nil) ;; '("jmdict" "postgres" "" "localhost"))
 
+;; the "dynamic connection" feature assumes the database itself doesn't change, just the connection parameters
+;; set the environment variable to the desired value of *connection* for example:
+;;
+;;     export ICHIRAN_CONNECTION='("jmdict" "postgres" "" "localhost" :use-ssl t)'
+;;
+(defvar *connection-env-var* "ICHIRAN_CONNECTION" "dynamic connection setting, an environment variable that contains the value for *connection*")
+(defvar *is-dynamic-connection* nil "set to true when loading connection from environment variable, disables keep-connection")
+
 ;; secondary connections (alist)
 (defvar *connections* '((:a "jmdict2" "postgres" "" "localhost")
                         (:b "jmdict3" "postgres" "" "localhost")))
@@ -68,12 +76,13 @@
 (def-conn-var *test-var* 10)
 
 (defun load-settings (&key keep-connection)
-  (let ((old-connection *connection*))
+  (let ((old-connection *connection*)
+        (old-dynamic *is-dynamic-connection*))
     (load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
     (load-connection-from-env)
-    (if (and old-connection keep-connection)
+    (if (and keep-connection old-connection (not *is-dynamic-connection*) (not old-dynamic))
         (setf *connection* old-connection)
-        (unless (equal old-connection *connection*)
+        (unless (or (equal old-connection *connection*) (eql old-dynamic *is-dynamic-connection* t))
           (switch-conn-vars *connection*)))))
 
 
@@ -145,19 +154,20 @@
   value)
 
 (defun get-ichiran-connection-env ()
-  (let*
-    ((env-connection
-      (uiop:getenv "ICHIRAN_CONNECTION"))
-        (connection
-          (if env-connection
-            (cl-ppcre:split "\\s+" env-connection)
-            nil)))
-    (when
-      (and connection (/= (length connection) 4))
-        (error (format nil "Invalid environment variable ICHIRAN_CONNECTION=~a. Expected the value to be in the form \"database-name database-user database-password database-host\"" connection)))
-    connection))
+  (when *connection-env-var*
+    (let ((connection-str (uiop:getenv *connection-env-var*)))
+      (when (and connection-str (not (zerop (length connection-str))))
+        (let* ((*read-eval* nil)
+               (connection (ignore-errors (read-from-string connection-str))))
+          (if connection
+              (if (listp connection)
+                  connection
+                  (warn "Invalid connection value in ~a, must be a list" *connection-env-var*))
+              (warn "Unable to parse connection value in ~a" *connection-env-var*)))))))
 
 (defun load-connection-from-env ()
   (let ((ichiran-connection (get-ichiran-connection-env)))
     (if ichiran-connection
-      (setf *connection* ichiran-connection))))
+        (setf *connection* ichiran-connection
+              *is-dynamic-connection* t)
+        (setf *is-dynamic-connection* nil))))
