@@ -8,7 +8,7 @@
 ;; the "dynamic connection" feature assumes the database itself doesn't change, just the connection parameters
 ;; set the environment variable to the desired value of *connection* for example:
 ;;
-;;     export ICHIRAN_CONNECTION='("jmdict" "postgres" "" "localhost" :use-ssl t)'
+;;     export ICHIRAN_CONNECTION='("jmdict" "postgres" "" "localhost" :use-ssl :yes)'
 ;;
 (defvar *connection-env-var* "ICHIRAN_CONNECTION" "dynamic connection setting, an environment variable that contains the value for *connection*")
 (defvar *is-dynamic-connection* nil "set to true when loading connection from environment variable, disables keep-connection")
@@ -82,7 +82,7 @@
     (load-connection-from-env)
     (if (and keep-connection old-connection (not *is-dynamic-connection*) (not old-dynamic))
         (setf *connection* old-connection)
-        (unless (or (equal old-connection *connection*) (eql old-dynamic *is-dynamic-connection* t))
+        (unless (or (equal old-connection *connection*) (and old-dynamic *is-dynamic-connection*))
           (switch-conn-vars *connection*)))))
 
 
