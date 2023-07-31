@@ -29,9 +29,9 @@
 (defpackage :ichiran/conn
   (:use :cl :postmodern)
   (:export :get-spec :with-db :let-db
-           :*connection* :*connections*
+           :*connection* :*connections* :*connection-env-var*
            :def-conn-var :switch-conn-vars
-           :load-settings :with-log
+           :load-settings :with-log :load-connection-from-env
            :cache  :defcache :all-caches :init-all-caches
            :get-cache :init-cache :reset-cache :ensure
            :*debug* :dp

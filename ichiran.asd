@@ -19,6 +19,7 @@
                #:jsown
                #:lparallel
                #:diff
+               #:cl+ssl
                )
   :components ((:file "package")
                (:file "characters")

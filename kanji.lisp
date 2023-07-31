@@ -2,9 +2,7 @@
 
 (defvar *kanjidic-path* #P"e:/dump/kanjidic2.xml")
 
-(defvar *connection* '("jmdict" "postgres" "" "localhost"))
-
-(load (asdf:system-relative-pathname :ichiran "settings.lisp") :if-does-not-exist nil)
+(load-settings :keep-connection t)
 
 (defgeneric to-json (obj &key &allow-other-keys)
   (:documentation "Convert object to json"))
