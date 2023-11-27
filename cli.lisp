@@ -21,8 +21,14 @@
   (:name :full
    :description "full split info (as JSON)"
    :short #\f
-   :long "full"))
-
+   :long "full")
+   (:name :limit
+   :description "limit segmentations to the specified number (useful only with -f or --full) [Example: ichiran-cli -f -l 5 \"一覧は最高だぞ\"]"
+   :short #\l
+   :long "limit"
+   :arg-parser #'parse-integer
+   :default 1
+   :meta-var "LIMIT"))
 
 (defun unknown-option (condition)
   (format t "warning: ~s option is unknown!~%" (opts:option condition))
@@ -76,7 +82,8 @@
            (print-romanize-info info))))
       ((getf options :full)
        (let* ((input (join " " free-args))
-              (result (romanize* input :limit 1)))  ;; TODO: option for limit > 1
+              (limit-value (getf options :limit))
+              (result (romanize* input :limit limit-value)))
          (princ (jsown:to-json result))))
       (t (let ((input (join " " free-args)))
            (princ (romanize input :with-info t))))
