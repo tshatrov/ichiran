@@ -926,8 +926,6 @@
 
   ;; these words had no kana in jmdict
   (add-reading 1161240 "いっかねん")
-  (add-reading 2209300 "たへる")
-  (add-conj-reading 2209300 "たへる") ;; this doesn't actually work because there are no existing conjugations but whatever
 
   (set-common 'kana-text  2008650 "そうした" :null)
   (add-sense-prop 1188270 0 "pos" "n") ;; 何か
