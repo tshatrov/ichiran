@@ -1099,7 +1099,7 @@
                 (pushnew end ends)
                 (list (list start end segments)))))
        into result
-     finally (return (values result kanji-break))))
+     finally (return (values result (remove-duplicates kanji-break)))))
 
 (defun join-substring-words (str)
   (multiple-value-bind (result kanji-break) (join-substring-words* str)
