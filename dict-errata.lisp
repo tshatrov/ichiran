@@ -34,15 +34,15 @@
                             :text reading
                             :source-text src-reading)))))))
 
-(defun add-reading (seq reading &key (common :null) (conjugate-p t))
+(defun add-reading (seq reading &key (common :null) (conjugate-p t) (table nil))
   (let* ((is-kana (test-word reading :kana))
-         (table (if is-kana 'kana-text 'kanji-text))
+         (table (or table (if is-kana 'kana-text 'kanji-text)))
          (entry (get-dao 'entry seq)))
     (when (not (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
       (let* ((maxord (query (:select (:max 'ord) :from table :where (:= 'seq seq)) :single))
              (ord (if (eql maxord :null) 0 (1+ maxord))))
         (make-dao table :text reading :seq seq :ord ord :common common :conjugate-p conjugate-p)
-        (if is-kana
+        (if (eql table 'kana-text)
             (incf (n-kana entry))
             (incf (n-kanji entry)))
         (update-dao entry)))
@@ -65,9 +65,9 @@
                    (select-dao 'kanji-text (:in 'seq (:set seqs))))))
     (mapcar 'set-reading readings)))
 
-(defun delete-reading (seq reading)
+(defun delete-reading (seq reading &key (table nil))
   (let* ((is-kana (test-word reading :kana))
-         (table (if is-kana 'kana-text 'kanji-text))
+         (table (or table (if is-kana 'kana-text 'kanji-text)))
          (entry (get-dao 'entry seq))
          (to-delete (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
          (deleted 0))
@@ -75,7 +75,7 @@
       (dolist (obj to-delete)
         (delete-dao obj)
         (incf deleted))
-      (if is-kana
+      (if (eql table 'kana-text)
           (decf (n-kana entry) deleted)
           (decf (n-kanji entry) deleted))
       (update-dao entry)
@@ -780,7 +780,7 @@
   (set-common 'kana-text 2147610 "いなくなる" 0)
 
   (set-common 'kana-text 1346290 "マス" 37)
-  (add-sense-prop 1346290 2 "misc" "uk")
+  (add-sense-prop 1346290 3 "misc" "uk")
   (set-primary-nokanji 1346290 t)
 
   (set-primary-nokanji 1409110 nil)
@@ -941,6 +941,15 @@
 
   )
 
+(defun add-errata-dec23 ()
+  (add-reading 2220325 "ヶ" :table 'kanji-text)
+  (add-reading 2220325 "ケ" :table 'kanji-text)
+  (delete-reading 2220325 "ヶ" :table 'kana-text)
+  (delete-reading 2220325 "ケ" :table 'kana-text)
+  (add-reading 2220325 "か")
+
+  )
+
 
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
@@ -999,9 +1008,6 @@
   (add-sense-prop 1505390 0 "pos" "ctr") ;; 文字
 
   (add-sense-prop 1101700 0 "pos" "ctr") ;; パック
-  (add-sense-prop 1101700 1 "pos" "n")
-  (add-sense-prop 1101700 1 "pos" "vs")
-
   (add-sense-prop 1120410 0 "pos" "ctr") ;; ページ
   (add-sense-prop 1138570 0 "pos" "ctr") ;; ラウンド
   (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
@@ -1028,6 +1034,8 @@
   (add-sense-prop 1732510 1 "pos" "ctr") ;; 番手
   (add-sense-prop 1732510 2 "pos" "ctr")
   (add-sense-prop 2086480 1 "pos" "ctr") ;; 頭身
+
+  (add-sense-prop 1331080 0 "pos" "ctr") ;; 周忌
   )
 
 

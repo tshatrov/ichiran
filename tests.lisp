@@ -577,6 +577,7 @@
   (assert-segment "うまくハメられた" "うまく" "ハメられた")
   (assert-segment "してるとこだから" "してる" "とこ" "だから")
   (assert-segment "下記のとおりです" "下記" "の" "とおり" "です")
+  (assert-segment "123ヶ年" "123ヶ年")
   )
 
 (define-test json-consistency-test
