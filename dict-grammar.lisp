@@ -357,7 +357,8 @@
                  ,primary-words)))))
 
 (def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
-  (find-word-with-conj-type root 13))
+  (unless (member root '("い") :test 'equal)
+    (find-word-with-conj-type root 13)))
 
 (def-simple-suffix suffix-ren :ren (:connector "" :score 5) (root)
   ;; generic ren'youkei suffix
@@ -923,6 +924,12 @@
   :description "no toori"
   :score 50
   :connector " ")
+
+(def-generic-synergy synergy-oki (l r)
+  (filter-is-pos ("ctr") (segment k p c l) t)
+  (filter-in-seq-set 2854117 2084550)
+  :score 20
+  :connector "")
 
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*

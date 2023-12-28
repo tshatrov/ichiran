@@ -578,6 +578,11 @@
   (assert-segment "してるとこだから" "してる" "とこ" "だから")
   (assert-segment "下記のとおりです" "下記" "の" "とおり" "です")
   (assert-segment "123ヶ年" "123ヶ年")
+  (assert-segment "そうはいかん" "そう" "は" "いかん")
+  (assert-segment "いつなりともお使いなさい" "いつなりと" "も" "お" "使いなさい")
+  (assert-segment "よそで待ってて" "よそ" "で" "待ってて")
+  (assert-segment "3つおきの席" "3つ" "おき" "の" "席")
+  (assert-segment "1年おきに" "1年" "おきに")
   )
 
 (define-test json-consistency-test

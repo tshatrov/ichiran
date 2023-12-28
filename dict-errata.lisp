@@ -948,6 +948,18 @@
   (delete-reading 2220325 "ケ" :table 'kana-text)
   (add-reading 2220325 "か")
 
+  (add-sense-prop 1180540 0 "misc" "uk") ;; おっす
+  (add-sense-prop 2826371 0 "misc" "uk")
+
+  (delete-sense-prop 2854117 "misc" "uk") ;; おき but I boost it later with synergy
+  (delete-sense-prop 2859257 "misc" "uk") ;; あれ (imperative of 有る)
+
+  ;; はいかん
+  (set-common 'kana-text 1625620 "はいかん" :null)
+  (set-common 'kana-text 1625610 "はいかん" :null)
+  (set-common 'kana-text 1681460 "はいかん" :null)
+
+
   )
 
 
