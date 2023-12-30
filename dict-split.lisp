@@ -85,6 +85,7 @@
                 :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
                 :where (:and (:like 'kt.text "%で")
                              (:= 'sp.seq 'kt.seq) (:= 'sp.tag "pos")
+                             (:not (:in 'sp.seq (:set (alexandria:hash-table-keys *split-map*))))
                              (:= 'sp.text "exp")))
 |#
 
@@ -95,66 +96,37 @@
        (2028980 1))))
 
 (def-de-split 1163700 1576150) ;; 一人で
-
 (def-de-split 1611020 1577100) ;; 何で
-
 (def-de-split 1004800 1628530) ;; これで
-
 (def-de-split 2810720 1004820) ;; 此れまでで
-
 (def-de-split 1006840 1006880) ;; その上で
-
 (def-de-split 1530610 1530600) ;; 無断で
-
 (def-de-split 1245390 1245290) ;; 空で
-
 (def-de-split 2719270 1445430) ;; 土足で
-
 (def-de-split 1189420 2416780) ;; 何用で
-
 (def-de-split 1272220 1592990) ;; 交代で
-
 (def-de-split 1311360 1311350) ;; 私費で
-
 (def-de-split 1368500 1368490) ;; 人前で
-
 (def-de-split 1395670 1395660) ;; 全体で
-
 (def-de-split 1417790 1417780) ;; 単独で
-
 (def-de-split 1454270 1454260) ;; 道理で
-
 (def-de-split 1479100 1679020) ;; 半眼で
-
 (def-de-split 1510140 1680900) ;; 別封で
-
 (def-de-split 1518550 1529560) ;; 無しで
-
 (def-de-split 1531420 1531410) ;; 名義で
-
 (def-de-split 1597400 1585205) ;; 力尽くで
-
 (def-de-split 1679990 2582460) ;; 抜き足で
-
 (def-de-split 1682060 2085340) ;; 金ずくで
-
 (def-de-split 1736650 1611710) ;; 水入らずで
-
 (def-de-split 1865020 1590150) ;; 陰で
-
 (def-de-split 1878880 2423450) ;; 差しで
-
 (def-de-split 2126220 1802920) ;; 捩じり鉢巻きで
-
 (def-de-split 2136520 2005870) ;; もう少しで
-
 (def-de-split 2513590 2513650) ;; 詰め開きで
-
 (def-de-split 2771850 2563780) ;; 気にしないで
-
 (def-de-split 2810800 1587590) ;; 今までで
-
 (def-de-split 1343110 1343100) ;; ところで
+(def-de-split 1270210 1001640) ;; お陰で
 
 (def-simple-split split-degozaimasu 2253080 20 () ;; でございます
   (2028980 1)
@@ -211,6 +183,7 @@
                 :from (:as 'kanji-text 'kt) (:as 'sense-prop 'sp)
                 :where (:and (:like 'kt.text "し%")
                              (:= 'sp.seq 'kt.seq) (:= 'sp.tag "pos")
+                             (:not (:in 'sp.seq (:set (alexandria:hash-table-keys *split-map*))))
                              (:in 'sp.text (:set *pos-with-conj-rules*)))))
 |#
 
@@ -237,6 +210,9 @@
 (def-shi-split 1594460 1372620) ;; し遂げる
 (def-shi-split 1594580 1277100) ;; し向ける
 (def-shi-split 2518250 1332760) ;; し終える
+(def-shi-split 1157240 1600260) ;; し残す
+(def-shi-split 1304820 1207610) ;; し掛ける
+(def-shi-split 2858937 1406690) ;; し損ねる
 
 ;; nakunaru split: because naku often attaches to previous word
 
@@ -916,8 +892,6 @@
            for hint-fn = (gethash seq *hint-map*)
            when hint-fn do (return (funcall hint-fn reading))))))
 
-;; expressions ending with は
-
 (defparameter *hints-checked*
   (mapcar 'car
           '(
@@ -949,7 +923,9 @@
             (2837561 "二足の草鞋をはく") (2837752 "肩肘をはる") (2837752 "肩ひじをはる") (2839604 "音程がはずれる")
             (2841916 "はたきを掛ける") (1002340 "おはよう御座います") (2159030 "はしごを外される") (2131510 "根をはる")
             (2131510 "根をはる") (2131510 "根をはる") (2849623 "少しでもはやく") (2238150 "はぶりの良い")
-            (2832275 "算盤をはじく") (2832275 "算盤をはじく") (2850988 "無念をはらす")
+            (2832275 "算盤をはじく") (2832275 "算盤をはじく") (2850988 "無念をはらす") (1344300 "もろはの剣")
+            (2102270 "鬱憤をはらす") (2708470 "百舌のはやにえ") (2770500 "はしが進む") (2770500 "はしが進む") (2788150 "本題にはいる")
+            (2859213 "頬をはる") (2858410 "筆をはしらせる")
 
             ;; へ
             (1185210 "へたの横好き") (1381650 "青天のへきれき") (1381650 "晴天のへきれき") (1919400 "へそを曲げる")
@@ -971,7 +947,10 @@
                                                                     *hints-checked*)))))))
 |#
 
-;; TODO pos=int, pos=adv
+;; TODO pos=adv
+
+
+;; expressions ending with は
 
 (def-simple-hint
     (2028920 ;; は
@@ -1149,6 +1128,7 @@
      2845739 ;; 今に始まった事ではない
      2849457 ;; 堪ったもんではない
      2850045 ;; 気が気ではない
+     2854412 ;; 比ではない
      )
     (l k)
   (deha (search "では" k :from-end t))
@@ -1297,6 +1277,7 @@
      2833597 ;; "君子は豹変す" "くんしはひょうへんす")
      2839953 ;; それはそれとして
      2844002 ;; ルールはルール
+     2858918 ;; 板垣死すとも自由は死せず"
      )
     (l k)
   (ha (search "は" k :from-end t))
@@ -1476,6 +1457,11 @@
 (def-easy-hint 2849042 "過去 は 過去")
 (def-easy-hint 2849859 "寝言 は 寝て 言え")
 (def-easy-hint 2851317 "困った 時 は お互い様")
+(def-easy-hint 2855884 "逃げた 魚 は 大きい")
+(def-easy-hint 2855675 "鯛 も 一人 は うまからず")
+(def-easy-hint 2856828 "ごめん で 済む なら 警察 は いらない")
+(def-easy-hint 2857339 "他 は 無い")
+(def-easy-hint 2857468 "無 から は 何も 生じない")
 
 ;; は は
 
@@ -1532,6 +1518,7 @@
 (def-easy-hint 2153170 "目 には 目 を 歯 には 歯 を")
 (def-easy-hint 2422970 "人 には 添うて見よ 馬 には 乗って見よ")
 (def-easy-hint 2833500 "馬 には 乗って見よ 人 には 添うて見よ")
+(def-easy-hint 2857020 "居候 三杯目 には そっと出し")
 
 ;; の は
 
@@ -1558,6 +1545,7 @@
 (def-easy-hint 2838606 "今日 の ところ は")
 (def-easy-hint 2838426 "木 の 実 は 本 へ 落つ")
 (def-easy-hint 2845252 "下戸 の 建てた 蔵 は ない")
+(def-easy-hint 2858678 "自分 の こと は 棚 に 上げる")
 
 ;; は の
 (def-easy-hint 1487700 "必要 は 発明 の 母")
@@ -1590,6 +1578,7 @@
 (def-easy-hint 2837756 "風邪 は 万病 の 元")
 (def-easy-hint 2842831 "口 は 災い の 門")
 (def-easy-hint 2843962 "生 は 死 の 始め")
+(def-easy-hint 2853754 "正直 は 最善 の 策")
 
 ;; は を
 (def-easy-hint 1213500 "甘言 は 偶人 を 喜ばす")
@@ -1623,6 +1612,9 @@
 (def-easy-hint 2847018 "名人 は 人 を 謗らず")
 (def-easy-hint 2850060 "赤き は 酒 の 咎")
 (def-easy-hint 2850189 "君子 の 交わり は 淡きこと 水 の ごとし")
+(def-easy-hint 2855699 "謀 は 密なる を 良しとす")
+(def-easy-hint 2859193 "百里 を 行く 者 は 九十 を 半ばとす")
+(def-easy-hint 2859070 "獅子 は 我が子 を 千尋 の 谷 に 落とす")
 
 ;; と は
 (def-easy-hint 2095170 "天才 と 狂人 は 紙一重")
@@ -1667,6 +1659,9 @@
 (def-easy-hint 2845443 "天災 は 忘れた頃 に やってくる")
 (def-easy-hint 2846430 "凝って は 思案 に 能わず")
 (def-easy-hint 2851107 "女 は 三界 に 家 なし")
+(def-easy-hint 2855268 "秋刀魚 は 目黒 に 限る")
+(def-easy-hint 2859282 "子供 は 三歳 までに 一生分 の 親孝行 を する")
+(def-easy-hint 2854538 "志ある者 は 事 竟に 成る")
 
 ;; に は
 
@@ -1677,6 +1672,8 @@
 (def-easy-hint 2830412 "他 に 方法 は 無い")
 (def-easy-hint 2666530 "墓 に 布団 は 着せられぬ")
 (def-easy-hint 2847238 "知らん が 為に 我 は 信ず")
+(def-easy-hint 2854601 "事 と 次第 によって は")
+(def-easy-hint 2855600 "武士 に 二言 は ない")
 
 ;; へ
 
