@@ -513,7 +513,8 @@
 
 (def-simple-split nil 1894260 50 (len txt) ;; ついてる
   (:test (> len 3))
-  (("付いて" 1495740) 3)
+  ;; refers to itself because 1495740 kana is not strong enough...
+  (("付いて" 1894260) 3)
   (1577980 nil t (optprefix "い")))
 
 (def-simple-split nil 1854750 20 ()
@@ -646,6 +647,11 @@
 (def-simple-split nil 1006880 50 (len) ;; その上
   (1006830 2)
   (1352130))
+
+(def-simple-split nil 1601010 50 (len) ;; はね上がる
+  (("跳ね" 1429620) 2)
+  (1352290 nil t))
+
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 

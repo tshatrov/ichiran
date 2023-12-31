@@ -795,8 +795,6 @@
 (defun add-errata-jan20 ()
   (add-reading 2839843 "うえをしたへ")
   (delete-reading 2839843 "うえをしたえ")
-  (add-reading 1930050 "バラす")
-  (add-conj-reading 1930050 "バラす")
   (add-reading 1593170 "コケる")
   (add-conj-reading 1593170 "コケる")
 
@@ -951,15 +949,24 @@
   (add-sense-prop 1180540 0 "misc" "uk") ;; おっす
   (add-sense-prop 2826371 0 "misc" "uk")
 
+  (add-sense-prop 1495740 0 "misc" "uk") ;; 付く
+
   (delete-sense-prop 2854117 "misc" "uk") ;; おき but I boost it later with synergy
   (delete-sense-prop 2859257 "misc" "uk") ;; あれ (imperative of 有る)
+  (delete-sense-prop 1198890 "misc" "uk") ;; 解く
+
+  (delete-sense-prop 2826371 "misc" "rare") ;; いつなりと
 
   ;; はいかん
   (set-common 'kana-text 1625620 "はいかん" :null)
   (set-common 'kana-text 1625610 "はいかん" :null)
   (set-common 'kana-text 1681460 "はいかん" :null)
 
+  (set-common 'kanji-text 2855480 "乙女" 0)
+  (set-common 'kana-text 2855480 "おとめ" 0)
 
+  (set-common 'kana-text 1930050 "バラす" 0)
+  (set-common 'kana-text 1582460 "ないかい" :null)
   )
 
 
