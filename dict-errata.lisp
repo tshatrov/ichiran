@@ -563,6 +563,7 @@
   (add-errata-jan21)
   (add-errata-may21)
   (add-errata-jan22)
+  (add-errata-dec23)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
