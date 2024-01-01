@@ -950,8 +950,6 @@
   (add-sense-prop 1180540 0 "misc" "uk") ;; おっす
   (add-sense-prop 2826371 0 "misc" "uk")
 
-  (add-sense-prop 1495740 0 "misc" "uk") ;; 付く
-
   (delete-sense-prop 2854117 "misc" "uk") ;; おき but I boost it later with synergy
   (delete-sense-prop 2859257 "misc" "uk") ;; あれ (imperative of 有る)
   (delete-sense-prop 1198890 "misc" "uk") ;; 解く
