@@ -505,6 +505,10 @@
   (2028930 1)
   (1495740 nil t))
 
+(def-simple-split nil 2835890 50 () ;; 折りたたみ式
+  (1385860 5)
+  (1319060 1))
+
 (defun optprefix (prefix)
   (lambda (txt)
     (if (alexandria:starts-with-subseq prefix txt)
