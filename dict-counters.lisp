@@ -211,9 +211,10 @@
 (defparameter *special-counters* (make-hash-table))
 
 (defparameter *counter-suffixes* '((:kan "間" "かん" "[duration]")
+                                   (:kango "間後" "かんご" "[after ...]")
                                    (:chuu "中" "ちゅう" "[among/out of ...]")))
 
-(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan) (1333450 :kan)))
+(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan) (1333450 :kan :kango)))
 
 (defparameter *counter-foreign* '(1120410))
 
