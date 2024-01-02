@@ -583,6 +583,9 @@
   (assert-segment "よそで待ってて" "よそ" "で" "待ってて")
   (assert-segment "3つおきの席" "3つ" "おき" "の" "席")
   (assert-segment "1年おきに" "1年" "おきに")
+  (assert-segment "練習したかいがあって" "練習した" "かいがあって")
+  (assert-segment "高いお金を払ったかいがあったと思う" "高い" "お金" "を" "払った" "かいがあった" "と" "思う")
+  (assert-segment "養生したかいもなく" "養生した" "かいもなく")
   )
 
 (define-test json-consistency-test

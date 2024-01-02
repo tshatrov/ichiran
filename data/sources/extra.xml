@@ -27,4 +27,22 @@
       <gloss xml:lang="eng">without</gloss>
     </sense>
   </entry>
+  <entry>
+    <ent_seq>甲斐もない</ent_seq>
+    <k_ele>
+      <keb>甲斐もない</keb>
+    </k_ele>
+    <k_ele>
+      <keb>甲斐も無い</keb>
+    </k_ele>
+    <r_ele>
+      <reb>かいもない</reb>
+    </r_ele>
+    <sense>
+      <pos>exp</pos>
+      <pos>adj-i</pos>
+      <gloss xml:lang=\"eng\">pointless</gloss>
+      <gloss xml:lang=\"eng\">in vain</gloss>
+    </sense>
+  </entry>
 </outer>

@@ -966,6 +966,7 @@
 
   (set-common 'kana-text 1930050 "バラす" 0)
   (set-common 'kana-text 1582460 "ないかい" :null)
+  (set-common 'kana-text 1202300 "かいが" 0)
   )
 
 
@@ -1093,6 +1094,7 @@
                             2718360 ;; がな
                             2201380 ;; わい
                             2722170 ;; のう
+                            2751630 ;;　かいな
                             )
   "Words that only have meaning when they're final")
 
