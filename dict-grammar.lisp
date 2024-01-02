@@ -143,6 +143,7 @@
    :tosuru "to try to .../to be about to..."
    :garu "to feel .../have a ... impression of someone"
    :me "somewhat/-ish"
+   :gai "worth it to ..."
    ;; these are used for splitsegs
    2826528 "polite prefix" ;; お
    2028980 "at / in / by" ;; で
@@ -278,6 +279,8 @@
 
         (load-kf :iadj (get-kana-form 2006580 "げ"))
         (load-kf :iadj (get-kana-form 1604890 "め") :class :me)
+
+        (load-kf :ren- (get-kana-form 2606690 "がい") :class :gai)
 
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ねぇ")
@@ -528,6 +531,7 @@
 
 (pushnew :mo *suffix-unique-only*)
 (pushnew :nikui *suffix-unique-only*)
+(pushnew :gai *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var patch-var)

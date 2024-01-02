@@ -586,6 +586,7 @@
   (assert-segment "練習したかいがあって" "練習した" "かいがあって")
   (assert-segment "高いお金を払ったかいがあったと思う" "高い" "お金" "を" "払った" "かいがあった" "と" "思う")
   (assert-segment "養生したかいもなく" "養生した" "かいもなく")
+  (assert-segment "読みがいがある" "読みがい" "が" "ある")
   )
 
 (define-test json-consistency-test
