@@ -202,10 +202,10 @@
 
         (loop for kf in (get-kana-forms 1577980) ;; いる (る)
            for tkf = (text kf)
-           do (setf (gethash tkf *suffix-cache*) (list (if (> (length tkf) 1) :te++ :te+) kf)
+           do (setf (gethash tkf *suffix-cache*) (list (if (> (length tkf) 1) :teiru+ :teiru) kf)
                     (gethash (seq kf) *suffix-class*) :iru)
              (when (> (length tkf) 1)
-               (setf (gethash (subseq tkf 1) *suffix-cache*) (list :te+ kf))))
+               (setf (gethash (subseq tkf 1) *suffix-cache*) (list :teiru kf))))
 
         (load-conjs :te 1547720 :kuru) ;; くる
 
@@ -381,11 +381,14 @@
 (def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
   (te-check root))
 
-(def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
-  (te-check root))
+(defun teiru-check (root)
+  (and (not (equal root "いて")) (te-check root)))
 
-(def-simple-suffix suffix-te++ :te++ (:connector "" :score 6) (root)
-  (te-check root))
+(def-simple-suffix suffix-teiru :teiru (:connector "" :score 3) (root)
+  (teiru-check root))
+
+(def-simple-suffix suffix-teiru+ :teiru+ (:connector "" :score 6) (root)
+  (teiru-check root))
 
 (def-simple-suffix suffix-te+space :te+space (:connector " " :score 3) (root)
   (te-check root))

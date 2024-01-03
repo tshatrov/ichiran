@@ -967,6 +967,8 @@
   (set-common 'kana-text 1930050 "バラす" 0)
   (set-common 'kana-text 1582460 "ないかい" :null)
   (set-common 'kana-text 1202300 "かいが" 0)
+
+  (set-common 'kanji-text 1328740 "狩る" 0)
   )
 
 
