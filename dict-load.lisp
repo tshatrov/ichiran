@@ -112,7 +112,7 @@
 (defun next-seq ()
   (1+ (query (:select (:max 'seq) :from 'entry) :single)))
 
-(defun load-entry (content &key if-exists upstream seq)
+(defun load-entry (content &key if-exists upstream seq conjugate-p)
   (let* ((parsed (typecase content
                    (dom:node
                     (unless (typep content 'dom:document)
@@ -146,15 +146,16 @@
       (insert-readings kanji-nodes "keb" 'kanji-text seq "ke_pri")
       (insert-readings kana-nodes "reb" 'kana-text seq "re_pri")
       (insert-senses sense-nodes seq))
-    (let ((posi (query (:select 'text :distinct :from 'sense-prop :where
-                                (:and
-                                 (:= 'seq seq)
-                                 (:= 'tag "pos")
-                                 (:in 'text (:set *pos-with-conj-rules*))))
-                       :column)))
-      (when posi
-        (conjugate-entry-outer seq :as-posi posi)
-        (load-secondary-conjugations :from (list seq))))
+    (when conjugate-p
+      (let ((posi (query (:select 'text :distinct :from 'sense-prop :where
+                                  (:and
+                                   (:= 'seq seq)
+                                   (:= 'tag "pos")
+                                   (:in 'text (:set *pos-with-conj-rules*))))
+                         :column)))
+        (when posi
+          (conjugate-entry-outer seq :as-posi posi)
+          (load-secondary-conjugations :from (list seq)))))
     seq))
 
 (defun fix-entities (source)

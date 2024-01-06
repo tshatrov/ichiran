@@ -45,4 +45,19 @@
       <gloss xml:lang=\"eng\">in vain</gloss>
     </sense>
   </entry>
+  <entry>
+    <ent_seq>観了</ent_seq>
+    <k_ele>
+      <keb>観了</keb>
+    </k_ele>
+    <r_ele>
+      <reb>かんりょう</reb>
+    </r_ele>
+    <sense>
+      <pos>n</pos>
+      <pos>vs</pos>
+      <pos>vt</pos>
+      <gloss xml:lang=\"eng\">finishing watching</gloss>
+    </sense>
+  </entry>
 </outer>
