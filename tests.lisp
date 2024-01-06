@@ -589,6 +589,7 @@
   (assert-segment "読みがいがある" "読みがい" "が" "ある")
   (assert-segment "狩りがいのある" "狩りがい" "の" "ある")
   (assert-segment "懐いている" "懐いている")
+  (assert-segment "カッコよさ" "カッコよさ")
   )
 
 (define-test json-consistency-test

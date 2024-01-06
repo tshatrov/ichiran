@@ -1075,6 +1075,14 @@
   (constantly nil)
   (filter-is-compound-end-text "ちゃい" "いか" "とか" "とき" "い"))
 
+;; some of adj-ix words end with 好い which produces a confusing 好き conjugation
+;; this should disable it
+(def-segfilter-must-follow segfilter-sukiyoki (l r)
+  (constantly nil)
+  (lambda (segment)
+    (and (funcall (filter-is-conjugation +conj-adjective-literary+) segment)
+         (alexandria:ends-with-subseq "好き" (get-text segment)))))
+
 ;; (def-segfilter-must-follow segfilter-itsu (l r)
 ;;   (complement (filter-is-compound-end-text "い"))
 ;;   (filter-in-seq-set 2221640 1013250)

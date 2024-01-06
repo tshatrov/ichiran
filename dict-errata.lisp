@@ -1160,6 +1160,16 @@
     (dolist (rule rules)
       (push rule (gethash pos hash nil))))
 
+  (let* ((pos (get-pos-index "adj-ix"))
+         (rules (list (make-conjugation-rule pos +conj-adverbial+ nil nil 1
+                                             1 "く" "よ" "")
+                      (make-conjugation-rule pos +conj-adjective-stem+ nil nil 1
+                                             1 "" "よ" "")
+                      (make-conjugation-rule pos +conj-adjective-literary+ nil nil 1
+                                             1 "き" "よ" ""))))
+    (dolist (rule rules)
+      (push rule (gethash pos hash nil))))
+
   (let ((pos (get-pos-index "v5aru")))
     (push (make-conjugation-rule pos 3 nil nil 2 1 "り" "" "")
           (gethash pos hash nil)))
