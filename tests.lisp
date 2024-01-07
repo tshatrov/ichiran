@@ -642,6 +642,10 @@
         (unless (and (equal ctr "つ") (equal n "十一"))
           (assert-segment s s))))))
 
+(define-test extra-xml-test
+  (let* ((extra-loader (getf (ichiran/custom:get-custom-data) :extra)))
+    (assert-true (> (slurp extra-loader) 0))))
+
 ;; (run-parallel-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-parallel-tests (&optional (tests :all) (pkg :ichiran/test))

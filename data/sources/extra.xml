@@ -41,8 +41,8 @@
     <sense>
       <pos>exp</pos>
       <pos>adj-i</pos>
-      <gloss xml:lang=\"eng\">pointless</gloss>
-      <gloss xml:lang=\"eng\">in vain</gloss>
+      <gloss xml:lang="eng">pointless</gloss>
+      <gloss xml:lang="eng">in vain</gloss>
     </sense>
   </entry>
   <entry>
@@ -57,7 +57,7 @@
       <pos>n</pos>
       <pos>vs</pos>
       <pos>vt</pos>
-      <gloss xml:lang=\"eng\">finishing watching</gloss>
+      <gloss xml:lang="eng">finishing watching</gloss>
     </sense>
   </entry>
 </outer>
