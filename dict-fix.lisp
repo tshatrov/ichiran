@@ -150,3 +150,15 @@
           for seq in seqs
           do (conjugate-entry-outer seq :conj-types (list +conj-adjective-literary+) :as-posi '("adj-i"))
           if (zerop (mod cnt 100)) do (format t "~a entries processed~%" cnt))))
+
+
+(defun add-adj-ix-conjs ()
+  (let ((seqs (query (:select 'seq :distinct :from 'sense-prop
+                                             :where (:and (:not (:in 'seq (:set *do-not-conjugate-seq*)))
+                                             (:= 'tag "pos")
+                                             (:= 'text "adj-ix")))
+                     :column)))
+    (loop for cnt from 1
+          for seq in seqs
+          do (conjugate-entry-outer seq :conj-types (list +conj-adverbial+ +conj-adjective-stem+ +conj-adjective-literary+) :as-posi '("adj-ix"))
+          if (zerop (mod cnt 100)) do (format t "~a entries processed~%" cnt))))

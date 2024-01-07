@@ -73,7 +73,11 @@ Returns 2 values, whether the entry should be either added or updated, and which
 
 (defmethod insert ((loader xml-loader))
   (loop for entry in (entries loader)
-     do (ichiran/dict::load-entry (xml-entry-content entry) :if-exists :skip :seq (xml-entry-seq entry))))
+        do (ichiran/dict::load-entry
+            (xml-entry-content entry)
+            :if-exists :skip
+            :seq (xml-entry-seq entry)
+            :conjugate-p t)))
 
 (defclass csv-loader (custom-source)
   ((description :initform "csv")

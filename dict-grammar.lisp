@@ -143,6 +143,7 @@
    :tosuru "to try to .../to be about to..."
    :garu "to feel .../have a ... impression of someone"
    :me "somewhat/-ish"
+   :gai "worth it to ..."
    ;; these are used for splitsegs
    2826528 "polite prefix" ;; お
    2028980 "at / in / by" ;; で
@@ -201,10 +202,10 @@
 
         (loop for kf in (get-kana-forms 1577980) ;; いる (る)
            for tkf = (text kf)
-           do (setf (gethash tkf *suffix-cache*) (list (if (> (length tkf) 1) :te++ :te+) kf)
+           do (setf (gethash tkf *suffix-cache*) (list (if (> (length tkf) 1) :teiru+ :teiru) kf)
                     (gethash (seq kf) *suffix-class*) :iru)
              (when (> (length tkf) 1)
-               (setf (gethash (subseq tkf 1) *suffix-cache*) (list :te+ kf))))
+               (setf (gethash (subseq tkf 1) *suffix-cache*) (list :teiru kf))))
 
         (load-conjs :te 1547720 :kuru) ;; くる
 
@@ -278,6 +279,8 @@
 
         (load-kf :iadj (get-kana-form 2006580 "げ"))
         (load-kf :iadj (get-kana-form 1604890 "め") :class :me)
+
+        (load-kf :ren- (get-kana-form 2606690 "がい") :class :gai)
 
         (load-abbr :nai "ねえ")
         (load-abbr :nai "ねぇ")
@@ -357,7 +360,8 @@
                  ,primary-words)))))
 
 (def-simple-suffix suffix-tai :tai (:connector "" :score 5) (root)
-  (find-word-with-conj-type root 13))
+  (unless (member root '("い") :test 'equal)
+    (find-word-with-conj-type root 13)))
 
 (def-simple-suffix suffix-ren :ren (:connector "" :score 5) (root)
   ;; generic ren'youkei suffix
@@ -377,11 +381,14 @@
 (def-simple-suffix suffix-te :te (:connector "" :score 0) (root)
   (te-check root))
 
-(def-simple-suffix suffix-te+ :te+ (:connector "" :score 3) (root)
-  (te-check root))
+(defun teiru-check (root)
+  (and (not (equal root "いて")) (te-check root)))
 
-(def-simple-suffix suffix-te++ :te++ (:connector "" :score 6) (root)
-  (te-check root))
+(def-simple-suffix suffix-teiru :teiru (:connector "" :score 3) (root)
+  (teiru-check root))
+
+(def-simple-suffix suffix-teiru+ :teiru+ (:connector "" :score 6) (root)
+  (teiru-check root))
 
 (def-simple-suffix suffix-te+space :te+space (:connector " " :score 3) (root)
   (te-check root))
@@ -527,6 +534,7 @@
 
 (pushnew :mo *suffix-unique-only*)
 (pushnew :nikui *suffix-unique-only*)
+(pushnew :gai *suffix-unique-only*)
 
 (defmacro def-abbr-suffix (name keyword stem
                            (root-var &optional suf-var patch-var)
@@ -924,6 +932,12 @@
   :score 50
   :connector " ")
 
+(def-generic-synergy synergy-oki (l r)
+  (filter-is-pos ("ctr") (segment k p c l) t)
+  (filter-in-seq-set 2854117 2084550)
+  :score 20
+  :connector "")
+
 (defun get-synergies (segment-list-left segment-list-right)
   (loop for fn in *synergy-list*
      nconc (funcall fn segment-list-left segment-list-right)))
@@ -1061,6 +1075,14 @@
   (constantly nil)
   (filter-is-compound-end-text "ちゃい" "いか" "とか" "とき" "い"))
 
+;; some of adj-ix words end with 好い which produces a confusing 好き conjugation
+;; this should disable it
+(def-segfilter-must-follow segfilter-sukiyoki (l r)
+  (constantly nil)
+  (lambda (segment)
+    (and (funcall (filter-is-conjugation +conj-adjective-literary+) segment)
+         (alexandria:ends-with-subseq "好き" (get-text segment)))))
+
 ;; (def-segfilter-must-follow segfilter-itsu (l r)
 ;;   (complement (filter-is-compound-end-text "い"))
 ;;   (filter-in-seq-set 2221640 1013250)
@@ -1102,6 +1124,12 @@
     (or (not (find 2089020 seq-set)) ;; だ
         (find 2028980 seq-set))) ;; で
   (filter-in-seq-set 1157170 2424740 1305070) ;; する　して
+  :allow-first t)
+
+(def-segfilter-must-follow segfilter-dekiru (l r)
+  ;; 出 followed by 来る or 来てる
+  (complement (filter-in-seq-set 1896380 2422860))
+  (filter-in-seq-set 2830009 1547720)
   :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)

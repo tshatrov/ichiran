@@ -57,7 +57,7 @@
 (defpackage :ichiran/custom
   (:use :cl :postmodern :split-sequence
         :ichiran/characters :ichiran/conn)
-  (:export :load-custom-data))
+  (:export :load-custom-data :get-custom-data :slurp))
 
 (uiop:define-package :ichiran
   (:use :cl :ichiran/characters :ichiran/conn :ichiran/dict)

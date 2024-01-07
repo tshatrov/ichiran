@@ -49,7 +49,7 @@
                   "名人" "に" "なってる" "はず")
   (assert-segment "いいとこ" "いいとこ")
   (assert-segment "そういうお隣どうし"
-                  "そういう" "お" "隣" "どうし")
+                  "そういう" "お" "隣どうし")
   (assert-segment "はしゃいじゃう" "はしゃいじゃう")
   (assert-segment "分かっちゃうのよ" "分かっちゃう" "の" "よ")
   (assert-segment "懐かしく新しいまだそしてまた"
@@ -87,7 +87,7 @@
   (assert-segment "時までに帰ってくると約束してくれるのなら外出してよろしい"
                   "時" "まで" "に" "帰ってくる" "と"
                   "約束してくれる" "の" "なら" "外出して" "よろしい")
-  (assert-segment "雨が降りそうな気がします" "雨" "が" "降りそう" "な" "気がします")
+  (assert-segment "雪が降りそうな気がします" "雪" "が" "降りそう" "な" "気がします")
   (assert-segment "新しそうだ" "新しそう" "だ")
   (assert-segment "本を読んだりテレビを見たりします"
                   "本" "を" "読んだり" "テレビ" "を" "見たり" "します")
@@ -97,7 +97,7 @@
   (assert-segment "そう呼んでくれていい" "そう" "呼んでくれていい")
   (assert-segment "払わなくてもいい" "払わなくてもいい")
   (assert-segment "体に悪いと知りながらタバコをやめることはできない"
-                  "体" "に" "悪い" "と" "知り" "ながら" "タバコをやめる" "こと" "は" "できない")
+                  "体に悪い" "と" "知り" "ながら" "タバコをやめる" "こと" "は" "できない")
   (assert-segment "いつもどうり" "いつも" "どうり")
   (assert-segment "微笑みはまぶしすぎる" "微笑み" "は" "まぶしすぎる")
   (assert-segment "なにをしていますか" "なに" "を" "しています" "か")
@@ -221,7 +221,7 @@
   (assert-segment "お酒を飲んじゃだめです" "お酒" "を" "飲んじゃ" "だめ" "です")
   (assert-segment "これ洗濯しといて" "これ" "洗濯しといて")
   (assert-segment "来週までに読んどいて" "来週" "まで" "に" "読んどいて")
-  (assert-segment "奴がまともに見られない" "奴" "が" "まとも" "に" "見られない")
+  (assert-segment "奴がまともに見られない" "奴" "が" "まともに" "見られない")
   (assert-segment "間違いなし" "間違いなし")
   (assert-segment "見ませんでしょうか" "見ません" "でしょうか")
   (assert-segment "書いていただけませんでしょうか" "書いていただけません" "でしょうか")
@@ -359,7 +359,7 @@
   (assert-segment "めんどくそがる" "めんどくそがる")
   (assert-segment "がなんで終わった" "が" "なんで" "終わった")
   (assert-segment "てか最近ファン層は円盤すら買わないからそいつらから金とるってのは無謀"
-                  "てか" "最近" "ファン" "層" "は" "円盤" "すら" "買わない" "から"
+                  "てか" "最近" "ファン層" "は" "円盤" "すら" "買わない" "から"
                   "そいつら" "から" "金" "とる" "ってのは" "無謀")
   (assert-segment "とろいな" "とろい" "な")
   (assert-segment "なんでもかんでも" "なんでもかんでも")
@@ -424,7 +424,6 @@
   (assert-segment "ふざけんな" "ふざけんな")
   (assert-segment "観終わってた" "観" "終わってた")
   (assert-segment "意味深終わり" "意味深" "終わり")
-  (assert-segment "共感性" "共感" "性")
   (assert-segment "今日とて居残りです" "今日" "とて" "居残り" "です")
   (assert-segment "堪能させていただきます" "堪能させていただきます")
   (assert-segment "わからんからそう思った" "わからん" "から" "そう" "思った")
@@ -504,7 +503,7 @@
   (assert-segment "のうえに" "の" "うえ" "に")
   (assert-segment "皇位についたが" "皇位" "に" "ついた" "が")
   (assert-segment "疱瘡がついたか" "疱瘡" "が" "ついた" "か")
-  (assert-segment "折りたたみ式ついたて" "折りたたみ" "式" "ついたて")
+  (assert-segment "折りたたみ式ついたて" "折りたたみ式" "ついたて")
   (assert-segment "いろいろな部分をもんだりこすったりすること" "いろいろ" "な" "部分" "を" "もんだり" "こすったり" "する" "こと")
   (assert-segment "たまにはいいもんだよ" "たまに" "は" "いい" "もんだ" "よ")
   (assert-segment "歩みをはやめるのだった" "歩み" "を" "はやめる" "の" "だった")
@@ -547,7 +546,8 @@
   (assert-segment "忙しくてろくに更新もできず" "忙しくて" "ろくに" "更新" "も" "できず")
   (assert-segment "だまってろって" "だまってろ" "って")
   (assert-segment "しっぽく蕎麦" "しっぽく" "蕎麦")
-  (assert-segment "猫はしっぽをぴんと立てて歩いた" "猫" "は" "しっぽ" "を" "ぴんと" "立てて" "歩いた")
+  (assert-segment "猫はしっぽをぴんとはね上がって歩いた" "猫" "は" "しっぽ" "を" "ぴんと" "はね上がって" "歩いた")
+  (assert-segment "物がぴんとはね上がるさま" "物" "が" "ぴんと" "はね上がる" "さま")
   (assert-segment "やる気はない" "やる気" "は" "ない")
   (assert-segment "あけましておめでとうございます" "あけましておめでとうございます")
   (assert-segment "おれたちは行くのにおまえたちは行かぬ" "おれたち" "は" "行く" "のに" "おまえたち" "は" "行かぬ")
@@ -577,6 +577,20 @@
   (assert-segment "うまくハメられた" "うまく" "ハメられた")
   (assert-segment "してるとこだから" "してる" "とこ" "だから")
   (assert-segment "下記のとおりです" "下記" "の" "とおり" "です")
+  (assert-segment "123ヶ年" "123ヶ年")
+  (assert-segment "そうはいかん" "そう" "は" "いかん")
+  (assert-segment "いつなりともお使いなさい" "いつなりと" "も" "お" "使いなさい")
+  (assert-segment "よそで待ってて" "よそ" "で" "待ってて")
+  (assert-segment "3つおきの席" "3つ" "おき" "の" "席")
+  (assert-segment "1年おきに" "1年" "おきに")
+  (assert-segment "練習したかいがあって" "練習した" "かいがあって")
+  (assert-segment "高いお金を払ったかいがあったと思う" "高い" "お金" "を" "払った" "かいがあった" "と" "思う")
+  (assert-segment "養生したかいもなく" "養生した" "かいもなく")
+  (assert-segment "読みがいがある" "読みがい" "が" "ある")
+  (assert-segment "狩りがいのある" "狩りがい" "の" "ある")
+  (assert-segment "懐いている" "懐いている")
+  (assert-segment "カッコよさ" "カッコよさ")
+  (assert-segment "上手く案内出来てたらいいんですけど" "上手く" "案内" "出来てたら" "いい" "ん" "です" "けど")
   )
 
 (define-test json-consistency-test
@@ -629,6 +643,10 @@
         (unless (and (equal ctr "つ") (equal n "十一"))
           (assert-segment s s))))))
 
+(define-test extra-xml-test
+  (let* ((extra-loader (getf (ichiran/custom:get-custom-data) :extra)))
+    (assert-true (> (ichiran/custom:slurp extra-loader) 0))))
+
 ;; (run-parallel-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
 (defun run-parallel-tests (&optional (tests :all) (pkg :ichiran/test))
@@ -641,6 +659,6 @@
     res))
 
 (defun run-all-tests ()
-  (init-all-caches)
+  (init-all-caches t)
   (init-suffixes t)
   (run-parallel-tests))

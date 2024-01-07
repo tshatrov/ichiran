@@ -745,8 +745,7 @@
                   (:select 'sense.seq :from 'sense
                            :left-join (:as 'sense-prop 'sp) :on (:and (:= 'sp.sense-id 'sense.id)
                                                                       (:= 'sp.tag "misc")
-                                                                      (:or (:= 'sp.text "arch")
-                                                                           (:= 'sp.text "obsc")))
+                                                                      (:in 'sp.text (:set "arch" "obsc" "rare")))
                            :group-by 'sense.seq :having (:every (:not-null 'sp.id)))
                   :column))
          (a2 (query (:select (:distinct 'seq) :from 'conjugation :where (:in 'from (:set a1))) :column)))
@@ -764,8 +763,7 @@
             :left-join (:as 'sense-prop 'sp2)
             :on (:and (:= 'sp1.sense-id 'sp2.sense-id)
                       (:= 'sp2.tag "misc")
-                      (:or (:= 'sp2.text "arch")
-                           (:= 'sp2.text "obsc")))
+                      (:in 'sp2.text (:set "arch" "obsc" "rare")))
             :where (:and (:in 'sp1.seq (:set seq-set))
                          (:= 'sp1.tag "pos")
                          (:is-null 'sp2.id)))
@@ -778,7 +776,9 @@
   (declare (type (or null (integer 0 10000)) use-length))
   (typecase reading
     (compound-text
-     (let ((args (list (score-base reading) :use-length (mora-length (text reading)) :score-mod (score-mod reading))))
+     (let ((args (list (score-base reading)
+                       :use-length (mora-length (text reading))
+                       :score-mod (score-mod reading))))
        (multiple-value-bind (score info) (apply 'calc-score args)
          (setf (getf info :conj) (word-conj-data reading))
          (when kanji-break

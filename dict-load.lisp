@@ -112,7 +112,7 @@
 (defun next-seq ()
   (1+ (query (:select (:max 'seq) :from 'entry) :single)))
 
-(defun load-entry (content &key if-exists upstream seq)
+(defun load-entry (content &key if-exists upstream seq conjugate-p)
   (let* ((parsed (typecase content
                    (dom:node
                     (unless (typep content 'dom:document)
@@ -146,6 +146,16 @@
       (insert-readings kanji-nodes "keb" 'kanji-text seq "ke_pri")
       (insert-readings kana-nodes "reb" 'kana-text seq "re_pri")
       (insert-senses sense-nodes seq))
+    (when conjugate-p
+      (let ((posi (query (:select 'text :distinct :from 'sense-prop :where
+                                  (:and
+                                   (:= 'seq seq)
+                                   (:= 'tag "pos")
+                                   (:in 'text (:set *pos-with-conj-rules*))))
+                         :column)))
+        (when posi
+          (conjugate-entry-outer seq :as-posi posi)
+          (load-secondary-conjugations :from (list seq)))))
     seq))
 
 (defun fix-entities (source)
@@ -447,15 +457,21 @@
            if (zerop (mod cnt 500)) do (format t "~a entries processed~%" cnt)))))
 
 
-(defun load-secondary-conjugations ()
-  (let ((to-conj (query (:select 'conj.from 'conj.seq 'conj-prop.conj-type
-                         :distinct-on 'conj.from 'conj.seq
-                         :from (:as 'conjugation 'conj)
-                         :left-join 'conj-prop :on (:= 'conj.id 'conj-prop.conj-id)
-                                                    :where (:and (:in 'conj-prop.conj-type (:set *secondary-conjugation-types-from*))
-                                                                 (:not (:in 'conj-prop.pos (:set "vs-i" "vs-s")))
-                                                                 (:or (:not 'neg) (:is-null 'neg))
-                                                                 (:or (:not 'fml) (:is-null 'fml)))))))
+(defun load-secondary-conjugations (&key from)
+  (let ((to-conj (query
+                  (sql-compile
+                   `(:select conj.from conj.seq conj-prop.conj-type
+                     :distinct-on conj.from conj.seq
+                     :from (:as conjugation conj)
+                     :left-join conj-prop :on (:= conj.id conj-prop.conj-id)
+                     :where (:and
+                             ,@(when from `((:in conj.from (:set ,@from))))
+                             (:in conj-prop.conj-type (:set ,@*secondary-conjugation-types-from*))
+                             (:not (:in conj-prop.pos (:set "vs-i" "vs-s")))
+                             (:is-null conj.via)
+                             (:or (:not neg) (:is-null neg))
+                             (:or (:not fml) (:is-null fml))))))
+                 ))
     (loop for cnt from 1
           for (seq-from seq conj-type) in to-conj
           do (conjugate-entry-outer seq-from :via seq

@@ -34,15 +34,15 @@
                             :text reading
                             :source-text src-reading)))))))
 
-(defun add-reading (seq reading &key (common :null) (conjugate-p t))
+(defun add-reading (seq reading &key (common :null) (conjugate-p t) (table nil))
   (let* ((is-kana (test-word reading :kana))
-         (table (if is-kana 'kana-text 'kanji-text))
+         (table (or table (if is-kana 'kana-text 'kanji-text)))
          (entry (get-dao 'entry seq)))
     (when (not (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
       (let* ((maxord (query (:select (:max 'ord) :from table :where (:= 'seq seq)) :single))
              (ord (if (eql maxord :null) 0 (1+ maxord))))
         (make-dao table :text reading :seq seq :ord ord :common common :conjugate-p conjugate-p)
-        (if is-kana
+        (if (eql table 'kana-text)
             (incf (n-kana entry))
             (incf (n-kanji entry)))
         (update-dao entry)))
@@ -65,9 +65,9 @@
                    (select-dao 'kanji-text (:in 'seq (:set seqs))))))
     (mapcar 'set-reading readings)))
 
-(defun delete-reading (seq reading)
+(defun delete-reading (seq reading &key (table nil))
   (let* ((is-kana (test-word reading :kana))
-         (table (if is-kana 'kana-text 'kanji-text))
+         (table (or table (if is-kana 'kana-text 'kanji-text)))
          (entry (get-dao 'entry seq))
          (to-delete (select-dao table (:and (:= 'seq seq) (:= 'text reading))))
          (deleted 0))
@@ -75,7 +75,7 @@
       (dolist (obj to-delete)
         (delete-dao obj)
         (incf deleted))
-      (if is-kana
+      (if (eql table 'kana-text)
           (decf (n-kana entry) deleted)
           (decf (n-kanji entry) deleted))
       (update-dao entry)
@@ -563,6 +563,7 @@
   (add-errata-jan21)
   (add-errata-may21)
   (add-errata-jan22)
+  (add-errata-dec23)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -780,7 +781,7 @@
   (set-common 'kana-text 2147610 "いなくなる" 0)
 
   (set-common 'kana-text 1346290 "マス" 37)
-  (add-sense-prop 1346290 2 "misc" "uk")
+  (add-sense-prop 1346290 3 "misc" "uk")
   (set-primary-nokanji 1346290 t)
 
   (set-primary-nokanji 1409110 nil)
@@ -795,8 +796,6 @@
 (defun add-errata-jan20 ()
   (add-reading 2839843 "うえをしたへ")
   (delete-reading 2839843 "うえをしたえ")
-  (add-reading 1930050 "バラす")
-  (add-conj-reading 1930050 "バラす")
   (add-reading 1593170 "コケる")
   (add-conj-reading 1593170 "コケる")
 
@@ -926,8 +925,6 @@
 
   ;; these words had no kana in jmdict
   (add-reading 1161240 "いっかねん")
-  (add-reading 2209300 "たへる")
-  (add-conj-reading 2209300 "たへる") ;; this doesn't actually work because there are no existing conjugations but whatever
 
   (set-common 'kana-text  2008650 "そうした" :null)
   (add-sense-prop 1188270 0 "pos" "n") ;; 何か
@@ -941,6 +938,36 @@
   (set-common 'kana-text 1806840 "がいそう" :null)
   (set-common 'kana-text 1639750 "こだから" :null)
 
+  )
+
+(defun add-errata-dec23 ()
+  (add-reading 2220325 "ヶ" :table 'kanji-text)
+  (add-reading 2220325 "ケ" :table 'kanji-text)
+  (delete-reading 2220325 "ヶ" :table 'kana-text)
+  (delete-reading 2220325 "ケ" :table 'kana-text)
+  (add-reading 2220325 "か")
+
+  (add-sense-prop 1180540 0 "misc" "uk") ;; おっす
+  (delete-sense-prop 2854117 "misc" "uk") ;; おき but I boost it later with synergy
+  (delete-sense-prop 2859257 "misc" "uk") ;; あれ (imperative of 有る)
+  (delete-sense-prop 1198890 "misc" "uk") ;; 解く
+
+  (add-sense-prop 2826371 0 "misc" "uk")
+  (delete-sense-prop 2826371 "misc" "rare") ;; いつなりと
+
+  ;; はいかん
+  (set-common 'kana-text 1625620 "はいかん" :null)
+  (set-common 'kana-text 1625610 "はいかん" :null)
+  (set-common 'kana-text 1681460 "はいかん" :null)
+
+  (set-common 'kanji-text 2855480 "乙女" 0)
+  (set-common 'kana-text 2855480 "おとめ" 0)
+
+  (set-common 'kana-text 1930050 "バラす" 0)
+  (set-common 'kana-text 1582460 "ないかい" :null)
+  (set-common 'kana-text 1202300 "かいが" 0)
+
+  (set-common 'kanji-text 1328740 "狩る" 0)
   )
 
 
@@ -1001,9 +1028,6 @@
   (add-sense-prop 1505390 0 "pos" "ctr") ;; 文字
 
   (add-sense-prop 1101700 0 "pos" "ctr") ;; パック
-  (add-sense-prop 1101700 1 "pos" "n")
-  (add-sense-prop 1101700 1 "pos" "vs")
-
   (add-sense-prop 1120410 0 "pos" "ctr") ;; ページ
   (add-sense-prop 1138570 0 "pos" "ctr") ;; ラウンド
   (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
@@ -1030,6 +1054,8 @@
   (add-sense-prop 1732510 1 "pos" "ctr") ;; 番手
   (add-sense-prop 1732510 2 "pos" "ctr")
   (add-sense-prop 2086480 1 "pos" "ctr") ;; 頭身
+
+  (add-sense-prop 1331080 0 "pos" "ctr") ;; 周忌
   )
 
 
@@ -1069,6 +1095,7 @@
                             2718360 ;; がな
                             2201380 ;; わい
                             2722170 ;; のう
+                            2751630 ;;　かいな
                             )
   "Words that only have meaning when they're final")
 
@@ -1129,6 +1156,16 @@
                                              1 "" "" "")
                       (make-conjugation-rule pos +conj-adjective-literary+ nil nil 1
                                              1 "き" "" ""))))
+    (dolist (rule rules)
+      (push rule (gethash pos hash nil))))
+
+  (let* ((pos (get-pos-index "adj-ix"))
+         (rules (list (make-conjugation-rule pos +conj-adverbial+ nil nil 1
+                                             1 "く" "よ" "")
+                      (make-conjugation-rule pos +conj-adjective-stem+ nil nil 1
+                                             1 "" "よ" "")
+                      (make-conjugation-rule pos +conj-adjective-literary+ nil nil 1
+                                             1 "き" "よ" ""))))
     (dolist (rule rules)
       (push rule (gethash pos hash nil))))
 

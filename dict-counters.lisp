@@ -211,9 +211,10 @@
 (defparameter *special-counters* (make-hash-table))
 
 (defparameter *counter-suffixes* '((:kan "間" "かん" "[duration]")
+                                   (:kango "間後" "かんご" "[after ...]")
                                    (:chuu "中" "ちゅう" "[among/out of ...]")))
 
-(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan) (1333450 :kan)))
+(defparameter *counter-accepts* '((1194480 :kan) (1490430 :kan) (1333450 :kan :kango)))
 
 (defparameter *counter-foreign* '(1120410))
 
@@ -375,6 +376,7 @@
                              :source (find (car ,text-var) ,readings-var :key 'text :test 'equal)
                              ,keys-var))
                     )
+               (declare (ignorable (function args-suffix)))
                (list ,@body))))))
 
 (def-special-counter 1203020 ()
@@ -676,6 +678,10 @@
 
 (def-special-counter 1175140 ()
   (args 'counter-hifumi "駅" "えき" :digit-set '(1 2)))
+
+(def-special-counter 2855028 ()
+  (args 'counter-hifumi "揃え" "そろえ" :digit-set '(1 2)))
+
 
 (defclass counter-days-kun (counter-text)
   ((allowed :initform '(1 2 3 4 5 6 7 8 9 10 14 20 24 30))))
