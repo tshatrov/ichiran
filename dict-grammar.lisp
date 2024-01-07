@@ -1132,6 +1132,15 @@
   (filter-in-seq-set 2830009 1547720)
   :allow-first t)
 
+(defparameter *honorifics*
+  '(1247260 ;; 君
+    ))
+
+(def-segfilter-must-follow segfilter-honorific (l r)
+  (complement (apply 'filter-in-seq-set *noun-particles*))
+  (apply 'filter-in-seq-set *honorifics*))
+
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*
@@ -1139,11 +1148,3 @@
               (loop for (seg-left seg-right) in splits
                  nconc (funcall segfilter seg-left seg-right)))
      finally (return splits)))
-
-(defparameter *honorifics*
-  '(1247260 ;; 君
-    ))
-
-(def-segfilter-must-follow segfilter-honorific (l r)
-  (complement (filter-in-seq-set *noun-particles*))
-  (filter-in-seq-set *honorifics*))
