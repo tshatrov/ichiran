@@ -144,6 +144,7 @@
    :garu "to feel .../have a ... impression of someone"
    :me "somewhat/-ish"
    :gai "worth it to ..."
+   :tasou "seem to want to... (tai+sou)"
    ;; these are used for splitsegs
    2826528 "polite prefix" ;; お
    2028980 "at / in / by" ;; で
@@ -194,6 +195,10 @@
         (load-kf :chau (get-kana-form 2028920 "は") :class :ha :text "じゃ")
 
         (load-conjs :tai 2017560)
+
+        ;; because suffix た is used up by いる this combination cannot occur, so I add it separately
+        (load-kf :tai (get-kana-form 900000 "たそう") :class :tasou)
+
         (load-conjs :ren- 2772730 :nikui)
 
         (load-conjs :te 1577985 :oru) ;; おる
@@ -229,7 +234,7 @@
                (setf (gethash tkf-short *suffix-cache*) val)))
 
         (load-kf :teii (get-kana-form 2820690 "いい") :class :ii)
-        (load-kf :teii (get-kana-form 2820690 "いい") :class :ii :text "もいい")
+        (load-kf :teii (get-kana-form 900001 "もいい") :class :ii :text "もいい")
         (load-kf :te (get-kana-form 2028940 "も") :class :mo)
 
         (load-kf :kudasai (get-kana-form 1184270 "ください" :conj :root))

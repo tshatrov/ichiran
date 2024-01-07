@@ -60,4 +60,29 @@
       <gloss xml:lang="eng">finishing watching</gloss>
     </sense>
   </entry>
+  <entry>
+    <ent_seq>900000</ent_seq>
+    <r_ele>
+      <reb>たそう</reb>
+    </r_ele>
+    <sense>
+      <pos>suf</pos>
+      <s_inf>after the -masu stem of a verb</s_inf>
+      <gloss xml:lang="eng">to seem to want to (do something)</gloss>
+    </sense>
+  </entry>
+  <entry>
+    <ent_seq>900001</ent_seq>
+    <r_ele>
+      <reb>もいい</reb>
+    </r_ele>
+    <sense>
+      <pos>suf</pos>
+      <s_inf>after the -て form; indicates permission or compromise</s_inf>
+      <gloss xml:lang="eng">OK</gloss>
+      <gloss xml:lang="eng">all right</gloss>
+      <gloss xml:lang="eng">fine</gloss>
+      <gloss xml:lang="eng">no problem</gloss>
+    </sense>
+  </entry>
 </outer>
