@@ -659,6 +659,6 @@
     res))
 
 (defun run-all-tests ()
-  (init-all-caches)
+  (init-all-caches t)
   (init-suffixes t)
   (run-parallel-tests))
