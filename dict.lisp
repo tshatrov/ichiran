@@ -776,7 +776,9 @@
   (declare (type (or null (integer 0 10000)) use-length))
   (typecase reading
     (compound-text
-     (let ((args (list (score-base reading) :use-length (mora-length (text reading)) :score-mod (score-mod reading))))
+     (let ((args (list (score-base reading)
+                       :use-length (mora-length (text reading))
+                       :score-mod (score-mod reading))))
        (multiple-value-bind (score info) (apply 'calc-score args)
          (setf (getf info :conj) (word-conj-data reading))
          (when kanji-break

@@ -1126,6 +1126,12 @@
   (filter-in-seq-set 1157170 2424740 1305070) ;; する　して
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-dekiru (l r)
+  ;; 出 followed by 来る or 来てる
+  (complement (filter-in-seq-set 1896380 2422860))
+  (filter-in-seq-set 2830009 1547720)
+  :allow-first t)
+
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))
      for segfilter in *segfilter-list*

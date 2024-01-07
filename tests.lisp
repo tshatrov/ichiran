@@ -590,6 +590,7 @@
   (assert-segment "狩りがいのある" "狩りがい" "の" "ある")
   (assert-segment "懐いている" "懐いている")
   (assert-segment "カッコよさ" "カッコよさ")
+  (assert-segment "上手く案内出来てたらいいんですけど" "上手く" "案内" "出来てたら" "いい" "ん" "です" "けど")
   )
 
 (define-test json-consistency-test
@@ -644,7 +645,7 @@
 
 (define-test extra-xml-test
   (let* ((extra-loader (getf (ichiran/custom:get-custom-data) :extra)))
-    (assert-true (> (slurp extra-loader) 0))))
+    (assert-true (> (ichiran/custom:slurp extra-loader) 0))))
 
 ;; (run-parallel-tests '(ichiran/test::match-readings-test) :ichiran/test)
 
