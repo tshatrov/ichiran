@@ -595,7 +595,6 @@
   (set-common 'kana-text 1394680 "そういう" :null)
   (set-common 'kana-text 1208840 "かつ" :null)
   (set-common 'kana-text 1011430 "べき" :null)
-  (set-common 'kana-text 1009610 "にも" :null)
   (set-common 'kana-text 1008340 "である" :null)
   (set-common 'kana-text 1007960 "ちんちん" :null)
   (set-common 'kana-text 1301230 "さんなん" :null)
@@ -968,6 +967,8 @@
   (set-common 'kana-text 1202300 "かいが" 0)
 
   (set-common 'kanji-text 1328740 "狩る" 0)
+
+  (set-common 'kana-text 1009610 "にも" 0)
   )
 
 
