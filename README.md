@@ -30,7 +30,7 @@ Start containers (this will take longer for the first time, because the db will 
 docker compose up
 ```
 
-This will likely take several minutes, and may print a couple of warnings about pre-existing tables, which are safe to ignore. You may monitor the size of the database in another terminal via `du -h -d0 docker/pgdata` as it grows to 4+ GB. Eventually, the database will be fully restored and you may proceed.
+This will likely take several minutes, and may print a few warnings about pre-existing tables or WAL (write-ahead log) or vacuum tasks, which are safe to ignore. You may monitor the size of the database in another terminal via `du -h -d0 docker/pgdata` as it grows to around 4.7 GB. Eventually, the database will be fully restored and the `ichiran` container will start and say, "All set, awaiting commands."
 
 If there were errors while importing db, or you want to import a new database you need to delete postgres data, so the postgres docker initdb scripts get called (if the folder is not empty it won't get called), and after this you can call `docker compose up` again:
 
