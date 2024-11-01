@@ -20,6 +20,7 @@
                #:lparallel
                #:diff
                #:cl+ssl
+               #:hunchentoot
                )
   :components ((:file "package")
                (:file "characters")
@@ -59,3 +60,14 @@
 #+sb-core-compression
 (defmethod asdf:perform ((o asdf:image-op) (c asdf:system))
   (uiop:dump-image (asdf:output-file o c) :executable t :compression t))
+
+(defsystem #:ichiran/web
+  :serial t
+  :description "Web interface for Ichiran"
+  :author "Timofei Shatrov <timofei.shatrov@example.com>"
+  :license "MIT"
+  :depends-on (#:ichiran
+               #:hunchentoot
+               #:jsown
+               #:babel)
+  :components ((:file "web")))
