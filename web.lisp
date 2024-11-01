@@ -8,7 +8,8 @@
 (defvar *default-port* 8080)
 
 (defclass ichiran-acceptor (easy-acceptor)
-  ((cache :initform (make-hash-table :test 'equal) :accessor acceptor-cache)))
+  ((cache :initform (make-hash-table :test 'equal) :accessor acceptor-cache)
+   (connection-spec :initarg :connection-spec :accessor connection-spec)))
 
 (defmethod initialize-instance :after ((acceptor ichiran-acceptor) &key)
   (setf (hunchentoot:acceptor-input-chunking-p acceptor) t))
@@ -34,21 +35,27 @@
 (defmethod jsown:to-json ((word-info ichiran/dict:word-info))
   (jsown:to-json (ichiran/dict:word-info-gloss-json word-info)))
 
+(defmacro with-thread-connection (&body body)
+  `(let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
+     (postmodern:with-connection ichiran/conn:*connection*
+       ,@body)))
+
 (define-easy-handler (analyze :uri "/api/analyze") (text info full)
-  (json-response 
-    (when text
-      (cond
-        (full
-         (let* ((limit-value 1)  ; Default limit like CLI
-                (result (romanize* text :limit limit-value)))
-           result))  ; romanize* already returns JSON structure
-        (info
-         (multiple-value-bind (romaji info) 
-             (romanize text :with-info t)
-           (format-word-info romaji info)))
-        (t
-         (jsown:new-js
-           ("romaji" (romanize text))))))))
+  (with-thread-connection
+    (json-response 
+      (when text
+        (cond
+          (full
+           (let* ((limit-value 1)
+                  (result (romanize* text :limit limit-value)))
+             result))
+          (info
+           (multiple-value-bind (romaji info) 
+               (romanize text :with-info t)
+             (format-word-info romaji info)))
+          (t
+           (jsown:new-js
+             ("romaji" (romanize text)))))))))
 
 (define-easy-handler (word-info :uri "/api/word-info") (text reading)
   (json-response
