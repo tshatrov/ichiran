@@ -1,4 +1,6 @@
 #!/bin/bash
 
 echo "Starting web server..."
-sbcl --eval "(ichiran/web:start-server)" 
+sbcl --core /root/ichiran.core \
+     --eval "(ichiran/web:start-server)" \
+     --eval "(loop (sleep 1))" 
