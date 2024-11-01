@@ -2,6 +2,7 @@
 
 set -e
 sbcl --non-interactive --eval "(ql:quickload :ichiran)" \
+                       --eval "(ql:quickload :ichiran/web)" \
                        --eval "(ichiran/mnt:add-errata)" \
                        --eval "(in-package :ichiran/all)" \
                        --eval "(init-all-caches)" \
