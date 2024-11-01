@@ -58,6 +58,7 @@
 (defun start-server (&key (port *default-port*))
   (when *server*
     (stop-server))
+  (ichiran/conn:load-settings :keep-connection t)  ; Ensure DB connection
   (setf *server* 
         (make-instance 'ichiran-acceptor 
                       :port port
