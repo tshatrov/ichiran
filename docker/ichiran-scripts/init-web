@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Starting web server..."
+sbcl --eval "(ichiran/web:start-server)" 
