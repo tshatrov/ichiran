@@ -65,11 +65,12 @@
 (defun start-server (&key (port *default-port*))
   (when *server*
     (stop-server))
-  (ichiran/conn:load-settings :keep-connection t)  ; Ensure DB connection
+  (ichiran/conn:load-settings :keep-connection t)  
   (setf *server* 
         (make-instance 'ichiran-acceptor 
                       :port port
-                      :address "0.0.0.0"))
+                      :address "0.0.0.0"
+                      :connection-spec ichiran/conn:*connection*))
   (start *server*)
   (format t "~&Server started on port ~A~%" port))
 
