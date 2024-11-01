@@ -1,11 +1,17 @@
 #!/bin/bash
 
 set -e
-sbcl --non-interactive --eval "(ql:quickload :ichiran)" \
-                       --eval "(ql:quickload :ichiran/web)" \
-                       --eval "(ichiran/mnt:add-errata)" \
-                       --eval "(in-package :ichiran/all)" \
-                       --eval "(init-all-caches)" \
-                       --eval "(init-suffixes t)" \
-                       --eval "(postmodern:clear-connection-pool)" \
-                       --eval "(uiop:dump-image \"/root/ichiran.core\" :executable nil :compression t)"
+sbcl --non-interactive \
+     --eval "(format t \"~%Loading main ichiran system...~%\")" \
+     --eval "(ql:quickload :ichiran)" \
+     --eval "(format t \"~%Loading web system...~%\")" \
+     --eval "(ql:quickload :ichiran/web)" \
+     --eval "(format t \"~%Verifying packages...~%\")" \
+     --eval "(format t \"Packages loaded: ~a~%\" (find-package :ichiran/web))" \
+     --eval "(ichiran/mnt:add-errata)" \
+     --eval "(in-package :ichiran/all)" \
+     --eval "(init-all-caches)" \
+     --eval "(init-suffixes t)" \
+     --eval "(postmodern:clear-connection-pool)" \
+     --eval "(format t \"~%Saving core file...~%\")" \
+     --eval "(uiop:dump-image \"/root/ichiran.core\" :executable nil :compression t)"

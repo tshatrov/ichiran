@@ -1,7 +1,6 @@
 #!/bin/bash
 
 echo "Starting web server..."
-sbcl --disable-debugger \
-     --eval "(ql:quickload :ichiran/web)" \
+sbcl --core /root/ichiran.core \
      --eval "(ichiran/web:start-server)" \
      --eval "(loop (sleep 1))"
