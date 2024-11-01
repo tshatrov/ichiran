@@ -37,7 +37,7 @@
 
 (defmacro with-thread-connection (&body body)
   `(let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
-     (postmodern:with-connection ichiran/conn:*connection*
+     (postmodern:with-connection (append ichiran/conn:*connection* '(:pooled-p t))
        ,@body)))
 
 (define-easy-handler (analyze :uri "/api/analyze") (text info full)
