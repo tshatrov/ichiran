@@ -6,7 +6,7 @@
 
 (defvar *server* nil)
 (defvar *default-port* 8080)
-(defparameter *max-concurrent-requests* 5)
+(defparameter *max-concurrent-requests* 10)
 (defparameter *request-semaphore* (sb-thread:make-semaphore :count *max-concurrent-requests*))
 (defparameter *server-ready* nil)
 
