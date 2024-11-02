@@ -37,8 +37,15 @@
 
 (defmacro with-thread-connection (&body body)
   `(let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
-     (postmodern:with-connection (append ichiran/conn:*connection* '(:pooled-p t))
-       ,@body)))
+     (handler-case
+         (postmodern:with-connection (append ichiran/conn:*connection* '(:pooled-p t))
+           ,@body)
+       (cl-postgres:database-socket-error (e)
+         ;; Try to reconnect once
+         (format t "~&Database connection lost, attempting to reconnect...~%")
+         (postmodern:clear-connection-pool)
+         (postmodern:with-connection (append ichiran/conn:*connection* '(:pooled-p t))
+           ,@body)))))
 
 (define-easy-handler (analyze :uri "/api/analyze") (text info full)
   (with-thread-connection
