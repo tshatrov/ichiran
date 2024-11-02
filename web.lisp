@@ -8,6 +8,7 @@
 (defvar *default-port* 8080)
 (defparameter *max-concurrent-requests* 50)
 (defparameter *request-semaphore* (sb-thread:make-semaphore :count *max-concurrent-requests*))
+(defparameter *server-ready* nil)
 
 (defclass ichiran-acceptor (easy-acceptor)
   ((cache :initform (make-hash-table :test 'equal) :accessor acceptor-cache)
@@ -73,17 +74,37 @@
     (when text
       (find-word-info-json text :reading reading))))
 
+(defun health-check ()
+  (setf (hunchentoot:content-type*) "application/json")
+  (if *server-ready*
+      "{\"status\": \"ok\"}"
+      (progn
+        (setf (hunchentoot:return-code*) 503)
+        "{\"status\": \"initializing\"}")))
+
 (defun start-server (&key (port *default-port*))
   (when *server*
     (stop-server))
-  (ichiran/conn:load-settings :keep-connection t)  
+  (setf *server-ready* nil)
+  (ichiran/conn:load-settings :keep-connection t)
   (setf *server* 
         (make-instance 'ichiran-acceptor 
                       :port port
                       :address "0.0.0.0"
                       :connection-spec ichiran/conn:*connection*))
+  (push (create-prefix-dispatcher "/health" 'health-check)
+        *dispatch-table*)
   (start *server*)
-  (format t "~&Server started on port ~A~%" port))
+  (handler-case
+      (progn
+        (postmodern:with-connection ichiran/conn:*connection*
+          (postmodern:query "SELECT 1"))
+        (setf *server-ready* t)
+        (format t "~&Server started and ready on port ~A~%" port))
+    (error (e)
+      (format t "~&Server failed to initialize: ~A~%" e)
+      (stop-server)
+      (error e))))
 
 (defun stop-server ()
   (when *server*
