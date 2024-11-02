@@ -6,7 +6,7 @@
 
 (defvar *server* nil)
 (defvar *default-port* 8080)
-(defparameter *max-concurrent-requests* 50)
+(defparameter *max-concurrent-requests* 5)
 (defparameter *request-semaphore* (sb-thread:make-semaphore :count *max-concurrent-requests*))
 (defparameter *server-ready* nil)
 
@@ -39,18 +39,18 @@
   (jsown:to-json (ichiran/dict:word-info-gloss-json word-info)))
 
 (defmacro with-thread-connection (&body body)
-  `(handler-case
-       (sb-thread:wait-on-semaphore *request-semaphore*) ; Wait for available slot
-       (unwind-protect
-           (let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
-             (postmodern:with-connection 
-                 (append ichiran/conn:*connection* '(:pooled-p t))
-               ,@body))
-         (sb-thread:signal-semaphore *request-semaphore*)) ; Release slot
-     (error (e)
-       (format t "~&Error in request: ~A~%" e)
-       (sb-thread:signal-semaphore *request-semaphore*)
-       (signal e))))
+  `(progn
+     (sb-thread:wait-on-semaphore *request-semaphore*)
+     (unwind-protect
+         (let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
+           (handler-case
+               (postmodern:with-connection 
+                   (append ichiran/conn:*connection* '(:pooled-p t))
+                 ,@body)
+             (error (e)
+               (format t "~&Error in request: ~A~%" e)
+               (signal e))))
+       (sb-thread:signal-semaphore *request-semaphore*))))
 
 (define-easy-handler (analyze :uri "/api/analyze") (text info full)
   (with-thread-connection
