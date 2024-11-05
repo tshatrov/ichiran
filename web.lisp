@@ -42,25 +42,36 @@
   `(progn
      (sb-thread:wait-on-semaphore *request-semaphore*)
      (unwind-protect
-         (let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
-           (handler-case
+         (handler-case
+             (progn
+               ;; Clear any potentially dead connections from the pool
+               (postmodern:clear-connection-pool)
                (postmodern:with-connection 
-                   ichiran/conn:*connection*
-                 ,@body)
-             (cl-postgres:database-connection-error (e)
-               (format t "~&Database connection error: ~A~%" e)
-               (setf (hunchentoot:return-code*) 503)
-               (json-response 
-                (jsown:new-js
-                  ("error" "Database connection error")
-                  ("message" (princ-to-string e)))))
-             (error (e)
-               (format t "~&Error in request: ~A~%" e)
-               (setf (hunchentoot:return-code*) 500)
-               (json-response 
-                (jsown:new-js
-                  ("error" "Internal server error")
-                  ("message" (princ-to-string e)))))))
+                   (list (first ichiran/conn:*connection*)
+                         (second ichiran/conn:*connection*)
+                         (third ichiran/conn:*connection*)
+                         (fourth ichiran/conn:*connection*)
+                         :port (getf (nthcdr 4 ichiran/conn:*connection*) :port)
+                         :pooled-p t
+                         :use-ssl (getf (nthcdr 4 ichiran/conn:*connection*) :use-ssl)
+                         :application-name (getf (nthcdr 4 ichiran/conn:*connection*) :application-name))
+                 ,@body))
+           (cl-postgres:database-connection-error (e)
+             (format t "~&Database connection error: ~A~%" e)
+             ;; Clear the pool again if we got a connection error
+             (postmodern:clear-connection-pool)
+             (setf (hunchentoot:return-code*) 503)
+             (json-response 
+              (jsown:new-js
+                ("error" "Database connection error")
+                ("message" (princ-to-string e)))))
+           (error (e)
+             (format t "~&Error in request: ~A~%" e)
+             (setf (hunchentoot:return-code*) 500)
+             (json-response 
+              (jsown:new-js
+                ("error" "Internal server error")
+                ("message" (princ-to-string e))))))
        (sb-thread:signal-semaphore *request-semaphore*))))
 
 (define-easy-handler (analyze :uri "/api/analyze") (text info full)
