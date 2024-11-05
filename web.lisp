@@ -44,7 +44,7 @@
      (unwind-protect
          (let ((ichiran/conn:*connection* (connection-spec *acceptor*)))
            (handler-case
-               (postmodern:with-connection* 
+               (postmodern:with-connection 
                    ichiran/conn:*connection*
                  ,@body)
              (cl-postgres:database-connection-error (e)
