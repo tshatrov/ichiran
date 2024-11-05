@@ -108,7 +108,7 @@
   (start *server*)
   (handler-case
       (progn
-        (postmodern:with-connection* ichiran/conn:*connection*
+        (postmodern:with-connection ichiran/conn:*connection*
           (postmodern:query (:select 1)))
         (setf *server-ready* t)
         (format t "~&Server started and ready on port ~A~%" port))
