@@ -3,5 +3,4 @@
 set -e
 
 init-sbcl
-init-cli
 init-web
