@@ -114,7 +114,7 @@
                       :port port
                       :address "0.0.0.0"
                       :connection-spec ichiran/conn:*connection*
-                      :taskmaster (make-instance 'hunchentoot:thread-pooling-taskmaster 
+                      :taskmaster (make-instance 'hunchentoot:one-thread-per-connection-taskmaster
                                                :max-thread-count *max-concurrent-requests*)))
   (push (create-prefix-dispatcher "/health" 'health-check)
         *dispatch-table*)
