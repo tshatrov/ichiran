@@ -6,7 +6,8 @@
 
 (defvar *server* nil)
 (defvar *default-port* 8080)
-(defparameter *max-concurrent-requests* 10)
+(defparameter *max-concurrent-requests* 30 
+)
 (defparameter *request-semaphore* (sb-thread:make-semaphore :count *max-concurrent-requests*))
 (defparameter *server-ready* nil)
 
@@ -113,7 +114,9 @@
         (make-instance 'ichiran-acceptor 
                       :port port
                       :address "0.0.0.0"
-                      :connection-spec ichiran/conn:*connection*))
+                      :connection-spec ichiran/conn:*connection*
+                      :max-thread-count 25
+                      :taskmaster (make-instance 'hunchentoot:one-thread-per-connection-taskmaster)))
   (push (create-prefix-dispatcher "/health" 'health-check)
         *dispatch-table*)
   (start *server*)
@@ -130,5 +133,6 @@
 
 (defun stop-server ()
   (when *server*
-    (stop-server))
+    (stop *server*))
+  (postmodern:clear-connection-pool)
   (setf *server* nil))
