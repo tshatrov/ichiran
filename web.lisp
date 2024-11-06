@@ -116,7 +116,7 @@
                       :connection-spec ichiran/conn:*connection*
                       :taskmaster (make-instance 'hunchentoot:one-thread-per-connection-taskmaster
                                                :max-thread-count *max-concurrent-requests*
-                                               :max-accept-count 100)))
+                                               :max-accept-count 1000)))
   (push (create-prefix-dispatcher "/health" 'health-check)
         *dispatch-table*)
   (start *server*)
