@@ -3,7 +3,7 @@
 echo "Starting web server..."
 SBCL_HOME=/root/.roswell/impls/x86-64/linux/sbcl-bin/2.4.10/lib/sbcl \
 exec /root/.roswell/impls/x86-64/linux/sbcl-bin/2.4.10/bin/sbcl \
-     --no-sysinit --no-userinit \
      --core /root/ichiran.core \
+     --no-sysinit --no-userinit \
      --eval "(ichiran/web:start-server)" \
      --eval "(loop (sleep 1))"
