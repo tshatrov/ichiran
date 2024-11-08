@@ -2,6 +2,8 @@
 
 set -e
 sbcl --non-interactive \
+     --eval "(push #p\"/root/quicklisp/local-projects/\" ql:*local-project-directories*)" \
+     --eval "(ql:register-local-projects)" \
      --eval "(format t \"~%Loading main ichiran system...~%\")" \
      --eval "(ql:quickload :ichiran)" \
      --eval "(format t \"~%Loading web system...~%\")" \
