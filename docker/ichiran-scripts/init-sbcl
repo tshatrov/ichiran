@@ -1,7 +1,8 @@
 #!/bin/bash
 
 set -e
-sbcl --non-interactive \
+SBCL_HOME=/root/.roswell/impls/x86-64/linux/sbcl-bin/2.4.10/lib/sbcl \
+sbcl --no-sysinit --no-userinit --non-interactive \
      --eval "(push #p\"/root/quicklisp/local-projects/\" ql:*local-project-directories*)" \
      --eval "(ql:register-local-projects)" \
      --eval "(format t \"~%Loading main ichiran system...~%\")" \
@@ -16,4 +17,4 @@ sbcl --non-interactive \
      --eval "(init-suffixes t)" \
      --eval "(postmodern:clear-connection-pool)" \
      --eval "(format t \"~%Saving core file...~%\")" \
-     --eval "(uiop:dump-image \"/root/ichiran.core\" :executable nil :compression t)"
+     --eval "(uiop:dump-image \"/root/ichiran.core\" :executable t :compression t)"
