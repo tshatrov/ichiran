@@ -1,8 +1,7 @@
 #!/bin/bash
 
 set -e
-SBCL_HOME=/root/.roswell/impls/x86-64/linux/sbcl-bin/2.4.10/lib/sbcl \
-sbcl --no-sysinit --no-userinit --non-interactive \
+ros run \
      --eval "(push #p\"/root/quicklisp/local-projects/\" ql:*local-project-directories*)" \
      --eval "(ql:register-local-projects)" \
      --eval "(format t \"~%Loading main ichiran system...~%\")" \

@@ -1,2 +1,4 @@
 #!/bin/bash
-sleep 0.1 && rlwrap sbcl --core /root/ichiran.core --eval "(sb-ext:enable-debugger)"
+sleep 0.1 && rlwrap ros run \
+    --eval "(ql:quickload :ichiran/web)" \
+    --eval "(sb-ext:enable-debugger)"
