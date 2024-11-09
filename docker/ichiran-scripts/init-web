@@ -2,6 +2,9 @@
 
 echo "Starting web server..."
 ros run \
+    --eval "(push #p\"/root/quicklisp/local-projects/\" ql:*local-project-directories*)" \
+    --eval "(ql:register-local-projects)" \
+    --eval "(ql:quickload :ichiran)" \
     --eval "(ql:quickload :ichiran/web)" \
     --eval "(ichiran/web:start-server)" \
     --eval "(loop (sleep 1))"
