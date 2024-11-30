@@ -93,11 +93,24 @@
 
 (defun health-check ()
   (setf (hunchentoot:content-type*) "application/json")
-  (if *server-ready*
-      "{\"status\": \"ok\"}"
-      (progn
-        (setf (hunchentoot:return-code*) 503)
-        "{\"status\": \"initializing\"}")))
+  (handler-case
+      (with-thread-connection
+        (if (and *server-ready*
+                 ;; Test full analysis path including dictionary lookups
+                 (multiple-value-bind (romaji info) 
+                     (romanize* "テスト" :with-info t)
+                   (and romaji info)))
+            "{\"status\": \"ok\"}"
+            (progn
+              (setf (hunchentoot:return-code*) 503)
+              "{\"status\": \"service unavailable\"}")))
+    (error (e)
+      (format t "~&Health check failed: ~A~%" e)
+      (setf (hunchentoot:return-code*) 503)
+      (jsown:to-json
+       (jsown:new-js
+         ("status" "error")
+         ("message" (princ-to-string e)))))))
 
 (defun start-server (&key (port *default-port*))
   (when *server*
