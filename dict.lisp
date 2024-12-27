@@ -1446,7 +1446,7 @@
 (defun simple-segment (str &key (limit 5))
   (caar (dict-segment str :limit limit)))
 
-(defun get-senses-raw (seq &aux (tags '("pos" "s_inf" "stagk" "stagr")))
+(defun get-senses-raw (seq &aux (tags '("pos" "s_inf" "stagk" "stagr" "field")))
   (let* ((glosses
           (query (:order-by
                   (:select 'sense.ord (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
@@ -1489,8 +1489,10 @@
           for rpos = pos then (if (equal pos "[]") rpos pos)
           for inf = (cdr (assoc "s_inf" props :test 'equal))
           for rinf = (when inf (join "; " inf))
+          for field = (cdr (assoc "field" props :test 'equal))
+          for rfield = (when field (join "," field))
           when (> i 1) do (terpri s)
-          do (format s "~a. ~a ~@[《~a》 ~]~a" i rpos rinf gloss))))
+          do (format s "~a. ~a ~@[{~a} ~]~@[《~a》 ~]~a" i rpos rfield rinf gloss))))
 
 
 (defun match-kana-kanji (kana-reading kanji-reading restricted)
@@ -1531,6 +1533,12 @@
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
      for inf = (cdr (assoc "s_inf" props :test 'equal))
      for rinf = (when inf (join "; " inf))
+     for field = (cdr (assoc "field" props :test 'equal))
+     for rfield = (loop for fld in field
+                        for descr = (get-field-description fld)
+                        collect (if (and descr (not (string-equal descr fld)))
+                                    (jsown:new-js ("n" fld) ("d" descr))
+                                    fld))
      when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
                (or (not (or reading-getter reading))
                    (not (or (assoc "stagk" props :test 'equal)
@@ -1541,7 +1549,8 @@
                                             reading (funcall reading-getter))))))
                      (if rr (match-sense-restrictions seq props rr) t))))
      collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
-               (if rinf (jsown:extend-js js ("info" rinf)))
+               (when rfield (jsown:extend-js js ("field" rfield)))
+               (when rinf (jsown:extend-js js ("info" rinf)))
                js)))
 
 (defun short-sense-str (seq &key with-pos)
