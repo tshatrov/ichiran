@@ -564,6 +564,7 @@
   (add-errata-may21)
   (add-errata-jan22)
   (add-errata-dec23)
+  (add-errata-jan25)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -940,11 +941,11 @@
   )
 
 (defun add-errata-dec23 ()
-  (add-reading 2220325 "ヶ" :table 'kanji-text)
-  (add-reading 2220325 "ケ" :table 'kanji-text)
-  (delete-reading 2220325 "ヶ" :table 'kana-text)
-  (delete-reading 2220325 "ケ" :table 'kana-text)
-  (add-reading 2220325 "か")
+  ;; (add-reading 2220325 "ヶ" :table 'kanji-text)
+  ;; (add-reading 2220325 "ケ" :table 'kanji-text)
+  ;; (delete-reading 2220325 "ヶ" :table 'kana-text)
+  ;; (delete-reading 2220325 "ケ" :table 'kana-text)
+  ;; (add-reading 2220325 "か")
 
   (add-sense-prop 1180540 0 "misc" "uk") ;; おっす
   (delete-sense-prop 2854117 "misc" "uk") ;; おき but I boost it later with synergy
@@ -969,6 +970,14 @@
   (set-common 'kanji-text 1328740 "狩る" 0)
 
   (set-common 'kana-text 1009610 "にも" 0)
+  )
+
+(defun add-errata-jan25 ()
+  (add-reading 2028930 "ヶ" :table 'kanji-text)
+  (add-reading 2028930 "ケ" :table 'kanji-text)
+  (delete-reading 2028930 "ヶ" :table 'kana-text)
+  (delete-reading 2028930 "ケ" :table 'kana-text)
+  (add-reading 2028930 "か")
   )
 
 
