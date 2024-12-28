@@ -259,10 +259,6 @@
           ((conj-id description) (parse-integer conj-id) description)
           (val val))
 
-(csv-hash *field-description* ("kwfld.csv" :skip-first t)
-          ((field-id kw description) kw description)
-          (val val))
-
 (defstruct (conjugation-rule
              (:conc-name cr-)
              (:constructor make-conjugation-rule (pos conj neg fml onum stem okuri euphr euphk)))

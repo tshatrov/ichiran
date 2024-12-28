@@ -1534,11 +1534,7 @@
      for inf = (cdr (assoc "s_inf" props :test 'equal))
      for rinf = (when inf (join "; " inf))
      for field = (cdr (assoc "field" props :test 'equal))
-     for rfield = (loop for fld in field
-                        for descr = (get-field-description fld)
-                        collect (if (and descr (not (string-equal descr fld)))
-                                    (jsown:new-js ("n" fld) ("d" descr))
-                                    fld))
+     for rfield = (and field (format nil "{~{~a~^,~}}" field))
      when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
                (or (not (or reading-getter reading))
                    (not (or (assoc "stagk" props :test 'equal)
