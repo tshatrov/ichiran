@@ -978,6 +978,12 @@
   (delete-reading 2028930 "ヶ" :table 'kana-text)
   (delete-reading 2028930 "ケ" :table 'kana-text)
   (add-reading 2028930 "か")
+
+  (delete-sense-prop 1138570 "pos" "ctr") ;; ラウンド
+  (add-sense-prop 1138570 1 "pos" "ctr")
+  (add-sense-prop 1138570 2 "pos" "ctr")
+  (add-sense-prop 1138570 3 "pos" "ctr")
+
   )
 
 
@@ -1039,7 +1045,6 @@
 
   (add-sense-prop 1101700 0 "pos" "ctr") ;; パック
   (add-sense-prop 1120410 0 "pos" "ctr") ;; ページ
-  (add-sense-prop 1138570 0 "pos" "ctr") ;; ラウンド
   (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
   (add-sense-prop 1333450 0 "pos" "ctr") ;; 週
   (add-sense-prop 1480050 0 "pos" "ctr") ;; 反
