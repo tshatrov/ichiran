@@ -957,7 +957,7 @@
                        for pmlen of-type (integer 0 10000) = (mora-length (text part))
                        for smlen of-type (integer 0 10000) = pmlen then (+ smlen pmlen)
                        for tpart = (if (and last (> slen (length text)))
-                                       (let ((new-len (max 1 (+ plen (- (length text) slen)))))
+                                       (let ((new-len (max 1 (the fixnum (+ plen (- (length text) slen))))))
                                          (make-instance 'proxy-text :source part :text (subseq ptext 0 new-len) :kana ""))
                                        part)
                        for part-score = (calc-score tpart

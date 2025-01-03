@@ -59,6 +59,16 @@
     (unless (zerop updated)
       (reset-readings seq))))
 
+(defun replace-reading-conj (seq table prefix-from prefix-to)
+  (let* ((seqs (cons seq (query (:select 'seq :distinct :from 'conjugation :where (:= 'from seq)) :column)))
+         (readings (select-dao table (:and (:in seq (:set seqs)) (:like 'text (:|| prefix-from "%"))) 'seq))
+         )
+    (loop for robj in readings
+          for new-text = (concatenate 'string prefix-to (subseq (text robj) (length prefix-from)))
+          do (setf (slot-value robj 'text) new-text) (update-dao robj)
+          collect (seq robj) into to-update
+          finally (when to-update (apply 'reset-readings to-update)))))
+
 (defun reset-readings (&rest seqs)
   (let ((readings (nconc
                    (select-dao 'kana-text (:in 'seq (:set seqs)))
@@ -983,6 +993,12 @@
   (add-sense-prop 1138570 1 "pos" "ctr")
   (add-sense-prop 1138570 2 "pos" "ctr")
   (add-sense-prop 1138570 3 "pos" "ctr")
+
+  (set-common 'kana-text 1001120 "うんち" 0)
+  (set-common 'kana-text 1511600 "かたかな" 0)
+
+  (replace-reading 2860664 "こどもはおやのせなかをみてそだう" "こどもはおやのせなかをみてそだつ")
+  (replace-reading-conj 2863544 'kana-text "みぎにでるのは" "みぎにでるものは")
 
   )
 

@@ -63,6 +63,10 @@
 ;; find expressions
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "pos") (:= 'text "exp")))
 
+;; showing results from above
+;; (display-seq-set (car /) () :conn :dec23)
+;; (display-seq-set (cadr //) () :conn :jan25)
+
 (defmacro display-seq-set (seq-set (&optional entry-var test) &key (conn 'ichiran/conn:*connection*))
   (alexandria:with-gensyms (x)
     (unless entry-var (setf entry-var (gensym "EV")))
