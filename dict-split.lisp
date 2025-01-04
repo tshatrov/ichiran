@@ -634,6 +634,11 @@
   (1002290 3)
   (1416220))
 
+;; these used to be same seq but now 1208000 got reading 破り so they're not merged anymore
+(def-simple-split nil 1606800 10 (len) ;;割り
+  (:test (eql len 2))
+  (("割り" 1208000)))
+
 (def-simple-split nil 1207840 50 (len) ;; 割り切れる
   (("割り" 1208000) 2)
   (1384860 nil t))

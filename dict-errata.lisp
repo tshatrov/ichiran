@@ -983,11 +983,8 @@
   )
 
 (defun add-errata-jan25 ()
-  (add-reading 2028930 "ヶ" :table 'kanji-text)
-  (add-reading 2028930 "ケ" :table 'kanji-text)
   (delete-reading 2028930 "ヶ" :table 'kana-text)
   (delete-reading 2028930 "ケ" :table 'kana-text)
-  (add-reading 2028930 "か")
 
   (delete-sense-prop 1138570 "pos" "ctr") ;; ラウンド
   (add-sense-prop 1138570 1 "pos" "ctr")
