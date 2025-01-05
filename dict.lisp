@@ -358,8 +358,9 @@
                                        :where (:and (:= 'conj-id (id conj)) (:in 'text (:set texts)))))
                        (query (:select 'text 'source-text :from 'conj-source-reading
                                        :where (:= 'conj-id (id conj)))))
-       when (or (not texts) src-map)
-       nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+     when (or (not texts) src-map)
+     nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
                                              :via (let ((via (seq-via conj)))
                                                     (if (eql via :null) nil via))
@@ -1606,12 +1607,33 @@
     (13 10)
     (t conj-type)))
 
-(defun select-conjs-and-props (seq &optional conj-ids)
+(defun is-rareru (text)
+  ;; surely there must be a better way to do this
+  (or
+   (alexandria:ends-with-subseq "られる" text)
+   (alexandria:ends-with-subseq "られます" text)
+   (alexandria:ends-with-subseq "られない" text)
+   (alexandria:ends-with-subseq "られません" text)))
+
+(defun filter-props (props text)
+  " A hack to remove Passive conjugation on れる forms "
+  (loop for prop in props
+        unless (and text
+                    (= (conj-type prop) 6) ;; passive
+                    (find (pos prop) '("v1" "v1s" "vk") :test 'equal)
+                    (not
+                     (if (listp text)
+                         (some 'is-rareru text)
+                         (is-rareru text))))
+        collect prop))
+
+(defun select-conjs-and-props (seq &optional conj-ids text)
   (sort
    (loop for conj in (select-conjs seq conj-ids)
-      for props = (select-dao 'conj-prop (:= 'conj-id (id conj)))
-      for val = (loop for prop in props minimizing (conj-type-order (conj-type prop)))
-      collect (list conj props (list (if (eql (seq-via conj) :null) 0 1) val)))
+         for props = (select-dao 'conj-prop (:= 'conj-id (id conj)))
+         for val = (loop for prop in props minimizing (conj-type-order (conj-type prop)))
+         for fprops = (filter-props props text)
+         collect (list conj fprops (list (if (eql (seq-via conj) :null) 0 1) val)))
    (lex-compare '<)
    :key 'third))
 
@@ -1633,7 +1655,7 @@
 
 (defun conj-info-json* (seq &key conjugations text has-gloss)
   (loop with via-used = nil
-     for (conj props) in (select-conjs-and-props seq conjugations)
+     for (conj props) in (select-conjs-and-props seq conjugations text)
      for via = (seq-via conj)
      unless (member via via-used)
      nconc (block outer
