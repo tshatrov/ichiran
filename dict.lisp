@@ -445,9 +445,11 @@
                            (if (= (length readings) 1)
                                (car readings)
                                (let ((km (kanji-cross-match (text parent-kt) parent-bk (text obj))))
-                                 (or (car (member km readings :test 'equal))
+                                 (or (find km readings :test 'equal)
                                      (loop with regex = (kanji-regex (text obj))
-                                        for rd in readings
+                                           and len-km = (length km)
+                                        ;; try to find the same length as km first, this allows to match 来れる to これる instead of こられる
+                                        for rd in (stable-sort readings '< :key (lambda (r) (abs (- (length r) len-km))))
                                         if (ppcre:scan regex rd) do (return rd)
                                         finally (return (car readings)))))))))
                   finally (return :null))))))
