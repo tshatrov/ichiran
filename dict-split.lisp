@@ -357,6 +357,10 @@
   (1636070 2)
   (("支え" 1310090)))
 
+(def-simple-split split-toiu 1922760 20 () ;; という
+  (1008490 1)
+  (1587040 nil t))
+
 (def-simple-split split-toiukotoda 2612990 30 (len) ;; ということだ
   (1922760 3)
   (1313580 (- len 4))
