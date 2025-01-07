@@ -41,6 +41,16 @@
                do (setf (gethash char hash) class)))
     hash))
 
+(defun get-char-class (char)
+  (gethash char *char-class-hash* char))
+
+(defun long-vowel-modifier-p (modifier prev-char)
+  (let ((vowel (getf '(:+a #\A :+i #\I :+u #\U :+e #\E :+o #\O) modifier)))
+    (when vowel
+      (let* ((char-class (get-char-class prev-char))
+             (char-str (string char-class)))
+        (and (keywordp char-class)
+           (char= vowel (char char-str (1- (length char-str)))))))))
 
 (defmacro hash-from-list (var list &key test)
   (alexandria:with-gensyms (hash key val)

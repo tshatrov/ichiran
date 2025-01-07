@@ -3,7 +3,8 @@
 (defpackage :ichiran/characters
   (:use :cl)
   (:export :*sokuon-characters* :*iteration-characters* :*modifier-characters*
-           :*kana-characters* :*all-characters* :*char-class-hash*
+   :*kana-characters* :*all-characters* :*char-class-hash*
+           :get-char-class :long-vowel-modifier-p
            :*katakana-regex* :*hiragana-regex* :*kanji-regex* :test-word
            :hash-from-list :voice-char :simplify-ngrams :normalize
            :split-by-regex :basic-split :mora-length :count-char-class

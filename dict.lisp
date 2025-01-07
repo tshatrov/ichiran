@@ -993,14 +993,17 @@
        and str-len = (length str)
      for pos from 0 below str-len
      for char = (char str pos)
-     for char-class = (gethash char *char-class-hash* char)
+     for char-class = (get-char-class char)
      if (and (eql char-class :sokuon)
              (not (= pos (1- str-len)))
              (let ((char (char str (1+ pos))))
-               (member (gethash char *char-class-hash* char) *kana-characters*)))
+               (find (get-char-class char) *kana-characters*)))
        collect (1+ pos)
-     else if (and (member char-class modifiers)
-                  (not (and (= pos (1- str-len)) (find char-class *modifier-characters*))))
+     else if (and (find char-class modifiers)
+                  (not (and (= pos (1- str-len))
+                            (or (eql char-class :long-vowel)
+                                (and (> pos 0)
+                                     (long-vowel-modifier-p char-class (char str (1- pos))))))))
             collect pos))
 
 (defun make-slice ()
@@ -1418,7 +1421,7 @@
             (loop with nani = nil and nan = nil
                for kana in kn
                for first-char = (when (> (length kana) 0) (char kana 0))
-               for fc-class = (gethash first-char *char-class-hash* first-char)
+               for fc-class = (get-char-class first-char)
                when first-char
                if (member fc-class '(:ba :bi :bu :be :bo
                                      :pa :pi :pu :pe :po

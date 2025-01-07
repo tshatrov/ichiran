@@ -594,7 +594,8 @@
   (assert-segment "何か問いたそうな口調" "何か" "問いたそう" "な" "口調")
   (assert-segment "どんなものにも潮時がある" "どんな" "もの" "にも" "潮時" "が" "ある")
   (assert-segment "特化してるというからね" "特化してる" "という" "から" "ね")
-  (assert-segment "歩いたぁ" "歩いた" :gap)
+  (assert-segment "歩いたぁ" "歩いた" :gap) ;; たぁ non-sticky
+  (assert-segment "りばてぃ" :gap) ;; てぃ still sticky
   )
 
 (define-test json-consistency-test
