@@ -997,10 +997,11 @@
      if (and (eql char-class :sokuon)
              (not (= pos (1- str-len)))
              (let ((char (char str (1+ pos))))
-               (member (gethash char *char-class-hash* char) *kana-characters*))) collect (1+ pos)
+               (member (gethash char *char-class-hash* char) *kana-characters*)))
+       collect (1+ pos)
      else if (and (member char-class modifiers)
-                  (not (and (= pos (1- str-len)) (eql char-class :long-vowel))))
-                  collect pos))
+                  (not (and (= pos (1- str-len)) (find char-class *modifier-characters*))))
+            collect pos))
 
 (defun make-slice ()
   (make-array 0 :element-type 'character
