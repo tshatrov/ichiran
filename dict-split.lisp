@@ -668,6 +668,26 @@
   (("跳ね" 1429620) 2)
   (1352290 nil t))
 
+(def-simple-split nil 1881690 50 (len txt) ;;　写真を撮る
+  (1321900 (position #\を txt))
+  (2029010 1)
+  (1298790 nil t))
+
+(def-simple-split nil 2834732 -10 (len txt) ;; 取り留め
+  (1707770 nil t))
+
+
+
+(def-simple-split nil 1855670 50 (len txt) ;; 取り留めのない
+  (("取り留め" 1707770) (position #\の txt))
+  (1469800 1)
+  (1529520))
+
+(def-simple-split nil 2855921 50 (len txt) ;; 取り留めもない
+  (("取り留め" 1707770) (position #\も txt))
+  (2028940 1)
+  (1529520))
+
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 

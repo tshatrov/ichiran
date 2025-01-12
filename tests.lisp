@@ -596,6 +596,10 @@
   (assert-segment "特化してるというからね" "特化してる" "という" "から" "ね")
   (assert-segment "歩いたぁ" "歩いた" :gap) ;; たぁ non-sticky
   (assert-segment "りばてぃ" :gap) ;; てぃ still sticky
+  (assert-segment "サウンドトラック" "サウンドトラック")
+  (assert-segment "写真を撮りました" "写真を撮りました")
+  (assert-segment "取り留めの無い" "取り留めの無い")
+  (assert-segment "取り留めも無い" "取り留めも無い")
   )
 
 (define-test json-consistency-test
