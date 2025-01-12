@@ -256,7 +256,7 @@
 
 (defun romanize (input &key (method *default-romanization-method*) (with-info nil))
   "Romanize a sentence according to method"
-  (setf input (normalize input))
+  (setf input (normalize input :context method))
   (loop with definitions = nil
      for (split-type . split-text) in (basic-split input)
      nconc
@@ -272,8 +272,7 @@
 
 (defun romanize* (input &key (method *default-romanization-method*) (limit 5) (wordprop-fn (constantly nil)))
   "Romanizes text with very detailed metadata"
-  (unless (eql method :kana)
-    (setf input (normalize input)))
+  (setf input (normalize input :context method))
   (loop for (split-type . split-text) in (basic-split input)
      collect
        (if (eql split-type :word)

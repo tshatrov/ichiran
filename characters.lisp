@@ -41,6 +41,16 @@
                do (setf (gethash char hash) class)))
     hash))
 
+(defun get-char-class (char)
+  (gethash char *char-class-hash* char))
+
+(defun long-vowel-modifier-p (modifier prev-char)
+  (let ((vowel (getf '(:+a #\A :+i #\I :+u #\U :+e #\E :+o #\O) modifier)))
+    (when vowel
+      (let* ((char-class (get-char-class prev-char))
+             (char-str (string char-class)))
+        (and (keywordp char-class)
+           (char= vowel (char char-str (1- (length char-str)))))))))
 
 (defmacro hash-from-list (var list &key test)
   (alexandria:with-gensyms (hash key val)
@@ -93,14 +103,17 @@
 (defparameter *dakuten-join*
   (append (dakuten-join *dakuten-hash* #\゛) (dakuten-join *handakuten-hash* #\゜)))
 
+(defparameter *half-width-kana* "･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ")
+(defparameter *full-width-kana* "・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜")
+
 (defparameter *abnormal-chars*
   (concatenate 'string
                "０１２３４５６７８９ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ＃＄％＆（）＊＋／〈＝〉？＠［］＾＿‘｛｜｝～"
-               "･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"))
+               *half-width-kana*))
 
 (defparameter *normal-chars*
   (concatenate 'string "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&()*+/<=>?@[]^_`{|}~"
-               "・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜"))
+               *full-width-kana*))
 
 (defparameter *katakana-regex* "[ァ-ヺヽヾー]")
 (defparameter *katakana-uniq-regex* "[ァ-ヺヽヾ]")
@@ -203,17 +216,20 @@
                                (cdr (assoc match alist :test #'equal)))
                              :simple-calls t)))
 
-(defun to-normal-char (char)
-  (let ((pos (position char *abnormal-chars*)))
+(defun to-normal-char (char &key context)
+  (let ((pos (position char (if (eql context :kana) *half-width-kana* *abnormal-chars*))))
     (when pos
-      (char *normal-chars* pos))))
+      (char (if (eql context :kana) *full-width-kana* *normal-chars*) pos))))
 
-(defun normalize (str)
+(defun normalize (str &key context)
   (loop for i from 0 below (length str)
        for char = (char str i)
-       for normal-char = (to-normal-char char)
+       for normal-char = (to-normal-char char :context context)
        if normal-char do (setf (char str i) normal-char))
-  (setf str (simplify-ngrams str (append *punctuation-marks* *dakuten-join*))))
+  (setf str (simplify-ngrams str
+                             (if (eql context :kana)
+                                 *dakuten-join*
+                                 (append *punctuation-marks* *dakuten-join*)))))
 
 (defun split-by-regex (regex str)
   (remove-if (lambda (seg) (= (length seg) 0))

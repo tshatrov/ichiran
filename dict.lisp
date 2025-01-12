@@ -358,8 +358,9 @@
                                        :where (:and (:= 'conj-id (id conj)) (:in 'text (:set texts)))))
                        (query (:select 'text 'source-text :from 'conj-source-reading
                                        :where (:= 'conj-id (id conj)))))
-       when (or (not texts) src-map)
-       nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+     when (or (not texts) src-map)
+     nconcing (loop for prop in (select-dao 'conj-prop (:= 'conj-id (id conj)))
+
                      collect (make-conj-data :seq (seq conj) :from (seq-from conj)
                                              :via (let ((via (seq-via conj)))
                                                     (if (eql via :null) nil via))
@@ -444,9 +445,11 @@
                            (if (= (length readings) 1)
                                (car readings)
                                (let ((km (kanji-cross-match (text parent-kt) parent-bk (text obj))))
-                                 (or (car (member km readings :test 'equal))
+                                 (or (find km readings :test 'equal)
                                      (loop with regex = (kanji-regex (text obj))
-                                        for rd in readings
+                                           and len-km = (length km)
+                                        ;; try to find the same length as km first, this allows to match 来れる to これる instead of こられる
+                                        for rd in (stable-sort readings '< :key (lambda (r) (abs (- (length r) len-km))))
                                         if (ppcre:scan regex rd) do (return rd)
                                         finally (return (car readings)))))))))
                   finally (return :null))))))
@@ -957,7 +960,7 @@
                        for pmlen of-type (integer 0 10000) = (mora-length (text part))
                        for smlen of-type (integer 0 10000) = pmlen then (+ smlen pmlen)
                        for tpart = (if (and last (> slen (length text)))
-                                       (let ((new-len (max 1 (+ plen (- (length text) slen)))))
+                                       (let ((new-len (max 1 (the fixnum (+ plen (- (length text) slen))))))
                                          (make-instance 'proxy-text :source part :text (subseq ptext 0 new-len) :kana ""))
                                        part)
                        for part-score = (calc-score tpart
@@ -990,14 +993,18 @@
        and str-len = (length str)
      for pos from 0 below str-len
      for char = (char str pos)
-     for char-class = (gethash char *char-class-hash* char)
+     for char-class = (get-char-class char)
      if (and (eql char-class :sokuon)
              (not (= pos (1- str-len)))
              (let ((char (char str (1+ pos))))
-               (member (gethash char *char-class-hash* char) *kana-characters*))) collect (1+ pos)
-     else if (and (member char-class modifiers)
-                  (not (and (= pos (1- str-len)) (eql char-class :long-vowel))))
-                  collect pos))
+               (find (get-char-class char) *kana-characters*)))
+       collect (1+ pos)
+     else if (and (find char-class modifiers)
+                  (not (and (= pos (1- str-len))
+                            (or (eql char-class :long-vowel)
+                                (and (> pos 0)
+                                     (long-vowel-modifier-p char-class (char str (1- pos))))))))
+            collect pos))
 
 (defun make-slice ()
   (make-array 0 :element-type 'character
@@ -1414,7 +1421,7 @@
             (loop with nani = nil and nan = nil
                for kana in kn
                for first-char = (when (> (length kana) 0) (char kana 0))
-               for fc-class = (gethash first-char *char-class-hash* first-char)
+               for fc-class = (get-char-class first-char)
                when first-char
                if (member fc-class '(:ba :bi :bu :be :bo
                                      :pa :pi :pu :pe :po
@@ -1446,7 +1453,7 @@
 (defun simple-segment (str &key (limit 5))
   (caar (dict-segment str :limit limit)))
 
-(defun get-senses-raw (seq &aux (tags '("pos" "s_inf" "stagk" "stagr")))
+(defun get-senses-raw (seq &aux (tags '("pos" "s_inf" "stagk" "stagr" "field")))
   (let* ((glosses
           (query (:order-by
                   (:select 'sense.ord (:raw "string_agg(gloss.text, '; ' ORDER BY gloss.ord)")
@@ -1489,8 +1496,10 @@
           for rpos = pos then (if (equal pos "[]") rpos pos)
           for inf = (cdr (assoc "s_inf" props :test 'equal))
           for rinf = (when inf (join "; " inf))
+          for field = (cdr (assoc "field" props :test 'equal))
+          for rfield = (when field (join "," field))
           when (> i 1) do (terpri s)
-          do (format s "~a. ~a ~@[《~a》 ~]~a" i rpos rinf gloss))))
+          do (format s "~a. ~a ~@[{~a} ~]~@[《~a》 ~]~a" i rpos rfield rinf gloss))))
 
 
 (defun match-kana-kanji (kana-reading kanji-reading restricted)
@@ -1531,6 +1540,8 @@
      for lpos = (split-pos pos) then (if emptypos lpos (split-pos pos))
      for inf = (cdr (assoc "s_inf" props :test 'equal))
      for rinf = (when inf (join "; " inf))
+     for field = (cdr (assoc "field" props :test 'equal))
+     for rfield = (and field (format nil "{~{~a~^,~}}" field))
      when (and (or (not pos-list) (intersection lpos pos-list :test 'equal))
                (or (not (or reading-getter reading))
                    (not (or (assoc "stagk" props :test 'equal)
@@ -1541,7 +1552,8 @@
                                             reading (funcall reading-getter))))))
                      (if rr (match-sense-restrictions seq props rr) t))))
      collect (let ((js (jsown:new-js ("pos" rpos) ("gloss" gloss))))
-               (if rinf (jsown:extend-js js ("info" rinf)))
+               (when rfield (jsown:extend-js js ("field" rfield)))
+               (when rinf (jsown:extend-js js ("info" rinf)))
                js)))
 
 (defun short-sense-str (seq &key with-pos)
@@ -1601,12 +1613,33 @@
     (13 10)
     (t conj-type)))
 
-(defun select-conjs-and-props (seq &optional conj-ids)
+(defun is-rareru (text)
+  ;; surely there must be a better way to do this
+  (or
+   (alexandria:ends-with-subseq "られる" text)
+   (alexandria:ends-with-subseq "られます" text)
+   (alexandria:ends-with-subseq "られない" text)
+   (alexandria:ends-with-subseq "られません" text)))
+
+(defun filter-props (props text)
+  " A hack to remove Passive conjugation on れる forms "
+  (loop for prop in props
+        unless (and text
+                    (= (conj-type prop) 6) ;; passive
+                    (find (pos prop) '("v1" "v1s" "vk") :test 'equal)
+                    (not
+                     (if (listp text)
+                         (some 'is-rareru text)
+                         (is-rareru text))))
+        collect prop))
+
+(defun select-conjs-and-props (seq &optional conj-ids text)
   (sort
    (loop for conj in (select-conjs seq conj-ids)
-      for props = (select-dao 'conj-prop (:= 'conj-id (id conj)))
-      for val = (loop for prop in props minimizing (conj-type-order (conj-type prop)))
-      collect (list conj props (list (if (eql (seq-via conj) :null) 0 1) val)))
+         for props = (select-dao 'conj-prop (:= 'conj-id (id conj)))
+         for val = (loop for prop in props minimizing (conj-type-order (conj-type prop)))
+         for fprops = (filter-props props text)
+         collect (list conj fprops (list (if (eql (seq-via conj) :null) 0 1) val)))
    (lex-compare '<)
    :key 'third))
 
@@ -1628,7 +1661,7 @@
 
 (defun conj-info-json* (seq &key conjugations text has-gloss)
   (loop with via-used = nil
-     for (conj props) in (select-conjs-and-props seq conjugations)
+     for (conj props) in (select-conjs-and-props seq conjugations text)
      for via = (seq-via conj)
      unless (member via via-used)
      nconc (block outer

@@ -75,7 +75,7 @@
     (let ((sense-id (id (make-dao 'sense :seq seq :ord ord))))
       (do-node-list-ord (ord node (dom:get-elements-by-tag-name node "gloss"))
         (make-dao 'gloss :sense-id sense-id :text (node-text node) :ord ord))
-      (loop for tag in '("pos" "misc" "dial"
+      (loop for tag in '("pos" "misc" "dial" "field"
                          "s_inf" "stagk" "stagr")
            do (insert-sense-traits node tag sense-id seq)))))
 

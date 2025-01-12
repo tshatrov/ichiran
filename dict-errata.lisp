@@ -59,6 +59,16 @@
     (unless (zerop updated)
       (reset-readings seq))))
 
+(defun replace-reading-conj (seq table prefix-from prefix-to)
+  (let* ((seqs (cons seq (query (:select 'seq :distinct :from 'conjugation :where (:= 'from seq)) :column)))
+         (readings (select-dao table (:and (:in seq (:set seqs)) (:like 'text (:|| prefix-from "%"))) 'seq))
+         )
+    (loop for robj in readings
+          for new-text = (concatenate 'string prefix-to (subseq (text robj) (length prefix-from)))
+          do (setf (slot-value robj 'text) new-text) (update-dao robj)
+          collect (seq robj) into to-update
+          finally (when to-update (apply 'reset-readings to-update)))))
+
 (defun reset-readings (&rest seqs)
   (let ((readings (nconc
                    (select-dao 'kana-text (:in 'seq (:set seqs)))
@@ -564,6 +574,7 @@
   (add-errata-may21)
   (add-errata-jan22)
   (add-errata-dec23)
+  (add-errata-jan25)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -940,11 +951,11 @@
   )
 
 (defun add-errata-dec23 ()
-  (add-reading 2220325 "ヶ" :table 'kanji-text)
-  (add-reading 2220325 "ケ" :table 'kanji-text)
-  (delete-reading 2220325 "ヶ" :table 'kana-text)
-  (delete-reading 2220325 "ケ" :table 'kana-text)
-  (add-reading 2220325 "か")
+  ;; (add-reading 2220325 "ヶ" :table 'kanji-text)
+  ;; (add-reading 2220325 "ケ" :table 'kanji-text)
+  ;; (delete-reading 2220325 "ヶ" :table 'kana-text)
+  ;; (delete-reading 2220325 "ケ" :table 'kana-text)
+  ;; (add-reading 2220325 "か")
 
   (add-sense-prop 1180540 0 "misc" "uk") ;; おっす
   (delete-sense-prop 2854117 "misc" "uk") ;; おき but I boost it later with synergy
@@ -969,6 +980,24 @@
   (set-common 'kanji-text 1328740 "狩る" 0)
 
   (set-common 'kana-text 1009610 "にも" 0)
+  )
+
+(defun add-errata-jan25 ()
+  (delete-reading 2028930 "ヶ" :table 'kana-text)
+  (delete-reading 2028930 "ケ" :table 'kana-text)
+
+  (delete-sense-prop 1138570 "pos" "ctr") ;; ラウンド
+  (add-sense-prop 1138570 1 "pos" "ctr")
+  (add-sense-prop 1138570 2 "pos" "ctr")
+  (add-sense-prop 1138570 3 "pos" "ctr")
+
+  (set-common 'kana-text 1001120 "うんち" 0)
+  (set-common 'kana-text 1511600 "かたかな" 0)
+  (set-common 'kana-text 1056400 "サウンドトラック" 0)
+
+  (replace-reading 2860664 "こどもはおやのせなかをみてそだう" "こどもはおやのせなかをみてそだつ")
+  (replace-reading-conj 2863544 'kana-text "みぎにでるのは" "みぎにでるものは")
+
   )
 
 
@@ -1030,7 +1059,6 @@
 
   (add-sense-prop 1101700 0 "pos" "ctr") ;; パック
   (add-sense-prop 1120410 0 "pos" "ctr") ;; ページ
-  (add-sense-prop 1138570 0 "pos" "ctr") ;; ラウンド
   (add-sense-prop 1956400 0 "pos" "ctr") ;; 集
   (add-sense-prop 1333450 0 "pos" "ctr") ;; 週
   (add-sense-prop 1480050 0 "pos" "ctr") ;; 反

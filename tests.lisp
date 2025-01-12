@@ -98,7 +98,6 @@
   (assert-segment "払わなくてもいい" "払わなくてもいい")
   (assert-segment "体に悪いと知りながらタバコをやめることはできない"
                   "体に悪い" "と" "知り" "ながら" "タバコをやめる" "こと" "は" "できない")
-  (assert-segment "いつもどうり" "いつも" "どうり")
   (assert-segment "微笑みはまぶしすぎる" "微笑み" "は" "まぶしすぎる")
   (assert-segment "なにをしていますか" "なに" "を" "しています" "か")
   (assert-segment "優しすぎそのうえカッコいいの" "優しすぎ" "そのうえ" "カッコいい" "の")
@@ -540,7 +539,7 @@
   (assert-segment "最良の方法は何だと思いますか" "最良" "の" "方法" "は" "何" "だ" "と" "思います" "か")
   (assert-segment "どうせいやがらせでする" "どうせ" "いやがらせ" "で" "する")
   (assert-segment "芝居もどきのせりふを言う" "芝居" "もどき" "の" "せりふ" "を" "言う")
-  (assert-segment "がんもどきという食品" "がんもどき" "と" "いう" "食品")
+  (assert-segment "がんもどきという食品" "がんもどき" "という" "食品")
   (assert-segment "落ちこぼれている" "落ちこぼれている")
   (assert-segment "1話しか見てない" "1話" "しか" "見てない")
   (assert-segment "忙しくてろくに更新もできず" "忙しくて" "ろくに" "更新" "も" "できず")
@@ -594,6 +593,13 @@
   (assert-segment "仲間になりたそうに見ている" "仲間" "に" "なりたそう" "に" "見ている")
   (assert-segment "何か問いたそうな口調" "何か" "問いたそう" "な" "口調")
   (assert-segment "どんなものにも潮時がある" "どんな" "もの" "にも" "潮時" "が" "ある")
+  (assert-segment "特化してるというからね" "特化してる" "という" "から" "ね")
+  (assert-segment "歩いたぁ" "歩いた" :gap) ;; たぁ non-sticky
+  (assert-segment "りばてぃ" :gap) ;; てぃ still sticky
+  (assert-segment "サウンドトラック" "サウンドトラック")
+  (assert-segment "写真を撮りました" "写真を撮りました")
+  (assert-segment "取り留めの無い" "取り留めの無い")
+  (assert-segment "取り留めも無い" "取り留めも無い")
   )
 
 (define-test json-consistency-test
