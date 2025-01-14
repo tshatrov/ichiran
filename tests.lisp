@@ -600,6 +600,7 @@
   (assert-segment "写真を撮りました" "写真を撮りました")
   (assert-segment "取り留めの無い" "取り留めの無い")
   (assert-segment "取り留めも無い" "取り留めも無い")
+  (assert-segment "これへんだ" "これ" "へん" "だ")
   )
 
 (define-test json-consistency-test

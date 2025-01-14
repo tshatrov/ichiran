@@ -1072,6 +1072,11 @@
   (filter-in-seq-set 1577980)
   :allow-first t)
 
+(def-segfilter-must-follow segfilter-n (l r)
+  (complement (apply 'filter-in-seq-set *noun-particles*))
+  (filter-in-seq-set 2139720 2849370 2849387) ;;　ん んだ
+  :allow-first t)
+
 (def-segfilter-must-follow segfilter-wokarasu (l r)
   (filter-in-seq-set 2029010)
   (filter-in-seq-set 2087020))

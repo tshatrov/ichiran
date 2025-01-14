@@ -994,6 +994,7 @@
   (set-common 'kana-text 1001120 "うんち" 0)
   (set-common 'kana-text 1511600 "かたかな" 0)
   (set-common 'kana-text 1056400 "サウンドトラック" 0)
+  (set-common 'kana-text 1510640 "へん" 5)
 
   (replace-reading 2860664 "こどもはおやのせなかをみてそだう" "こどもはおやのせなかをみてそだつ")
   (replace-reading-conj 2863544 'kana-text "みぎにでるのは" "みぎにでるものは")
