@@ -765,6 +765,14 @@
   (lambda (segment)
     (intersection seqs (getf (segment-info segment) :seq-set))))
 
+(declaim (inline filter-in-seq-set-simple))
+(defun filter-in-seq-set-simple (&rest seqs)
+  "Same as above but checks that the word is not compound"
+  (lambda (segment)
+    (let ((seq (seq (segment-word segment))))
+      (and (not (listp seq))
+           (intersection seqs (getf (segment-info segment) :seq-set))))))
+
 (declaim (inline filter-is-conjugation))
 (defun filter-is-conjugation (conj-type)
   (lambda (segment)
@@ -1073,7 +1081,7 @@
   :allow-first t)
 
 (def-segfilter-must-follow segfilter-n (l r)
-  (complement (apply 'filter-in-seq-set *noun-particles*))
+  (complement (apply 'filter-in-seq-set-simple *noun-particles*))
   (filter-in-seq-set 2139720 2849370 2849387) ;;　ん んだ
   :allow-first t)
 
