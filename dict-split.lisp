@@ -46,16 +46,20 @@
                          (,part-txt (safe-subseq ,text-var ,offset
                                                  (and ,part-length (+ ,offset ,part-length)))))
                     (push
-                     (when ,part-txt
-                       (car (apply
-                             ,(if conj-p
-                                  ''find-word-conj-of
-                                  ''find-word-seq)
-                             ,(case modify
-                                ((t) `(unrendaku ,part-txt))
-                                ((nil) part-txt)
-                                (t `(funcall ,modify ,part-txt)))
-                             ,pseq)))
+                     (cond
+                       ;; avoid recursion
+                       ((member ,seq ,pseq)
+                        (warn "Recursive split on ~a" ,seq))
+                       (,part-txt
+                        (car (apply
+                              ,(if conj-p
+                                   ''find-word-conj-of
+                                   ''find-word-seq)
+                              ,(case modify
+                                 ((t) `(unrendaku ,part-txt))
+                                 ((nil) part-txt)
+                                 (t `(funcall ,modify ,part-txt)))
+                              ,pseq))))
                      ,parts)
                     (when ,part-length
                       (incf ,offset ,part-length))))
