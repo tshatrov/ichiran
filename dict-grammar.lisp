@@ -128,6 +128,7 @@
    :mo "even if ..."
    :sugiru "to be too (much) ..."
    :nikui "difficult to..."
+   :gatai "difficult to..."
    :sa "-ness (degree or condition of adjective)"
    :tsutsu "while ... / in the process of ..."
    :tsutsuaru "to be doing ... / to be in the process of doing ..."
@@ -200,6 +201,7 @@
         (load-kf :tai (get-kana-form 900000 "たそう") :class :tasou)
 
         (load-conjs :ren- 2772730 :nikui)
+        (load-conjs :ren- 2867504 :gatai)
 
         (load-conjs :te 1577985 :oru) ;; おる
 
@@ -446,7 +448,7 @@
                                                          ((equal root "から") 40)
                                                          ((equal root "い") 0)
                                                          ((equal root "出来") 100)
-                                                         (t 60)))
+                                                         (t 70)))
                                     :connector "")
     (root suf patch)
   (suffix-sou-base root patch))
