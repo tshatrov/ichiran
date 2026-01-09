@@ -575,6 +575,7 @@
   (add-errata-jan22)
   (add-errata-dec23)
   (add-errata-jan25)
+  (add-errata-jan26)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -1001,6 +1002,15 @@
 
   )
 
+(defun add-errata-jan26 ()
+  (delete-sense-prop 1236660 "misc" "uk") ;; おそれ
+  (delete-sense-prop 2859279 "misc" "uk") ;;　はねる
+  (delete-sense-prop 1591420 "misc" "uk") ;; 決まる
+
+  (set-common 'kana-text 1392580 "まえ" 5)
+
+  )
+
 
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
@@ -1111,6 +1121,7 @@
                              2029030 ;; ものの
                              2568020 ;; せる
                              900000 ;; たそう
+                             2827357 ;; まう
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
