@@ -299,6 +299,7 @@
 
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
+        (load-abbr :nakereba "ねば")
 
         ;; TODO: this abbr conflicts with noun + や too often
         ;; (load-abbr :eba "や") ;; う
@@ -1160,6 +1161,11 @@
   (complement (apply 'filter-in-seq-set *noun-particles*))
   (apply 'filter-in-seq-set *honorifics*))
 
+
+(def-segfilter-must-follow segfilter-mononi (l r)
+                           (complement (filter-in-seq-set 2028940))
+                           (filter-in-seq-set 1009980)
+                           :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))

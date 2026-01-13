@@ -680,8 +680,6 @@
 (def-simple-split nil 2834732 -10 (len txt) ;; 取り留め
   (1707770 nil t))
 
-
-
 (def-simple-split nil 1855670 50 (len txt) ;; 取り留めのない
   (("取り留め" 1707770) (position #\の txt))
   (1469800 1)

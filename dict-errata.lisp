@@ -1007,6 +1007,10 @@
   (delete-sense-prop 2859279 "misc" "uk") ;;　はねる
   (delete-sense-prop 1591420 "misc" "uk") ;; 決まる
 
+  (set-primary-nokanji 1502390 nil) ;; もの
+  (set-common 'kana-text 1502390 "モノ" 0)
+
+
   (set-common 'kana-text 1392580 "まえ" 5)
 
   )
