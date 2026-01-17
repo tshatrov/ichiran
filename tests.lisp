@@ -604,6 +604,9 @@
   (assert-segment "おそれたか" "おそれた" "か")
   (assert-segment "不確かなものに" "不確か" "な" "もの" "に")
   (assert-segment "まとめていかねばな" "まとめていかねば" "な")
+  (assert-segment "来るからすき" "来る" "から" "すき")
+  (assert-segment "けんかを引分ける" "けんか" "を" "引分ける")
+  (assert-segment "取り計らいましょう" "取り計らいましょう")
   )
 
 (define-test json-consistency-test

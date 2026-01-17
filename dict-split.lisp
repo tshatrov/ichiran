@@ -690,6 +690,10 @@
   (2028940 1)
   (1529520))
 
+(def-simple-split nil 1774820 -5 (len txt r) ;; からすき
+  (:test (eql (word-type r) :kana))
+  (1002980 2)
+  (1277450))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 
