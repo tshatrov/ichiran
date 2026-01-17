@@ -672,7 +672,7 @@
   (("跳ね" 1429620) 2)
   (1352290 nil t))
 
-(def-simple-split nil 1881690 50 (len txt) ;;　写真を撮る
+(def-simple-split nil 1881690 50 (len txt) ;; 写真を撮る
   (1321900 (position #\を txt))
   (2029010 1)
   (1298790 nil t))
@@ -694,6 +694,10 @@
   (:test (eql (word-type r) :kana))
   (1002980 2)
   (1277450))
+
+(def-simple-split nil 1362970 100 (len txt) ;; 申し遅れる
+  (("申し" 1363090) 2)
+  (1589040 nil t))
 
 ;; SEGMENT SPLITS (allows to expand one segment into several, e.g. "ところが" "ところ+が")
 

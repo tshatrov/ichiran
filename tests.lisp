@@ -607,6 +607,7 @@
   (assert-segment "来るからすき" "来る" "から" "すき")
   (assert-segment "けんかを引分ける" "けんか" "を" "引分ける")
   (assert-segment "取り計らいましょう" "取り計らいましょう")
+  (assert-segment "一日置いただけで" "一日" "置いた" "だけ" "で")
   )
 
 (define-test json-consistency-test

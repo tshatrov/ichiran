@@ -1226,6 +1226,11 @@
 (defparameter *force-kanji-break*
   '("です"))
 
+(defparameter *no-kanji-break*
+  '("日置")  ;; problematic with 一日置く
+  "Words that do not cause kanji break"
+  )
+
 ;; Additional conjugations
 
 (defconstant +conj-adverbial+ 50)

@@ -1099,9 +1099,11 @@
               (when segments
                 (when (or (= start 0) (find start ends))
                   (setf kanji-break
-                        (nconc (if (find part *force-kanji-break* :test 'equal)
-                                   (alexandria:iota (1- (length part)) :start (1+ start))
-                                   (sequential-kanji-positions part start))
+                        (nconc (cond
+                                 ((find part *force-kanji-break* :test 'equal)
+                                  (alexandria:iota (1- (length part)) :start (1+ start)))
+                                 ((find part *no-kanji-break* :test 'equal) nil)
+                                 (t (sequential-kanji-positions part start)))
                                kanji-break)))
                 (pushnew end ends)
                 (list (list start end segments)))))
