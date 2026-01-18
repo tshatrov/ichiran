@@ -128,6 +128,7 @@
    :mo "even if ..."
    :sugiru "to be too (much) ..."
    :nikui "difficult to..."
+   :gatai "difficult to..."
    :sa "-ness (degree or condition of adjective)"
    :tsutsu "while ... / in the process of ..."
    :tsutsuaru "to be doing ... / to be in the process of doing ..."
@@ -200,6 +201,7 @@
         (load-kf :tai (get-kana-form 900000 "たそう") :class :tasou)
 
         (load-conjs :ren- 2772730 :nikui)
+        (load-conjs :ren- 2867504 :gatai)
 
         (load-conjs :te 1577985 :oru) ;; おる
 
@@ -297,6 +299,7 @@
 
         (load-abbr :nakereba "なきゃ")
         (load-abbr :nakereba "なくちゃ")
+        (load-abbr :nakereba "ねば")
 
         ;; TODO: this abbr conflicts with noun + や too often
         ;; (load-abbr :eba "や") ;; う
@@ -446,7 +449,7 @@
                                                          ((equal root "から") 40)
                                                          ((equal root "い") 0)
                                                          ((equal root "出来") 100)
-                                                         (t 60)))
+                                                         (t 70)))
                                     :connector "")
     (root suf patch)
   (suffix-sou-base root patch))
@@ -1158,6 +1161,11 @@
   (complement (apply 'filter-in-seq-set *noun-particles*))
   (apply 'filter-in-seq-set *honorifics*))
 
+
+(def-segfilter-must-follow segfilter-mononi (l r)
+                           (complement (filter-in-seq-set 2028940))
+                           (filter-in-seq-set 1009980)
+                           :allow-first t)
 
 (defun apply-segfilters (seg-left seg-right)
   (loop with splits = (list (list seg-left seg-right))

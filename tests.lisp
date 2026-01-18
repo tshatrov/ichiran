@@ -601,6 +601,13 @@
   (assert-segment "取り留めの無い" "取り留めの無い")
   (assert-segment "取り留めも無い" "取り留めも無い")
   (assert-segment "これへんだ" "これ" "へん" "だ")
+  (assert-segment "おそれたか" "おそれた" "か")
+  (assert-segment "不確かなものに" "不確か" "な" "もの" "に")
+  (assert-segment "まとめていかねばな" "まとめていかねば" "な")
+  (assert-segment "来るからすき" "来る" "から" "すき")
+  (assert-segment "けんかを引分ける" "けんか" "を" "引分ける")
+  (assert-segment "取り計らいましょう" "取り計らいましょう")
+  (assert-segment "一日置いただけで" "一日" "置いた" "だけ" "で")
   )
 
 (define-test json-consistency-test

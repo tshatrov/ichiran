@@ -575,6 +575,7 @@
   (add-errata-jan22)
   (add-errata-dec23)
   (add-errata-jan25)
+  (add-errata-jan26)
   (add-errata-counters)
 
   (ichiran/custom:load-custom-data '(:extra) t)
@@ -1001,6 +1002,68 @@
 
   )
 
+(defun add-errata-jan26 ()
+  (delete-sense-prop 1236660 "misc" "uk") ;; おそれ
+  (delete-sense-prop 2859279 "misc" "uk") ;;　はねる
+  (delete-sense-prop 1591420 "misc" "uk") ;; 決まる
+
+  (set-primary-nokanji 1502390 nil) ;; もの
+  (set-common 'kana-text 1502390 "モノ" 0)
+
+
+  (set-common 'kana-text 1392580 "まえ" 5)
+  (set-common 'kanji-text 1502920 "分かつ" :null)
+  (set-common 'kanji-text 1169130 "引分ける" 0)
+  (set-common 'kanji-text 1326660 "取り計らう" 0)
+  (set-common 'kanji-text 1340420 "出来" 0)
+  (set-common 'kanji-text 1340430 "出来" 9)
+
+  ;; nerf continuative nouns per https://github.com/tshatrov/ichiran/issues/69
+  #| (progn (print
+  (query (:select 'kt.seq 'kt.text :from (:as 'kanji-text 'kt)
+    :inner-join 'entry :on (:and (:= 'kt.seq 'entry.seq) 'root-p)
+    :inner-join (:as 'kanji-text 'kt2) :on (:and (:= 'kt.text 'kt2.text) (:not (:= 'kt.seq 'kt2.seq)))
+    :inner-join (:as 'conjugation 'conj) :on (:= 'kt2.seq 'conj.seq)
+    :inner-join (:as 'conj-prop 'cp) :on (:and (:= 'conj.id 'cp.conj-id) (:= 'conj-type 13))
+    :where (:or (:and (:> 'kt.common 0) (:< 'kt.common 11) (:< (:length 'kt.text) 3))
+                (:and (:> 'kt.common -1) (:= (:length 'kt.text) 3)))))) nil)
+  |#
+
+  (set-common 'kanji-text 1589320 "思い" 0)
+  (set-common 'kanji-text 1281000 "考え" 0)
+  (set-common 'kanji-text 2862681 "閉まり" :null)
+  (set-common 'kanji-text 1989500 "開き" 0)
+  (set-common 'kanji-text 1985020 "気づき" :null)
+  (set-common 'kanji-text 1180130 "押し" 0)
+  (set-common 'kanji-text 1216850 "含み" 0)
+  (set-common 'kanji-text 1231760 "居座り" :null)
+  (set-common 'kanji-text 1236660 "恐れ" 0)
+  (set-common 'kanji-text 1238660 "驚き" 0)
+  (set-common 'kanji-text 1259890 "見直し" 0)
+  (set-common 'kanji-text 1297250 "作り" 0)
+  (set-common 'kanji-text 1304480 "残り" 0)
+  (set-common 'kanji-text 1327090 "守り" 0)
+  (set-common 'kanji-text 1327100 "守り" 9)
+  (set-common 'kanji-text 1396550 "狙い" 0)
+  (set-common 'kanji-text 1403130 "増やし" :null)
+  (set-common 'kanji-text 1535930 "問い" 0)
+  (set-common 'kanji-text 1548390 "頼り" 0)
+  (set-common 'kanji-text 1609560 "勝ち" 0)
+  (set-common 'kanji-text 1954660 "聞こえ" :null)
+  (set-common 'kanji-text 1497960 "負け" 0)
+  (set-common 'kanji-text 1502940 "分かり" :null)
+  (set-common 'kanji-text 1917220 "分かれ" :null)
+  (set-common 'kanji-text 1221250 "帰り" 0)
+  (set-common 'kanji-text 1351280 "笑い" 0)
+  (set-common 'kanji-text 1352300 "上げ" 0)
+  (set-common 'kanji-text 1354720 "乗り" 0)
+  (set-common 'kanji-text 1502990 "分け" 0)
+  (set-common 'kanji-text 1630270 "脅かし" :null)
+  (set-common 'kanji-text 1456130 "読み" 0)
+  (set-common 'kanji-text 1403020 "騒ぎ" 0)
+  (set-common 'kanji-text 1659120 "受け" 0)
+  )
+
 
 (defun add-errata-counters ()
   (delete-reading 1299960 "さんかい")
@@ -1089,8 +1152,7 @@
   )
 
 
-(defparameter *skip-words* '(2458040  ;; てもいい
-                             2822120  ;; ても良い
+(defparameter *skip-words* '(2822120  ;; ても良い
                              2013800  ;; ちゃう
                              2108590  ;; とく
                              2029040  ;; ば
@@ -1112,6 +1174,7 @@
                              2029030 ;; ものの
                              2568020 ;; せる
                              900000 ;; たそう
+                             2827357 ;; まう
                              )
   "seq of words that aren't really words, like suffixes etc."
   )
@@ -1162,6 +1225,11 @@
 
 (defparameter *force-kanji-break*
   '("です"))
+
+(defparameter *no-kanji-break*
+  '("日置")  ;; problematic with 一日置く
+  "Words that do not cause kanji break"
+  )
 
 ;; Additional conjugations
 

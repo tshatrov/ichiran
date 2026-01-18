@@ -54,13 +54,18 @@
                (set-difference ,q2 ,q1 :test 'equal)))))
 
 ;; example queries
-;; find all [uk] tag changes
+;; find all [uk] tag changes (NOTE: use the common one below instead)
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "misc") (:= 'text "uk")))
+;; common [uk] tag changes
+#|
+ (:select 'kt.seq :distinct :from (:as 'sense-prop 'sp) (:as 'kana-text 'kt)
+    :where (:and (:= 'kt.seq 'sp.seq) (:= 'sp.tag "misc") (:= 'sp.text "uk") (:not (:is-null 'kt.common))))
+|#
 ;; find common kana changes
 ;; (:select 'seq 'text :distinct :from 'kana-text :where (:not (:is-null 'common)))
 ;; find counters
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "pos") (:= 'text "ctr")))
-;; find expressions
+;; find expressions (use the ones in split instead)
 ;; (:select 'seq :distinct :from 'sense-prop :where (:and (:= 'tag "pos") (:= 'text "exp")))
 
 ;; showing results from above
