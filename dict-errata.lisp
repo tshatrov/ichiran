@@ -266,12 +266,13 @@
        do (delete-conjugation (seq conj) (seq-from conj))))
   (loop for seq in seqs
      for readings = (get-all-readings seq)
-     do (loop for (conj suf) in '(((1 "exp" t :null) "せん")
-                                  ((2 "exp" :null :null) "した")
-                                  ((3 "exp" :null :null) "して")
-                                  ((9 "exp" :null :null) "しょう")
-                                  ((11 "exp" :null :null) "したら")
-                                  ((12 "exp" :null :null) "したり")
+     for pos = (if (eql seq 2253080) "cop" "exp")
+     do (loop for (conj suf) in `(((1 ,pos t :null) "せん")
+                                  ((2 ,pos :null :null) "した")
+                                  ((3 ,pos :null :null) "して")
+                                  ((9 ,pos :null :null) "しょう")
+                                  ((11 ,pos :null :null) "したら")
+                                  ((12 ,pos :null :null) "したり")
                                   )
            do (add-conj seq conj
                         (loop for reading in readings
