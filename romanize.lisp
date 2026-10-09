@@ -248,11 +248,13 @@
 (defun romanize-word-info (word-info &key (method *default-romanization-method*))
   "Romanize word-info instance"
   (let* ((orig-text (word-info-text word-info)))
-    (map-word-info-kana
-     (if (eql method :kana)
-         (lambda (wk) (strip-hints wk))
-         (lambda (wk) (romanize-word wk :method method :original-spelling orig-text :normalize nil)))
-     word-info)))
+    (if (eql method :text)
+        orig-text
+        (map-word-info-kana
+         (if (eql method :kana)
+             (lambda (wk) (strip-hints wk))
+             (lambda (wk) (romanize-word wk :method method :original-spelling orig-text :normalize nil)))
+         word-info))))
 
 (defun romanize (input &key (method *default-romanization-method*) (with-info nil))
   "Romanize a sentence according to method"
