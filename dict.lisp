@@ -1575,6 +1575,8 @@
        'sense.ord)
       1)) :single))
 
+(defparameter *original-text-reading-only* nil)
+
 (defun reading-str* (kanji kana)
   (if kanji
       (format nil "~a 【~a】" kanji kana)
@@ -1587,7 +1589,8 @@
 
 (defgeneric reading-str (obj)
   (:method ((obj simple-text))
-    (reading-str* (get-kanji obj) (get-kana obj)))
+    (if *original-text-reading-only* (get-text obj)
+        (reading-str* (get-kanji obj) (get-kana obj))))
   (:method ((obj integer))
     (reading-str-seq obj)))
 
@@ -1734,8 +1737,9 @@
       (funcall fn wkana)))
 
 (defun word-info-reading-str (word-info)
-  (cond ((or (eql (word-info-type word-info) :kanji)
-             (and (word-info-counter word-info) (word-info-seq word-info)))
+  (cond ((and (or (eql (word-info-type word-info) :kanji)
+                  (and (word-info-counter word-info) (word-info-seq word-info)))
+              (not *original-text-reading-only*))
          (reading-str* (word-info-text word-info) (word-info-kana word-info)))
         (t (reading-str* nil (word-info-text word-info)))))
 
