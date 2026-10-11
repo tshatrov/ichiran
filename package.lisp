@@ -53,7 +53,7 @@
            :find-word-info :find-word-info-json :simple-word-info
            :process-hints :strip-hints
            :find-kanji-for-pattern
-           :match-glosses))
+           :match-glosses :*original-text-reading-only*))
 
 (defpackage :ichiran/custom
   (:use :cl :postmodern :split-sequence
