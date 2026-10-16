@@ -58,10 +58,13 @@ jobs:
       - name: Build ichiran core
         run: |
           # Load ichiran first
-          sbcl --non-interactive --eval "(ql:quickload :ichiran)"
+          sbcl --non-interactive \
+               --eval "(push '*default-pathname-defaults* asdf:*central-registry*)" \
+               --eval "(ql:quickload :ichiran)"
 
           # Build the core file with caches initialized
           sbcl --non-interactive \
+               --eval "(push '*default-pathname-defaults* asdf:*central-registry*)" \
                --eval "(ql:quickload :ichiran)" \
                --eval "(ichiran/mnt:add-errata)" \
                --eval "(in-package :ichiran/all)" \
