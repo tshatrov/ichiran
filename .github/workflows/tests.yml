@@ -1,0 +1,78 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ master, add-text-method ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sbcl postgresql-client wget git rlwrap docker.io
+
+      - name: Start PostgreSQL container
+        env:
+          ICHIRAN_DB_URL: https://github.com/tshatrov/ichiran/releases/download/ichiran-260118/ichiran-260118.pgdump
+        run: |
+          # Build and start the postgres container using the same Dockerfile as docker-compose
+          docker build -t ichiran-pg -f docker/postgres-dockerfile --build-arg ICHIRAN_DB_URL=$ICHIRAN_DB_URL .
+          docker run -d --name pg --shm-size=1gb -e POSTGRES_PASSWORD=password -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 ichiran-pg
+
+      - name: Wait for PostgreSQL and database initialization
+        run: |
+          # Wait for PostgreSQL to be ready
+          timeout 300 bash -c 'while ! docker exec pg pg_isready -U postgres; do sleep 1; done'
+          
+          # Wait for the database to be created and populated
+          # The init script creates jmdict database and restores the dump
+          timeout 600 bash -c 'while ! docker exec pg psql -U postgres -l 2>/dev/null | grep -q jmdict; do sleep 1; done'
+          
+          # Give a bit more time for the restore to complete
+          sleep 5
+
+      - name: Set up Quicklisp
+        run: |
+          wget https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --load quicklisp.lisp --non-interactive \
+               --eval "(quicklisp-quickstart:install)" \
+               --eval "(ql-util:without-prompting (ql:add-to-init-file))" \
+               --eval "(sb-ext:quit)"
+
+      - name: Clone jmdictdb dependency
+        run: |
+          git clone https://gitlab.com/yamagoya/jmdictdb.git
+
+      - name: Copy docker settings
+        run: |
+          cp docker/settings.lisp settings.lisp
+
+      - name: Build ichiran core
+        run: |
+          # Load ichiran first
+          sbcl --non-interactive --eval "(ql:quickload :ichiran)"
+          
+          # Build the core file with caches initialized
+          sbcl --non-interactive \
+               --eval "(ql:quickload :ichiran)" \
+               --eval "(ichiran/mnt:add-errata)" \
+               --eval "(in-package :ichiran/all)" \
+               --eval "(init-all-caches t)" \
+               --eval "(init-suffixes t)" \
+               --eval "(postmodern:clear-connection-pool)" \
+               --eval "(uiop:dump-image \"/tmp/ichiran.core\" :executable nil :compression t)" \
+               --eval "(sb-ext:quit)"
+
+      - name: Run tests
+        run: |
+          sbcl --core /tmp/ichiran.core --non-interactive \
+               --eval "(ichiran/test:run-all-tests)" \
+               --eval "(sb-ext:quit)"
