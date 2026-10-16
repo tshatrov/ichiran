@@ -2,14 +2,14 @@ name: Run Tests
 
 on:
   push:
-    branches: [ master, add-text-method ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y sbcl postgresql-client wget git rlwrap docker.io
+          sudo apt-get install -y sbcl postgresql-client wget git docker.io
 
       - name: Start PostgreSQL container
         env:
@@ -31,11 +31,11 @@ jobs:
         run: |
           # Wait for PostgreSQL to be ready
           timeout 300 bash -c 'while ! docker exec pg pg_isready -U postgres; do sleep 1; done'
-          
+
           # Wait for the database to be created and populated
           # The init script creates jmdict database and restores the dump
           timeout 600 bash -c 'while ! docker exec pg psql -U postgres -l 2>/dev/null | grep -q jmdict; do sleep 1; done'
-          
+
           # Give a bit more time for the restore to complete
           sleep 5
 
@@ -59,7 +59,7 @@ jobs:
         run: |
           # Load ichiran first
           sbcl --non-interactive --eval "(ql:quickload :ichiran)"
-          
+
           # Build the core file with caches initialized
           sbcl --non-interactive \
                --eval "(ql:quickload :ichiran)" \
