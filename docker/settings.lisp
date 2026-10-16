@@ -2,15 +2,14 @@
 
 (defparameter *connection* '("jmdict" "postgres" "password" "pg"))
 
-(defparameter *connections* '((:old "jmdict_old" "postgres" "password" "localhost")
-                              (:test "jmdict_test" "postgres" "password" "localhost")))
+(defparameter *connections* '())
 
 (in-package #:ichiran/dict)
 
-(defparameter *jmdict-path* #p"/home/you/dump/JMdict_e")
+(defparameter *jmdict-path* #p"ignore")
 
 (defparameter *jmdict-data* #p"/root/jmdictdb/jmdictdb/data/")
 
 (in-package #:ichiran/kanji)
 
-(defparameter *kanjidic-path* #P"/home/you/dump/kanjidic2.xml")
+(defparameter *kanjidic-path* #P"ignore")

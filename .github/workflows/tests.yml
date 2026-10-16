@@ -53,7 +53,7 @@ jobs:
 
       - name: Copy docker settings
         run: |
-          cp docker/settings.lisp settings.lisp
+          cp settings.lisp.ci settings.lisp
 
       - name: Build ichiran core
         run: |
