@@ -39,7 +39,7 @@ jobs:
           # Give a bit more time for the restore to complete
           sleep 5
 
-          pg_isready -h 127.0.0.1
+          pg_isready -h 127.0.0.1 -U postgres
 
       - name: Set up Quicklisp
         run: |
