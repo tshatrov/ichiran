@@ -17,7 +17,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y sbcl postgresql-client wget git docker.io
+          sudo apt-get install -y sbcl
 
       - name: Start PostgreSQL container
         env:
