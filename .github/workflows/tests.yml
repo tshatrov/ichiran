@@ -17,47 +17,53 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y sbcl postgresql-client
+          sudo apt-get install -y sbcl postgresql postgresql-client locales
+          sudo locale-gen en_US.UTF-8
+          sudo locale-gen ja_JP.UTF-8
+          sudo update-locale LANG=en_US.UTF-8
 
-      - name: Start PostgreSQL container
+      - name: Download database dump
         env:
           ICHIRAN_DB_URL: https://github.com/tshatrov/ichiran/releases/download/ichiran-260118/ichiran-260118.pgdump
         run: |
-          # Build the postgres image
-          docker build -t ichiran-pg -f docker/postgres-dockerfile --build-arg ICHIRAN_DB_URL=$ICHIRAN_DB_URL .
+          wget $ICHIRAN_DB_URL --quiet -O /tmp/ichiran.pgdump
 
-          # Start the container with:
-          # - Trust authentication for host connections (allows external connections without password)
-          # - Port 5432 published to all host interfaces
-          # - PGDATA set to match docker-compose
-          docker run -d --name pg --shm-size=1gb \
-            -e POSTGRES_PASSWORD=password \
-            -e POSTGRES_USER=postgres \
-            -e PGDATA=/var/lib/postgresql/data/pgdata \
-            -e POSTGRES_HOST_AUTH_METHOD=trust \
-            -p 5432:5432 \
-            ichiran-pg
-
-      - name: Wait for PostgreSQL initialization
+      - name: Set up PostgreSQL
         run: |
-          # Wait for PostgreSQL to be ready inside the container
-          echo "Waiting for PostgreSQL to start..."
-          timeout 300 bash -c 'while ! docker exec pg pg_isready -U postgres; do sleep 1; done'
+          # Start PostgreSQL service
+          sudo service postgresql start
 
-          # Wait for the jmdict database to be created and populated
-          echo "Waiting for jmdict database..."
-          timeout 600 bash -c 'while ! docker exec pg psql -U postgres -l 2>/dev/null | grep -q jmdict; do sleep 1; done'
+          # Find the PostgreSQL version directory
+          PG_VERSION=$(ls /etc/postgresql/)
+          PG_CONF="/etc/postgresql/$PG_VERSION/main"
 
-          echo "Waiting for restore to complete..."
-          sleep 10
+          # Configure PostgreSQL to listen on all interfaces
+          sudo sed -i "s/^#listen_addresses = 'localhost'/listen_addresses = '*'/g" $PG_CONF/postgresql.conf
 
-          # Verify external connectivity from the runner
-          echo "Checking external connection..."
+          # Configure pg_hba.conf to trust local connections
+          sudo sed -i "s/^local.*peer/local   all   all   trust/g" $PG_CONF/pg_hba.conf
+          sudo sed -i "s/^host.*md5/host    all   all   127.0.0.1\/32   trust/g" $PG_CONF/pg_hba.conf
+          sudo sed -i "s/^host.*md5/host    all   all   ::1\/128        trust/g" $PG_CONF/pg_hba.conf
+
+          # Add explicit trust for all local connections
+          sudo echo "host    all             all             127.0.0.1/32            trust" | sudo tee -a $PG_CONF/pg_hba.conf
+          sudo echo "host    all             all             ::1/128                 trust" | sudo tee -a $PG_CONF/pg_hba.conf
+
+          # Restart PostgreSQL
+          sudo service postgresql restart
+
+          # Wait for PostgreSQL to be ready
           timeout 60 bash -c 'while ! pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
-          echo "PostgreSQL is ready and accessible from host!"
 
-          # Test actual connection
-          psql -h localhost -p 5432 -U postgres -d jmdict -c "SELECT 1"
+          # Create the jmdict database with UTF8 encoding and Japanese locale
+          sudo -u postgres createdb -E 'UTF8' -l 'ja_JP.utf8' -T template0 jmdict
+
+          # Restore the dump
+          sudo -u postgres pg_restore -d jmdict /tmp/ichiran.pgdump --no-owner --no-privileges --clean
+
+          # Verify connection
+          pg_isready -h localhost -p 5432 -U postgres
+          psql -h localhost -U postgres -d jmdict -c "SELECT 1"
 
       - name: Set up Quicklisp
         run: |
