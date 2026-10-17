@@ -29,6 +29,8 @@ jobs:
           wget $ICHIRAN_DB_URL --quiet -O /tmp/ichiran.pgdump
 
       - name: Set up PostgreSQL
+        env:
+          PGPASSWORD: password
         run: |
           # Start PostgreSQL service
           sudo service postgresql start
