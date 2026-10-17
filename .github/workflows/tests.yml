@@ -10,20 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_PASSWORD: password
-        # Wait until postgres is ready to accept connections before starting the job steps
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,42 +19,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sbcl postgresql-client
 
-      - name: Download Ichiran database dump
+      - name: Start PostgreSQL container
         env:
           ICHIRAN_DB_URL: https://github.com/tshatrov/ichiran/releases/download/ichiran-260118/ichiran-260118.pgdump
         run: |
-          wget $ICHIRAN_DB_URL --quiet -O ichiran.pgdump && chmod o+r ichiran.pgdump
+          # Build and start the postgres container using the same Dockerfile as docker-compose
+          docker build -t ichiran-pg -f docker/postgres-dockerfile --build-arg ICHIRAN_DB_URL=$ICHIRAN_DB_URL .
+          docker run -d --name pg --shm-size=1gb -e POSTGRES_PASSWORD=password -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 ichiran-pg
 
-      - name: Restore Ichiran database dump
-        env:
-          PGPASSWORD: password
+      - name: Wait for PostgreSQL and database initialization
         run: |
-          # create database
-          createdb -h localhost -U postgres -E 'UTF8' -l 'ja_JP.utf8' -T template0 jmdict
-          # restore dump
-          pg_restore -h localhost -U postgres -d jmdict ichiran.pgdump --no-owner --no-privileges
+          # Wait for PostgreSQL to be ready
+          timeout 300 bash -c 'while ! docker exec pg pg_isready -U postgres; do sleep 1; done'
 
-      # - name: Start PostgreSQL container
-      #   env:
-      #     ICHIRAN_DB_URL: https://github.com/tshatrov/ichiran/releases/download/ichiran-260118/ichiran-260118.pgdump
-      #   run: |
-      #     # Build and start the postgres container using the same Dockerfile as docker-compose
-      #     docker build -t ichiran-pg -f docker/postgres-dockerfile --build-arg ICHIRAN_DB_URL=$ICHIRAN_DB_URL .
-      #     docker run -d --name pg --shm-size=1gb -e POSTGRES_PASSWORD=password -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 ichiran-pg
+          # Wait for the database to be created and populated
+          # The init script creates jmdict database and restores the dump
+          timeout 600 bash -c 'while ! docker exec pg psql -U postgres -l 2>/dev/null | grep -q jmdict; do sleep 1; done'
 
-      # - name: Wait for PostgreSQL and database initialization
-      #   run: |
-      #     # Wait for PostgreSQL to be ready
-      #     timeout 300 bash -c 'while ! docker exec pg pg_isready -U postgres; do sleep 1; done'
+          # Give a bit more time for the restore to complete
+          sleep 5
 
-      #     # Wait for the database to be created and populated
-      #     # The init script creates jmdict database and restores the dump
-      #     timeout 600 bash -c 'while ! docker exec pg psql -U postgres -l 2>/dev/null | grep -q jmdict; do sleep 1; done'
-
-      #     # Give a bit more time for the restore to complete
-      #     sleep 5
-
-      #     pg_isready -h pg -U postgres
+          PGPASSWORD=password pg_isready -h localhost -U postgres
 
       - name: Set up Quicklisp
         run: |
