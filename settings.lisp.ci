@@ -8,7 +8,7 @@
 
 (defparameter *jmdict-path* #p"ignore")
 
-(defparameter *jmdict-data* #p"/root/jmdictdb/jmdictdb/data/")
+(defparameter *jmdict-data* #p"jmdictdb/jmdictdb/data/")
 
 (in-package #:ichiran/kanji)
 
