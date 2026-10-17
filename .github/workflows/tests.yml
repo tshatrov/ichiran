@@ -40,8 +40,10 @@ jobs:
           wget $ICHIRAN_DB_URL --quiet -O ichiran.pgdump && chmod o+r ichiran.pgdump
 
       - name: Restore Ichiran database dump
-        run:
+        run: |
+          # create database
           createdb -h localhost -U postgres -E 'UTF8' -l 'ja_JP.utf8' -T template0 jmdict
+          # restore dump
           pg_restore -h localhost -U postgres -d jmdict ichiran.pgdump --no-owner --no-privileges
 
       # - name: Start PostgreSQL container
