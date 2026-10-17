@@ -23,23 +23,41 @@ jobs:
         env:
           ICHIRAN_DB_URL: https://github.com/tshatrov/ichiran/releases/download/ichiran-260118/ichiran-260118.pgdump
         run: |
-          # Build and start the postgres container using the same Dockerfile as docker-compose
+          # Build the postgres image
           docker build -t ichiran-pg -f docker/postgres-dockerfile --build-arg ICHIRAN_DB_URL=$ICHIRAN_DB_URL .
-          docker run -d --name pg --shm-size=1gb -e POSTGRES_PASSWORD=password -e PGDATA=/var/lib/postgresql/data/pgdata -p 127.0.0.1:5432:5432 ichiran-pg
 
-      - name: Wait for PostgreSQL and database initialization
+          # Start the container with:
+          # - Trust authentication for host connections (allows external connections without password)
+          # - Port 5432 published to all host interfaces
+          # - PGDATA set to match docker-compose
+          docker run -d --name pg --shm-size=1gb \
+            -e POSTGRES_PASSWORD=password \
+            -e POSTGRES_USER=postgres \
+            -e PGDATA=/var/lib/postgresql/data/pgdata \
+            -e POSTGRES_HOST_AUTH_METHOD=trust \
+            -p 5432:5432 \
+            ichiran-pg
+
+      - name: Wait for PostgreSQL initialization
         run: |
-          # Wait for PostgreSQL to be ready
+          # Wait for PostgreSQL to be ready inside the container
+          echo "Waiting for PostgreSQL to start..."
           timeout 300 bash -c 'while ! docker exec pg pg_isready -U postgres; do sleep 1; done'
 
-          # Wait for the database to be created and populated
-          # The init script creates jmdict database and restores the dump
+          # Wait for the jmdict database to be created and populated
+          echo "Waiting for jmdict database..."
           timeout 600 bash -c 'while ! docker exec pg psql -U postgres -l 2>/dev/null | grep -q jmdict; do sleep 1; done'
 
-          # Give a bit more time for the restore to complete
-          sleep 5
+          echo "Waiting for restore to complete..."
+          sleep 10
 
-          pg_isready -h localhost -p 5432 -U postgres
+          # Verify external connectivity from the runner
+          echo "Checking external connection..."
+          timeout 60 bash -c 'while ! pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+          echo "PostgreSQL is ready and accessible from host!"
+
+          # Test actual connection
+          psql -h localhost -p 5432 -U postgres -d jmdict -c "SELECT 1"
 
       - name: Set up Quicklisp
         run: |
@@ -53,7 +71,7 @@ jobs:
         run: |
           git clone https://gitlab.com/yamagoya/jmdictdb.git
 
-      - name: Copy docker settings
+      - name: Copy CI settings
         run: |
           cp settings.lisp.ci settings.lisp
 
