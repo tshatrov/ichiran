@@ -1,6 +1,6 @@
 (in-package #:ichiran/conn)
 
-(defparameter *connection* '("jmdict" "postgres" "password" "127.0.0.1"))
+(defparameter *connection* '("jmdict" "postgres" "password" "localhost"))
 
 (defparameter *connections* '())
 
