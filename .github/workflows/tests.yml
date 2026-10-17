@@ -51,6 +51,9 @@ jobs:
           sudo echo "host    all             all             127.0.0.1/32            trust" | sudo tee -a $PG_CONF/pg_hba.conf
           sudo echo "host    all             all             ::1/128                 trust" | sudo tee -a $PG_CONF/pg_hba.conf
 
+          echo "PG config:"
+          sudo cat $PG_CONF/pg_hba.conf
+
           # Restart PostgreSQL
           sudo service postgresql restart
 
