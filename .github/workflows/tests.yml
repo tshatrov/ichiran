@@ -40,6 +40,8 @@ jobs:
           wget $ICHIRAN_DB_URL --quiet -O ichiran.pgdump && chmod o+r ichiran.pgdump
 
       - name: Restore Ichiran database dump
+        env:
+          PGPASSWORD: password
         run: |
           # create database
           createdb -h localhost -U postgres -E 'UTF8' -l 'ja_JP.utf8' -T template0 jmdict
