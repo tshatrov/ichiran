@@ -58,8 +58,9 @@ jobs:
           # Create the jmdict database with UTF8 encoding and Japanese locale
           sudo -u postgres createdb -E 'UTF8' -l 'ja_JP.utf8' -T template0 jmdict
 
-          # Restore the dump
-          sudo -u postgres pg_restore -d jmdict /tmp/ichiran.pgdump --no-owner --no-privileges --clean
+          # Restore the dump (exit code 1 is expected due to ignorable errors)
+          sudo -u postgres pg_restore -d jmdict /tmp/ichiran.pgdump --no-owner --no-privileges --clean || \
+            { exit_code=$?; if [ $exit_code -ne 1 ]; then exit $exit_code; fi; }
 
           # Verify connection
           pg_isready -h localhost -p 5432 -U postgres
