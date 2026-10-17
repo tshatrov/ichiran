@@ -1,0 +1,15 @@
+(in-package #:ichiran/conn)
+
+(defparameter *connection* '("jmdict" "postgres" "password" "localhost"))
+
+(defparameter *connections* '())
+
+(in-package #:ichiran/dict)
+
+(defparameter *jmdict-path* #p"ignore")
+
+(defparameter *jmdict-data* #p"jmdictdb/jmdictdb/data/")
+
+(in-package #:ichiran/kanji)
+
+(defparameter *kanjidic-path* #P"ignore/kanjidic2.xml")
