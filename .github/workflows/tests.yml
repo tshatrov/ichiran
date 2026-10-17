@@ -1,0 +1,104 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sbcl postgresql postgresql-client locales
+          sudo locale-gen en_US.UTF-8
+          sudo locale-gen ja_JP.UTF-8
+          sudo update-locale LANG=en_US.UTF-8
+
+      - name: Download database dump
+        env:
+          ICHIRAN_DB_URL: https://github.com/tshatrov/ichiran/releases/download/ichiran-260118/ichiran-260118.pgdump
+        run: |
+          wget $ICHIRAN_DB_URL --quiet -O /tmp/ichiran.pgdump
+
+      - name: Set up PostgreSQL
+        env:
+          PGPASSWORD: password
+        run: |
+          # Start PostgreSQL service
+          sudo service postgresql start
+
+          # Find the PostgreSQL version directory
+          PG_VERSION=$(ls /etc/postgresql/)
+          PG_CONF="/etc/postgresql/$PG_VERSION/main"
+
+          # Configure PostgreSQL to listen on all interfaces
+          sudo sed -i "s/^#listen_addresses = 'localhost'/listen_addresses = '*'/g" $PG_CONF/postgresql.conf
+
+          # Set postgres user password to "password" (matching docker-compose setup)
+          sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'password'"
+
+          # Restart PostgreSQL
+          sudo service postgresql restart
+
+          # Wait for PostgreSQL to be ready
+          timeout 60 bash -c 'while ! pg_isready -h localhost -p 5432 -U postgres; do sleep 1; done'
+
+          # Create the jmdict database with UTF8 encoding and Japanese locale
+          sudo -u postgres createdb -E 'UTF8' -l 'ja_JP.utf8' -T template0 jmdict
+
+          # Restore the dump (exit code 1 is expected due to ignorable errors)
+          sudo -u postgres pg_restore -d jmdict /tmp/ichiran.pgdump --no-owner --no-privileges --clean || \
+            { exit_code=$?; if [ $exit_code -ne 1 ]; then exit $exit_code; fi; }
+
+          # Verify connection
+          pg_isready -h localhost -p 5432 -U postgres
+          psql -h localhost -U postgres -d jmdict -c "SELECT 1"
+
+      - name: Set up Quicklisp
+        run: |
+          wget https://beta.quicklisp.org/quicklisp.lisp
+          sbcl --load quicklisp.lisp --non-interactive \
+               --eval "(quicklisp-quickstart:install)" \
+               --eval "(ql-util:without-prompting (ql:add-to-init-file))" \
+               --eval "(sb-ext:quit)"
+
+      - name: Clone jmdictdb dependency
+        run: |
+          git clone https://gitlab.com/yamagoya/jmdictdb.git
+
+      - name: Copy CI settings
+        run: |
+          cp settings.lisp.ci settings.lisp
+
+      - name: Build ichiran core
+        run: |
+          # Load ichiran first
+          sbcl --non-interactive \
+               --eval "(push '*default-pathname-defaults* asdf:*central-registry*)" \
+               --eval "(ql:quickload :ichiran)"
+
+          # Build the core file with caches initialized
+          sbcl --non-interactive \
+               --eval "(push '*default-pathname-defaults* asdf:*central-registry*)" \
+               --eval "(ql:quickload :ichiran)" \
+               --eval "(ichiran/mnt:add-errata)" \
+               --eval "(in-package :ichiran/all)" \
+               --eval "(init-all-caches t)" \
+               --eval "(init-suffixes t)" \
+               --eval "(postmodern:clear-connection-pool)" \
+               --eval "(uiop:dump-image \"/tmp/ichiran.core\" :executable nil :compression t)" \
+               --eval "(sb-ext:quit)"
+
+      - name: Run tests
+        run: |
+          sbcl --core /tmp/ichiran.core --non-interactive \
+               --eval "(ichiran/test:run-all-tests)" \
+               --eval "(sb-ext:quit)"
