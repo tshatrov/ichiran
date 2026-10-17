@@ -25,7 +25,7 @@ jobs:
         run: |
           # Build and start the postgres container using the same Dockerfile as docker-compose
           docker build -t ichiran-pg -f docker/postgres-dockerfile --build-arg ICHIRAN_DB_URL=$ICHIRAN_DB_URL .
-          docker run --net=host -d --name pg --shm-size=1gb -e POSTGRES_PASSWORD=password -e PGDATA=/var/lib/postgresql/data/pgdata -p 5432:5432 ichiran-pg
+          docker run -d --name pg --shm-size=1gb -e POSTGRES_PASSWORD=password -e PGDATA=/var/lib/postgresql/data/pgdata -p 127.0.0.1:5432:5432 ichiran-pg
 
       - name: Wait for PostgreSQL and database initialization
         run: |
