@@ -99,6 +99,19 @@ jobs:
 
       - name: Run tests
         run: |
+          # Run tests and capture output
           sbcl --core /tmp/ichiran.core --non-interactive \
                --eval "(ichiran/test:run-all-tests)" \
-               --eval "(sb-ext:quit)"
+               --eval "(sb-ext:quit)" | tee test-output.txt
+          
+          # Check for non-zero failures or execution errors in the Unit Test Summary
+          # Look for "| N failed" or "| N execution errors" where N > 0
+          if awk '/Unit Test Summary/,/^$/{ 
+            if (/failed/ && !/\| *0 *failed/) exit 1; 
+            if (/execution errors/ && !/\| *0 *execution errors/) exit 1 
+          }' test-output.txt; then
+            echo "All tests passed!"
+          else
+            echo "Tests failed or have execution errors!"
+            exit 1
+          fi
